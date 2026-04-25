@@ -6,14 +6,14 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
-## By The Numbers
+## By The Numbers (Phase 1: Backend Core)
 
-- **3 services:** Python deterministic backend, TypeScript agent, React frontend
-- **3-layer pipeline:** Extract → Validate → Verdict → Trust Score
-- **Hybrid RAG:** Elasticsearch BM25 + pgvector + cross-encoder reranking
-- **100-example golden set:** CI hard-fail on regression
-- **2 observability platforms:** Phoenix (tracing) + Langfuse (prompt/cost)
-- **15+ technologies:** Production Python, TypeScript agents, hybrid RAG, full observability
+- **3 services:** Python deterministic backend (✅), TypeScript agent (🚧 stub), React frontend (🚧 scaffold)
+- **3-layer pipeline:** Extract → Validate → Verdict → Trust Score (Layer 1 ✅, Layers 2-3 🚧)
+- **103 tests passing:** 83 unit + 20 integration tests
+- **4 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`
+- **5 check functions:** wage, fringe, overtime, signature, totals (with regulation citations)
+- **20-trade DBWD corpus:** In-memory with fuzzy matching
 
 ---
 
@@ -52,10 +52,13 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ```bash
 # Clone
-git clone https://github.com/FishRaposo/WCP-Compliance-Agent.git
-cd WCP-Compliance-Agent
+git clone https://github.com/FishRaposo/WCP-Compliance-Agent-V3.git
+cd WCP-Compliance-Agent-V3
 
-# Start everything
+# Start infrastructure only (for Phase 1 backend development)
+docker-compose up postgres redis elasticsearch phoenix -d
+
+# Or start everything (includes agent + frontend stubs)
 docker-compose up --build
 
 # Services:
@@ -94,7 +97,8 @@ v3/
 │   │   └── models/      # SQLAlchemy + Pydantic
 │   ├── tests/
 │   │   ├── eval/        # Golden set + regression
-│   │   └── unit/
+│   │   ├── integration/ # API endpoint tests (20 tests)
+│   │   └── unit/        # Core logic tests (83 tests)
 │   └── Dockerfile
 │
 ├── agent/                # TypeScript Mastra.ai agent
@@ -207,13 +211,26 @@ This architecture would hold up in a design review for medical devices, trading 
 
 ## Roadmap
 
-**Current:** V3 — Production AI system with hybrid RAG, multi-document batch processing, evaluation pipeline, full observability
+**Current: Phase 1 — Backend Core ✅**
+Python deterministic pipeline complete. 103 tests passing. 4 API endpoints: `/extract`, `/validate`, `/dbwd`, `/health`.
 
-**V3.1:** Multi-LLM routing — Anthropic Claude + Ollama support, model-agnostic LLM layer with cost/quality routing
+**Phase 2 — Agent Layer** (Next)
+TypeScript Mastra.ai agent with LLM verdict orchestration, Langfuse tracing, Phoenix observability.
 
-**V4:** Enterprise data platform — Contract/payroll databases at scale (millions of records vs. thousands in V3), DuckDB OLAP, Prefect bulk ingestion, Redis Streams, Great Expectations, Recharts analytics
+**Phase 3 — Frontend + Integration**
+React frontend, file upload, decision visualization, human review queue.
 
-See [V3_PLAN.md](docs/planning/V3_PLAN.md) for current architecture and [V4_PLAN.md](docs/planning/V4_PLAN.md) for data platform specification.
+**Phase 4 — Hybrid RAG + Persistence**
+Elasticsearch + pgvector retrieval, PostgreSQL decisions, Redis caching, batch processing.
+
+**Phase 5 — Evaluation + CI/CD**
+Golden set regression testing, evaluation pipeline, full observability, production deploy.
+
+**Future:**
+- **V3.1:** Multi-LLM routing — Anthropic Claude + Ollama support, model-agnostic LLM layer
+- **V4:** Enterprise data platform — Contract/payroll databases at scale, DuckDB OLAP, Prefect bulk ingestion
+
+See [phase-01-backend-core.md](docs/planning/phases/phase-01-backend-core.md) for Phase 1 details and [V3_PLAN.md](docs/planning/V3_PLAN.md) for full architecture spec.
 
 ---
 
