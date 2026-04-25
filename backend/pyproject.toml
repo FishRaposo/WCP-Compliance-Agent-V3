@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "wcp-backend"
+version = "3.0.0"
+description = "WCP Compliance Agent — Deterministic Python Backend"
+authors = ["Vinícius Raposo <viniciusraposo1999@gmail.com>"]
+readme = "README.md"
+packages = [{include = "wcp_backend", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+pydantic = "^2.9.0"
+pydantic-settings = "^2.6.0"
+asyncpg = "^0.30.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
+alembic = "^1.14.0"
+redis = {extras = ["asyncio"], version = "^5.2.0"}
+celery = {extras = ["redis"], version = "^5.4.0"}
+flower = "^2.0.1"
+elasticsearch = {extras = ["async"], version = "^8.15.0"}
+sentence-transformers = "^3.3.0"
+pdfplumber = "^0.11.4"
+arize-phoenix = "^5.0.0"
+opentelemetry-api = "^1.28.0"
+opentelemetry-sdk = "^1.28.0"
+opentelemetry-exporter-otlp = "^1.28.0"
+structlog = "^24.4.0"
+httpx = "^0.27.2"
+pgvector = "^0.3.5"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-benchmark = "^4.0.0"
+pytest-cov = "^6.0.0"
+httpx = "^0.27.2"
+anyio = "^4.6.0"
+ruff = "^0.7.0"
+mypy = "^1.13.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

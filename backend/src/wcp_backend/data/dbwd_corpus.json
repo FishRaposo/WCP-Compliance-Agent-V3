@@ -1,0 +1,162 @@
+[
+  {
+    "trade": "Electrician",
+    "locality": "Washington, DC",
+    "rate": 51.69,
+    "fringe": 34.63,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Plumber",
+    "locality": "Washington, DC",
+    "rate": 48.50,
+    "fringe": 32.25,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Carpenter",
+    "locality": "Washington, DC",
+    "rate": 42.75,
+    "fringe": 28.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Laborer",
+    "locality": "Washington, DC",
+    "rate": 28.50,
+    "fringe": 18.25,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Equipment Operator",
+    "locality": "Washington, DC",
+    "rate": 45.00,
+    "fringe": 30.00,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Ironworker",
+    "locality": "Washington, DC",
+    "rate": 49.25,
+    "fringe": 33.00,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Painter",
+    "locality": "Washington, DC",
+    "rate": 38.50,
+    "fringe": 25.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Sheet Metal Worker",
+    "locality": "Washington, DC",
+    "rate": 47.00,
+    "fringe": 31.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "HVAC Technician",
+    "locality": "Washington, DC",
+    "rate": 46.50,
+    "fringe": 31.00,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Welder",
+    "locality": "Washington, DC",
+    "rate": 44.00,
+    "fringe": 29.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Mason",
+    "locality": "Washington, DC",
+    "rate": 43.25,
+    "fringe": 28.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Roofer",
+    "locality": "Washington, DC",
+    "rate": 39.75,
+    "fringe": 26.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Glazier",
+    "locality": "Washington, DC",
+    "rate": 41.50,
+    "fringe": 27.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Insulation Worker",
+    "locality": "Washington, DC",
+    "rate": 37.25,
+    "fringe": 24.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Tile Setter",
+    "locality": "Washington, DC",
+    "rate": 40.00,
+    "fringe": 26.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Drywall Installer",
+    "locality": "Washington, DC",
+    "rate": 35.50,
+    "fringe": 23.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Concrete Finisher",
+    "locality": "Washington, DC",
+    "rate": 36.75,
+    "fringe": 24.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Surveyor",
+    "locality": "Washington, DC",
+    "rate": 52.00,
+    "fringe": 34.75,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Flagger",
+    "locality": "Washington, DC",
+    "rate": 25.00,
+    "fringe": 16.50,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  },
+  {
+    "trade": "Truck Driver",
+    "locality": "Washington, DC",
+    "rate": 32.00,
+    "fringe": 21.25,
+    "effective_date": "2026-01-01",
+    "wage_determination_number": "DC2026-001"
+  }
+]

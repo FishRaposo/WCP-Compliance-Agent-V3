@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "trust-scored-decision",
+  "title": "TrustScoredDecision",
+  "description": "Final decision output with trust score and routing determination",
+  "type": "object",
+  "required": ["job_id", "verdict", "trust_score", "trust_band", "requires_human_review"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "verdict": { "type": "string", "enum": ["approved", "rejected", "requires_review"] },
+    "trust_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "trust_band": { "type": "string", "enum": ["high", "medium", "low"] },
+    "requires_human_review": { "type": "boolean" },
+    "violation_count": { "type": "integer" },
+    "warning_count": { "type": "integer" },
+    "llm_confidence": { "type": "number" },
+    "reasoning_summary": { "type": "string" },
+    "citations": { "type": "array", "items": { "type": "object" } },
+    "cost_usd": { "type": "number" },
+    "latency_ms": { "type": "integer" },
+    "phoenix_trace_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

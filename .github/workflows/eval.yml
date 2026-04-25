@@ -1,0 +1,68 @@
+name: Evaluation (Golden Set Regression)
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  evaluate:
+    name: Golden Set Regression
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: wcp_eval
+          POSTGRES_USER: wcp
+          POSTGRES_PASSWORD: wcp
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+      elasticsearch:
+        image: elasticsearch:8.15.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+        ports: ["9200:9200"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        working-directory: backend
+        run: poetry install
+      - name: Seed evaluation data
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_eval
+          REDIS_URL: redis://localhost:6379
+          ELASTICSEARCH_URL: http://localhost:9200
+        run: poetry run python scripts/seed_dbwd.py && poetry run python scripts/seed_elasticsearch.py
+      - name: Run golden set evaluation
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_eval
+          REDIS_URL: redis://localhost:6379
+          ELASTICSEARCH_URL: http://localhost:9200
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: poetry run pytest tests/eval/ --benchmark-only -v
+      - name: Regression check
+        working-directory: backend
+        run: poetry run python tests/eval/regression_test.py
+      - name: Upload eval artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results-${{ github.sha }}
+          path: backend/eval_report.json

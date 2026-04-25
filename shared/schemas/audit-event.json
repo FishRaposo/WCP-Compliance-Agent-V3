@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "audit-event",
+  "title": "AuditEvent",
+  "description": "Immutable audit trail entry for a compliance decision",
+  "type": "object",
+  "required": ["event_id", "job_id", "event_type", "timestamp"],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "job_id": { "type": "string" },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "extraction_complete",
+        "validation_complete",
+        "verdict_issued",
+        "trust_scored",
+        "human_review_queued",
+        "human_review_complete",
+        "decision_persisted"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "actor": { "type": "string" },
+    "payload": { "type": "object" },
+    "regulation_references": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "trace_id": { "type": "string" }
+  }
+}

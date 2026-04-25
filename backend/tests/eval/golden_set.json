@@ -1,0 +1,34 @@
+[
+  {
+    "id": "eval_001",
+    "description": "Compliant electrician — wage and fringe meet DBWD",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 34.63,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "minimum_trust_score": 0.85,
+    "regulations": ["40 U.S.C. § 3142", "40 U.S.C. § 3141(2)(B)"]
+  },
+  {
+    "id": "eval_002",
+    "description": "Wage violation — hourly rate below DBWD minimum",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 35.00,
+      "fringe_benefits": 20.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_checks_failed": ["wage_check"],
+    "minimum_trust_score": 0.80,
+    "regulations": ["40 U.S.C. § 3142"]
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "extracted-wcp",
+  "title": "ExtractedWCP",
+  "description": "Structured data extracted from a WH-347 payroll form",
+  "type": "object",
+  "required": ["job_id", "contractor", "project", "employees", "certification_date"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "contractor": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "ein": { "type": "string" }
+      }
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "contract_number": { "type": "string" },
+        "wage_determination_number": { "type": "string" }
+      }
+    },
+    "employees": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "trade_classification", "hours_worked", "hourly_wage"],
+        "properties": {
+          "name": { "type": "string" },
+          "trade_classification": { "type": "string" },
+          "hours_worked": { "type": "number" },
+          "overtime_hours": { "type": "number", "default": 0 },
+          "hourly_wage": { "type": "number" },
+          "fringe_benefits": { "type": "number", "default": 0 },
+          "gross_earnings": { "type": "number" },
+          "deductions": { "type": "number", "default": 0 },
+          "net_wages": { "type": "number" }
+        }
+      }
+    },
+    "certification_date": { "type": "string", "format": "date" },
+    "payroll_number": { "type": "integer" },
+    "week_ending": { "type": "string", "format": "date" }
+  }
+}

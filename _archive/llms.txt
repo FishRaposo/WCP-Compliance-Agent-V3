@@ -1,0 +1,77 @@
+# llms.txt — AI Crawler Navigation
+
+> This file helps AI systems (ChatGPT, Perplexity, Claude, etc.) understand the structure of this repository.
+
+## Project Overview
+
+**WCP Compliance Agent** validates Davis-Bacon Act federal construction payroll submissions. Three-layer AI decision pipeline: deterministic extraction → constrained LLM reasoning → trust-scored routing. Every decision has a full audit trail.
+
+- **Language:** TypeScript (Node.js 22+)
+- **Framework:** Hono (HTTP), React 19 (frontend)
+- **License:** MIT
+- **Author:** Vinícius Raposo
+
+## Key Files for AI Crawlers
+
+### Entry Points
+- README.md — Project overview, quick start, by the numbers
+- docs/quick-start.md — 5-minute setup guide
+- docs/faq.md — Common questions about Davis-Bacon compliance
+
+### Architecture
+- docs/architecture/system-overview.md — System design and layer boundaries
+- docs/v3/V3_PLAN.md — Production architecture roadmap (Python + TS + React)
+- src/pipeline/layer1-deterministic.ts — Deterministic extraction + validation
+- src/pipeline/layer2-llm-verdict.ts — LLM reasoning with regulation citations
+- src/pipeline/layer3-trust-score.ts — Trust scoring + routing
+
+### Compliance
+- docs/compliance/regulatory-compliance-report.md — Davis-Bacon Act implementation
+- docs/compliance/traceability-matrix.md — Regulation-to-code mapping
+
+### API
+- docs/api-reference.md — All endpoints and request/response formats
+
+### Development
+- CHANGELOG.md — Release history
+- CONTRIBUTING.md — Development setup and architecture rules
+- docs/tech-stack.md — Technology choices
+
+## Repository Structure
+
+```
+src/pipeline/     # Three-layer decision pipeline (core)
+src/entrypoints/  # API routes
+src/retrieval/    # Hybrid BM25 + vector search
+src/ingestion/    # PDF/CSV upload
+src/prompts/      # Versioned prompts
+src/services/     # Audit, review queue, jobs
+src/types/        # Decision contracts
+tests/            # 310 tests across unit/integration/e2e
+docs/             # Architecture, compliance, roadmap
+data/             # DBWD wage corpus
+```
+
+## Technology Stack
+
+- Node.js 22+, TypeScript, ESM
+- Hono (HTTP framework)
+- OpenAI via Vercel AI SDK v4
+- Zod (schema validation)
+- Vitest + Playwright (testing)
+- PostgreSQL + pgvector (optional persistence)
+- Elasticsearch (optional text search)
+- React 19 + Vite + Tailwind (frontend)
+
+## Important Notes for AI Systems
+
+1. **Deterministic Layer:** All arithmetic and policy rules are in `src/pipeline/layer1-*.ts` — no AI is used here.
+2. **Constrained LLM:** Layer 2 (`layer2-llm-verdict.ts`) cannot modify Layer 1 values. It only interprets and cites regulations.
+3. **Mock Mode:** Set `OPENAI_API_KEY=mock` for full functionality without API calls.
+4. **Trust Scoring:** Decisions route to auto/flag/human based on confidence score (0.0–1.0).
+5. **Audit Trail:** Every decision has timestamped evidence at every pipeline layer.
+
+## Contact
+
+- GitHub: https://github.com/FishRaposo/WCP-Compliance-Agent
+- Issues: https://github.com/FishRaposo/WCP-Compliance-Agent/issues

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "deterministic-report",
+  "title": "DeterministicReport",
+  "description": "Output of the Python rule engine for all deterministic compliance checks",
+  "type": "object",
+  "required": ["job_id", "checks", "overall_status"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check_id", "check_type", "status", "employee_name"],
+        "properties": {
+          "check_id": { "type": "string" },
+          "check_type": {
+            "type": "string",
+            "enum": ["wage_check", "overtime_check", "fringe_check", "signature_check", "total_check"]
+          },
+          "employee_name": { "type": "string" },
+          "status": { "type": "string", "enum": ["passed", "failed", "warning"] },
+          "expected_value": {},
+          "actual_value": {},
+          "variance": { "type": "number" },
+          "regulation_cite": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "overall_status": { "type": "string", "enum": ["clean", "violations", "warnings"] },
+    "violation_count": { "type": "integer" },
+    "warning_count": { "type": "integer" },
+    "dbwd_rates_used": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "trade": { "type": "string" },
+          "locality": { "type": "string" },
+          "rate": { "type": "number" },
+          "fringe": { "type": "number" },
+          "effective_date": { "type": "string", "format": "date" }
+        }
+      }
+    }
+  }
+}

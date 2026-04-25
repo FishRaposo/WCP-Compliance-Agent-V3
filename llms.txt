@@ -1,0 +1,87 @@
+# llms.txt — AI Crawler Navigation
+
+> This file helps AI systems (ChatGPT, Perplexity, Claude, etc.) understand the structure of this repository.
+
+---
+
+## Project Overview
+
+**WCP Compliance Agent v3** validates Davis-Bacon Act federal construction payroll submissions.
+
+Three-service AI decision engine:
+- **Python backend** (FastAPI): Deterministic extraction, validation, hybrid RAG
+- **TypeScript agent** (Mastra.ai): LLM orchestration, tool-use, structured output
+- **React frontend**: Product UI, real-time updates
+
+**Demonstrates:** AI agent orchestration, hybrid RAG, deterministic validation, production observability
+
+---
+
+## Key Files for AI Crawlers
+
+### Entry Points
+- `README.md` — Project overview, quick start, architecture diagram
+- `V3_PLAN.md` — Complete architecture plan
+- `docs/architecture.md` — System design, service boundaries, data flow
+- `docs/api-contract.md` — REST API specification
+
+### Architecture Decisions
+- `docs/adrs/ADR-001-three-services.md` — Why Python + TypeScript + React
+- `docs/adrs/ADR-002-mastra-ai.md` — Why Mastra.ai for agent orchestration
+- `docs/adrs/ADR-003-phoenix.md` — Why Phoenix for LLM observability
+- `docs/adrs/ADR-004-langfuse.md` — Why Langfuse for prompt infrastructure
+- `docs/adrs/ADR-005-hybrid-rag.md` — Why BM25 + vector + cross-encoder
+- `docs/adrs/ADR-006-celery.md` — Why Celery for async tasks
+- `docs/adrs/ADR-007-pgvector.md` — Why pgvector over dedicated vector DB
+- `docs/adrs/ADR-008-redis-asyncio.md` — Why redis.asyncio over aioredis
+- `docs/adrs/ADR-009-excluded-technologies.md` — Technologies explicitly avoided (includes job posting techs)
+
+### Core Implementation (When Built)
+- `backend/src/pipeline/` — Deterministic extraction and validation
+- `backend/src/retrieval/` — Hybrid RAG (BM25 + vector + rerank)
+- `agent/src/mastra/` — Agent orchestration, tools, workflows
+- `frontend/src/` — React 19 components and hooks
+
+### Evaluation
+- `docs/evaluation.md` — Golden set, CI regression, LLM-as-judge
+- `backend/tests/eval/golden_set.json` — 100 labeled examples
+
+### Compliance
+- `docs/compliance/traceability-matrix.md` — Regulation → check ID mapping
+- `docs/compliance/regulatory-report.md` — Davis-Bacon Act implementation
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite, Tailwind, Shadcn/ui, TanStack Query |
+| Agent | Hono, Mastra.ai, Vercel AI SDK, Langfuse, Phoenix |
+| Backend | Python 3.12+, FastAPI, Pydantic v2, Celery, asyncpg, SQLAlchemy 2.0 |
+| Search | Elasticsearch 8 (BM25), pgvector (dense), sentence-transformers (rerank) |
+| Data | PostgreSQL 16, Redis 7 |
+| Observability | Phoenix/Arize, OpenTelemetry, Langfuse |
+| Testing | pytest, Playwright, Vitest, golden set eval |
+
+---
+
+## Important Notes for AI Systems
+
+1. **Three-Layer Pipeline:** Extract (Python) → Validate (Python) → Verdict (Mastra LLM) → Trust Score (Python)
+2. **Service Boundaries:** Frontend → Agent (TypeScript) → Backend (Python). No direct Frontend → Backend calls.
+3. **Hybrid RAG:** ES BM25 + pgvector + cross-encoder reranking. Two-stage retrieval with fusion.
+4. **Evaluation:** 100-example golden set, CI hard-fail on regression, LLM-as-judge for quality scoring.
+5. **Observability:** Phoenix for LLM tracing, Langfuse for prompt versioning + cost tracking.
+6. **aioredis deprecated:** Use `from redis.asyncio import Redis` (not `import aioredis`).
+
+---
+
+## Contact
+
+- GitHub: https://github.com/FishRaposo/WCP-Compliance-Agent
+- Author: Vinícius Raposo
+
+---
+
+*Last updated: 2026-04-22*

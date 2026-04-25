@@ -1,0 +1,288 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WCP Compliance Agent Configuration Schema",
+  "description": "Schema for wcp.config.json - centralized configuration file",
+  "type": "object",
+  "required": ["pipeline", "dbwd", "api"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Configuration version"
+    },
+    "description": {
+      "type": "string",
+      "description": "Configuration description"
+    },
+    "pipeline": {
+      "type": "object",
+      "description": "Pipeline configuration",
+      "required": ["deterministic", "llm", "trust"],
+      "properties": {
+        "deterministic": {
+          "type": "object",
+          "description": "Layer 1 deterministic scaffold configuration",
+          "required": ["extraction", "checks"],
+          "properties": {
+            "extraction": {
+              "type": "object",
+              "description": "Data extraction patterns",
+              "properties": {
+                "rolePatterns": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "hoursPattern": { "type": "string" },
+                "wagePattern": { "type": "string" },
+                "fringePattern": { "type": "string" }
+              }
+            },
+            "checks": {
+              "type": "object",
+              "description": "Compliance check configuration",
+              "properties": {
+                "classification": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": { "type": "boolean" },
+                    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                    "regulation": { "type": "string" },
+                    "confidenceThreshold": { "type": "number", "minimum": 0, "maximum": 1 }
+                  }
+                },
+                "baseWage": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": { "type": "boolean" },
+                    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                    "regulation": { "type": "string" }
+                  }
+                },
+                "overtime": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": { "type": "boolean" },
+                    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                    "regulation": { "type": "string" },
+                    "thresholdHours": { "type": "number" },
+                    "multiplier": { "type": "number" }
+                  }
+                },
+                "fringe": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": { "type": "boolean" },
+                    "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                    "regulation": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "llm": {
+          "type": "object",
+          "description": "Layer 2 LLM verdict configuration",
+          "properties": {
+            "model": { "type": "string" },
+            "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+            "maxTokens": { "type": "integer" },
+            "maxSteps": { "type": "integer" },
+            "timeout": { "type": "integer" },
+            "systemPromptPath": { "type": "string" }
+          }
+        },
+        "trust": {
+          "type": "object",
+          "description": "Layer 3 trust score configuration",
+          "required": ["thresholds"],
+          "properties": {
+            "thresholds": {
+              "type": "object",
+              "properties": {
+                "autoApprove": { "type": "number", "minimum": 0, "maximum": 1 },
+                "flagForReview": { "type": "number", "minimum": 0, "maximum": 1 },
+                "requireHuman": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            "weights": {
+              "type": "object",
+              "properties": {
+                "deterministic": { "type": "number", "minimum": 0, "maximum": 1 },
+                "classification": { "type": "number", "minimum": 0, "maximum": 1 },
+                "llmSelf": { "type": "number", "minimum": 0, "maximum": 1 },
+                "agreement": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            },
+            "severityImpact": {
+              "type": "object",
+              "properties": {
+                "critical": { "type": "number", "minimum": 0, "maximum": 1 },
+                "high": { "type": "number", "minimum": 0, "maximum": 1 },
+                "medium": { "type": "number", "minimum": 0, "maximum": 1 },
+                "low": { "type": "number", "minimum": 0, "maximum": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "dbwd": {
+      "type": "object",
+      "description": "DBWD prevailing wage rate configuration",
+      "required": ["source", "effectiveDate"],
+      "properties": {
+        "source": { "type": "string", "enum": ["hardcoded", "json", "postgresql", "api"] },
+        "corpusPath": { "type": "string", "description": "Path to JSON corpus file (used when source=json)" },
+        "effectiveDate": { "type": "string", "format": "date" },
+        "geographicScope": { "type": "string" },
+        "rates": {
+          "type": "object",
+          "description": "Optional inline DBWD rates by trade (used when source=hardcoded)",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "base": { "type": "number" },
+              "fringe": { "type": "number" },
+              "total": { "type": "number" },
+              "dbwdId": { "type": "string" }
+            }
+          }
+        },
+        "phase2Target": {
+          "type": "object",
+          "properties": {
+            "source": { "type": "string" },
+            "schema": { "type": "string" },
+            "tableName": { "type": "string" }
+          }
+        }
+      }
+    },
+    "tradeAliases": {
+      "type": "object",
+      "description": "Map of trade synonym → canonical trade name (merged into retriever at startup)",
+      "additionalProperties": { "type": "string" }
+    },
+    "api": {
+      "type": "object",
+      "description": "API server configuration",
+      "properties": {
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "host": { "type": "string" },
+        "cors": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowedOrigins": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "timeout": { "type": "integer" },
+        "endpoints": {
+          "type": "object",
+          "properties": {
+            "analyze": { "type": "string" },
+            "apiAnalyze": { "type": "string" },
+            "health": { "type": "string" },
+            "apiHealth": { "type": "string" }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature flags",
+      "properties": {
+        "pdfParsing": { "type": "boolean" },
+        "ragLookup": { "type": "boolean" },
+        "batchProcessing": { "type": "boolean" },
+        "observability": { "type": "boolean" }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "description": "Observability configuration",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": { "type": "string", "enum": ["trace", "debug", "info", "warn", "error", "fatal"] },
+            "format": { "type": "string" }
+          }
+        },
+        "tracing": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "langfuse": {
+              "type": "object",
+              "properties": {
+                "publicKey": { "type": "string" },
+                "secretKey": { "type": "string" },
+                "host": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "url": { "type": "string" },
+        "maxConnections": { "type": "integer" },
+        "migrationPath": { "type": "string" },
+        "logging": { "type": "boolean" }
+      }
+    },
+    "humanReview": {
+      "type": "object",
+      "description": "Human review queue configuration",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "persistence": { "type": "string", "enum": ["memory", "file", "database"] },
+        "queuePath": { "type": "string" },
+        "retentionDays": { "type": "integer" }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "description": "Audit trail configuration",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "retentionYears": { "type": "integer" },
+        "trail": {
+          "type": "object",
+          "properties": {
+            "layer1": { "type": "boolean" },
+            "layer2": { "type": "boolean" },
+            "layer3": { "type": "boolean" },
+            "humanReview": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "mock": {
+      "type": "object",
+      "description": "Mock mode configuration",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "modeDetection": { "type": "string" },
+        "validKeys": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "references": {
+      "type": "object",
+      "description": "Reference material paths",
+      "properties": {
+        "legislation": { "type": "string" },
+        "values": { "type": "string" },
+        "instructions": { "type": "string" }
+      }
+    }
+  }
+}
