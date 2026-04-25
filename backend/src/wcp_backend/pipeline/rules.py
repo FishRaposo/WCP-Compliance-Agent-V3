@@ -15,9 +15,11 @@ from wcp_backend.pipeline.checks.overtime_check import check_overtime
 from wcp_backend.pipeline.checks.signature_check import check_signature
 from wcp_backend.pipeline.checks.total_check import check_totals
 from wcp_backend.pipeline.checks.wage_check import check_wage
+from wcp_backend.observability.tracing import trace_span
 from wcp_backend.pipeline.dbwd_lookup import get_dbwd_rate
 
 
+@trace_span("run_rule_engine", attributes={"component": "rule_engine"})
 async def run_rule_engine(extracted: ExtractedWCP) -> DeterministicReport:
     """Run all compliance checks. Returns a DeterministicReport."""
     checks: list[ComplianceCheck] = []

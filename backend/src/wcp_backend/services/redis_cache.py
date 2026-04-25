@@ -34,3 +34,17 @@ async def cache_set(key: str, value: Any, ttl: int = DBWD_CACHE_TTL) -> None:
 
 def dbwd_cache_key(trade: str, locality: str, date: str) -> str:
     return f"dbwd:{trade.lower()}:{locality.lower()}:{date}"
+
+
+async def health_check() -> bool:
+    """Check Redis connectivity with PING.
+    
+    Returns:
+        True if Redis is reachable and responding, False otherwise
+    """
+    try:
+        client = get_redis()
+        result = await client.ping()
+        return result is True
+    except Exception:
+        return False

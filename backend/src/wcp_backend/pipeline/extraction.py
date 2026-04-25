@@ -37,6 +37,7 @@ from typing import Any
 import pdfplumber
 
 from wcp_backend.models.schemas import ContractorInfo, EmployeeRecord, ExtractedWCP, ProjectInfo
+from wcp_backend.observability.tracing import trace_span
 
 # Classification aliases for trade normalization
 # Maps common variations to canonical trade names
@@ -191,6 +192,7 @@ def _extract_date(text: str, pattern: str, group: int = 1) -> date | None:
     return None
 
 
+@trace_span("extract_from_text", attributes={"component": "extraction"})
 def extract_from_text(text: str) -> ExtractedWCP:
     """Extract structured data from plain text representation of WH-347."""
     # Generate a unique job ID
@@ -401,6 +403,7 @@ def _parse_employee_block(block: str) -> EmployeeRecord | None:
     )
 
 
+@trace_span("extract_from_pdf", attributes={"component": "extraction"})
 def extract_from_pdf(pdf_bytes: bytes) -> ExtractedWCP:
     """Extract structured data from a WH-347 PDF using pdfplumber."""
     try:

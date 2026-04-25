@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from wcp_backend.observability.tracing import trace_span
 from wcp_backend.retrieval.bm25 import bm25_retrieve
 from wcp_backend.retrieval.cross_encoder import rerank
 from wcp_backend.retrieval.vector import vector_retrieve
 
 
+@trace_span("hybrid_search", attributes={"component": "retrieval"})
 async def hybrid_search(
     query: str,
     trade: str | None = None,

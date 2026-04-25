@@ -27,3 +27,24 @@ async def index_chunk(chunk_id: str, text: str, metadata: dict) -> None:
     """Index a regulation chunk into Elasticsearch."""
     # TODO: implement
     raise NotImplementedError
+
+
+async def health_check() -> dict:
+    """Check Elasticsearch cluster health.
+    
+    Returns:
+        dict with status: 'ok', 'warning', or 'error'
+    """
+    try:
+        client = get_es_client()
+        health = await client.cluster.health()
+        status = health.get("status", "unknown")
+        
+        if status in ("green", "yellow"):
+            return {"status": "ok", "cluster_status": status}
+        elif status == "red":
+            return {"status": "warning", "cluster_status": status}
+        else:
+            return {"status": "error", "cluster_status": status}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
