@@ -86,6 +86,9 @@ logs/
 *.tar.gz
 *.rar
 
+# Archive directory (V2 legacy code)
+_archive/
+
 # Test outputs
 test-results/
 playwright-report/
