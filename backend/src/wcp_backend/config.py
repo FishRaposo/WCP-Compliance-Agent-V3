@@ -22,5 +22,7 @@ class Settings(BaseSettings):
     trust_score_high_band: float = 0.85
     trust_score_medium_band: float = 0.60
 
+    phase: int = 1
+
 
 settings = Settings()

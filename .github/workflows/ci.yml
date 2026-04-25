@@ -31,6 +31,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      elasticsearch:
+        image: elasticsearch:8.15.0
+        ports: ["9200:9200"]
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        options: >-
+          --health-cmd "curl -f http://localhost:9200/_cluster/health || exit 1"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,12 +53,26 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: poetry install
+      - name: Run migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_test
+        run: poetry run alembic upgrade head
+      - name: Seed test data
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_test
+          REDIS_URL: redis://localhost:6379
+          ELASTICSEARCH_URL: http://localhost:9200
+        run: poetry run python scripts/seed_all.py
       - name: Run tests
         working-directory: backend
         env:
           DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_test
           REDIS_URL: redis://localhost:6379
+          ELASTICSEARCH_URL: http://localhost:9200
           CELERY_BROKER_URL: redis://localhost:6379/0
+          PHASE: 2
         run: poetry run pytest tests/unit tests/integration -v
 
   agent:

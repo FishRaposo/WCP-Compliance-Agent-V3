@@ -19,7 +19,10 @@ def test_health_returns_phase_1_version(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "3.0.2", "phase": 1}
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["phase"] == 1
+    assert "version" in data
 
 
 def test_extract_accepts_text_body(client):

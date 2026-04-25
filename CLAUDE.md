@@ -18,7 +18,9 @@ A three-service AI decision engine that validates WH-347 federal construction pa
 
 **Phase 1 (Backend Core): COMPLETE.** Python deterministic pipeline fully implemented with 83 unit tests + 20 integration tests (103 total). All Phase 1 endpoints working: `/extract`, `/validate`, `/dbwd`, `/health`.
 
-**Phase 2-5: Not started.** Agent layer (TypeScript/Mastra) and React frontend are scaffolded with TODOs. The `_archive/` directory contains the working V2 TypeScript monolith — use it to understand existing behavior and edge cases.
+**Phase 2 (Data Layer + Infrastructure): IN PROGRESS.** PostgreSQL with migrations, Redis caching, Elasticsearch BM25, pgvector, Phoenix observability. Seed scripts operational. Health endpoint checks all services.
+
+**Phase 3-5: Not started.** Agent layer (TypeScript/Mastra) and React frontend are scaffolded with TODOs.
 
 ---
 
