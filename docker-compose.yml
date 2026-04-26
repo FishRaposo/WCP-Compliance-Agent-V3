@@ -93,6 +93,7 @@ services:
   celery_worker:
     build: ./backend
     restart: unless-stopped
+    entrypoint: []
     command: celery -A wcp_backend.workers.celery_worker worker --loglevel=info
     environment:
       DATABASE_URL: postgresql+asyncpg://wcp:wcp@postgres:5432/wcp
@@ -113,6 +114,7 @@ services:
   celery_beat:
     build: ./backend
     restart: unless-stopped
+    entrypoint: []
     command: celery -A wcp_backend.workers.celery_worker beat --loglevel=info
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -129,6 +131,7 @@ services:
   flower:
     build: ./backend
     restart: unless-stopped
+    entrypoint: []
     command: celery -A wcp_backend.workers.celery_worker flower --port=5555
     ports: ["5555:5555"]
     environment:

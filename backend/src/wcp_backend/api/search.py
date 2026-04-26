@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from wcp_backend.config import settings
 from wcp_backend.retrieval.hybrid import hybrid_search as retrieval_hybrid_search
 
 router = APIRouter()
@@ -40,6 +41,11 @@ async def hybrid_search(request: SearchRequest) -> list[SearchResult]:
     Raises:
         HTTPException: 500 if retrieval pipeline fails
     """
+    if settings.phase < 2:
+        raise HTTPException(
+            status_code=503, detail="Search API requires Phase 2 (Elasticsearch + pgvector)"
+        )
+
     try:
         results = await retrieval_hybrid_search(
             query=request.query,

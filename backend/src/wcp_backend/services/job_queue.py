@@ -19,8 +19,17 @@ from wcp_backend.pipeline.rules import (
 )
 from wcp_backend.services.audit import append_audit_event, persist_decision
 
-celery_app = Celery("wcp_backend", broker=settings.celery_broker_url)
-celery_app.config_from_object("celeryconfig")
+celery_app = Celery(
+    "wcp_backend",
+    broker=settings.celery_broker_url,
+    backend=settings.celery_broker_url,
+)
+celery_app.conf.update(
+    task_serializer="json",
+    result_serializer="json",
+    accept_content=["json"],
+    task_track_started=True,
+)
 
 
 @celery_app.task(bind=True, max_retries=3)  # type: ignore[untyped-decorator]

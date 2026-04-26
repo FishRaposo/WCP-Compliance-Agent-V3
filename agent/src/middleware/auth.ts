@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 import { jwtVerify, SignJWT } from "jose";
-import { config, isAuthDisabled } from "../../config.js";
-import { logger } from "../../utils/logger.js";
+import { config, isAuthDisabled } from "../config.js";
+import { logger } from "../utils/logger.js";
 
 const secret = new TextEncoder().encode(config.JWT_SECRET);
 

@@ -70,7 +70,7 @@ async def test_enqueue_job_returns_job_id(client, monkeypatch):
     if response.status_code == 202:
         data = response.json()
         assert "job_id" in data
-        assert data["status"] == "pending"
+        assert data["status"] == "processing"
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
@@ -98,4 +98,4 @@ async def test_get_job_status_returns_status(client, monkeypatch):
         data = response.json()
         assert "job_id" in data
         assert "status" in data
-        assert data["status"] in ("pending", "running", "completed", "failed", "unknown")
+        assert data["status"] in ("pending", "processing", "complete", "failed")

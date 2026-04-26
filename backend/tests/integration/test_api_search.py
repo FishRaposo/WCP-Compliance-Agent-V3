@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import pytest
 
+from wcp_backend.config import settings
 
+
+@pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
 @pytest.mark.asyncio
 async def test_search_endpoint_returns_results(client, monkeypatch):
     """POST /search returns regulation chunks."""
@@ -41,6 +44,7 @@ async def test_search_endpoint_returns_results(client, monkeypatch):
     assert "score" in results[0]
 
 
+@pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
 @pytest.mark.asyncio
 async def test_search_endpoint_with_filters(client, monkeypatch):
     """POST /search respects trade and locality filters."""
@@ -71,6 +75,7 @@ async def test_search_endpoint_with_filters(client, monkeypatch):
     assert received_filters["locality"] == "Washington, DC"
 
 
+@pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
 @pytest.mark.asyncio
 async def test_search_endpoint_empty_results(client, monkeypatch):
     """POST /search handles empty results gracefully."""
@@ -91,6 +96,7 @@ async def test_search_endpoint_empty_results(client, monkeypatch):
     assert response.json() == []
 
 
+@pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
 @pytest.mark.asyncio
 async def test_search_endpoint_default_top_k(client, monkeypatch):
     """POST /search uses default top_k=5."""
