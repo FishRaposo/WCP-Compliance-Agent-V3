@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -21,17 +19,24 @@ class HealthResponse(BaseModel):
 
 
 @router.get("/health", response_model=HealthResponse)
-async def health_check() -> dict[str, Any]:
+async def health_check() -> HealthResponse:
     """Health check endpoint that verifies all infrastructure services."""
-    # For Phase 1, return simple health check
-    # For Phase 2+, check all services
     if settings.phase < 2:
-        return {
-            "status": "ok",
-            "version": "3.0.2",
-            "phase": settings.phase,
-        }
-    
-    # Phase 2+: Check all infrastructure services
+        return HealthResponse(
+            status="ok",
+            version="3.0.0",
+            phase=settings.phase,
+        )
+
     from wcp_backend.services.health_check import get_health_status
-    return await get_health_status()
+
+    status = await get_health_status()
+    return HealthResponse(
+        status=status["status"],
+        version=status["version"],
+        phase=status["phase"],
+        services={
+            k: ServiceHealth(status=v["status"], message=v["message"])
+            for k, v in status.get("services", {}).items()
+        },
+    )

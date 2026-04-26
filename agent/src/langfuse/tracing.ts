@@ -15,5 +15,21 @@ export async function logGeneration(
   model: string,
   usage: { promptTokens: number; completionTokens: number }
 ) {
-  // TODO: implement — log generation to Langfuse trace for cost tracking
+  const trace = langfuse.trace({ id: traceId });
+  trace.generation({
+    name: "wcp-verdict-generation",
+    input,
+    output,
+    model,
+    modelParameters: {
+      temperature: 0.2,
+      max_tokens: 2048,
+    },
+    usage: {
+      input: usage.promptTokens,
+      output: usage.completionTokens,
+      total: usage.promptTokens + usage.completionTokens,
+      unit: "TOKENS",
+    },
+  });
 }

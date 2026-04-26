@@ -17,7 +17,12 @@ DBWD_CACHE_TTL = 3600 * 24  # 24 hours
 def get_redis() -> aioredis.Redis:
     global _pool
     if _pool is None:
-        _pool = aioredis.from_url(settings.redis_url, decode_responses=True)
+        _pool = aioredis.from_url(  # type: ignore[no-untyped-call]
+            settings.redis_url,
+            decode_responses=True,
+            socket_connect_timeout=2,
+            socket_timeout=2,
+        )
     return _pool
 
 

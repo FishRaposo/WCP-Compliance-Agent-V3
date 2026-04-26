@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from wcp_backend.api import (
     analytics,
+    auth,
     dbwd,
     decisions,
     extract,
@@ -14,6 +15,7 @@ from wcp_backend.api import (
 router = APIRouter()
 
 router.include_router(health.router, tags=["health"])
+router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(extract.router, prefix="/extract", tags=["extraction"])
 router.include_router(validate.router, prefix="/validate", tags=["validation"])
 router.include_router(dbwd.router, prefix="/dbwd", tags=["dbwd"])

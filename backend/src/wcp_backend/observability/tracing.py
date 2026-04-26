@@ -14,7 +14,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 @contextmanager
-def span(name: str, attributes: dict | None = None) -> Generator[Span, None, None]:
+def span(name: str, attributes: dict[str, Any] | None = None) -> Generator[Span, None, None]:
     """Context manager for creating a trace span.
     
     Args:

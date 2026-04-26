@@ -4,7 +4,7 @@
   "title": "ExtractedWCP",
   "description": "Structured data extracted from a WH-347 payroll form",
   "type": "object",
-  "required": ["job_id", "contractor", "project", "employees", "certification_date"],
+  "required": ["job_id", "contractor", "project", "employees"],
   "properties": {
     "job_id": { "type": "string" },
     "contractor": {
@@ -28,7 +28,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "trade_classification", "hours_worked", "hourly_wage"],
+        "required": ["name", "trade_classification", "hours_worked", "hourly_wage", "gross_earnings", "net_wages"],
         "properties": {
           "name": { "type": "string" },
           "trade_classification": { "type": "string" },

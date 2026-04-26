@@ -1,4 +1,6 @@
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,11 +10,16 @@ from wcp_backend.config import settings
 from wcp_backend.observability.phoenix_setup import init_phoenix
 from wcp_backend.services.db import init_db
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await init_db()
-    init_phoenix()
+    try:
+        init_phoenix()
+    except Exception:
+        logger.warning("Phoenix initialization failed", exc_info=True)
     yield
 
 

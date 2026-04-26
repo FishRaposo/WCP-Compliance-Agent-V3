@@ -125,6 +125,13 @@ class AuditEvent(BaseModel):
     event_type: str
     timestamp: datetime
     actor: str = "system"
-    payload: dict = Field(default_factory=dict)
+    payload: dict[str, object] = Field(default_factory=dict)
     regulation_references: list[str] = Field(default_factory=list)
     trace_id: str = ""
+
+
+class User(BaseModel):
+    id: str
+    email: str
+    role: str = "analyst"
+    created_at: datetime | None = None

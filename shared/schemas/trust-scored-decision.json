@@ -9,7 +9,7 @@
     "job_id": { "type": "string" },
     "verdict": { "type": "string", "enum": ["approved", "rejected", "requires_review"] },
     "trust_score": { "type": "number", "minimum": 0, "maximum": 1 },
-    "trust_band": { "type": "string", "enum": ["high", "medium", "low"] },
+    "trust_band": { "type": "string", "enum": ["auto_approve", "flag_for_review", "require_human_review"] },
     "requires_human_review": { "type": "boolean" },
     "violation_count": { "type": "integer" },
     "warning_count": { "type": "integer" },

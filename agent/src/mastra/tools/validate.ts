@@ -1,6 +1,8 @@
 import { httpClient } from "../../utils/http-client.js";
-import type { ExtractedWCP } from "../../types/index.js";
+import type { DeterministicReport, ExtractedWCP } from "../../types/index.js";
 
-export async function validateTool(extracted: ExtractedWCP): Promise<object> {
-  return httpClient.post<object>("/validate", extracted);
+export async function validateTool(
+  extracted: ExtractedWCP
+): Promise<DeterministicReport> {
+  return httpClient.post<DeterministicReport>("/validate", extracted);
 }

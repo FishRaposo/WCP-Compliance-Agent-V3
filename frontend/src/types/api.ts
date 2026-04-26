@@ -1,5 +1,5 @@
 export type VerdictStatus = "approved" | "rejected" | "requires_review";
-export type TrustBand = "high" | "medium" | "low";
+export type TrustBand = "auto_approve" | "flag_for_review" | "require_human_review";
 
 export interface Citation {
   regulation: string;
@@ -29,6 +29,10 @@ export interface DecisionSummary {
   job_id: string;
   verdict: VerdictStatus;
   trust_score: number;
+  trust_band: TrustBand;
+  requires_human_review: boolean;
+  violation_count: number;
+  warning_count: number;
   created_at: string;
 }
 
@@ -41,10 +45,42 @@ export interface JobStatus {
   updated_at: string;
 }
 
-export interface AnalyticsVolume {
+export interface DecisionVolume {
   date: string;
+  count: number;
+}
+
+export interface ApprovalRateOverall {
   total: number;
   approved: number;
-  rejected: number;
-  in_review: number;
+  rate: number;
+}
+
+export interface ApprovalRateByBand {
+  trust_band: string;
+  total: number;
+  approved: number;
+  rate: number;
+}
+
+export interface ApprovalRateResponse {
+  overall: ApprovalRateOverall;
+  by_trust_band: ApprovalRateByBand[];
+}
+
+export interface TrustBandDistribution {
+  trust_band: string;
+  count: number;
+  percentage: number;
+}
+
+export interface CostAnalytics {
+  total_decisions: number;
+  decisions_this_month: number;
+  note: string;
+}
+
+export interface PipelineStep {
+  label: string;
+  status: "pending" | "running" | "done" | "error";
 }

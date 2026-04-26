@@ -6,18 +6,18 @@ interface Props {
   decision: TrustScoredDecision;
 }
 
-export default function DecisionCard({ decision }: Props) {
-  const verdictColors = {
-    approved: "text-green-700 bg-green-50",
-    rejected: "text-red-700 bg-red-50",
-    requires_review: "text-yellow-700 bg-yellow-50",
-  };
+const verdictColors: Record<string, string> = {
+  approved: "text-green-700 bg-green-50",
+  rejected: "text-red-700 bg-red-50",
+  requires_review: "text-yellow-700 bg-yellow-50",
+};
 
+export default function DecisionCard({ decision }: Props) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${verdictColors[decision.verdict]}`}>
-          {decision.verdict.replace("_", " ")}
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${verdictColors[decision.verdict] ?? "text-gray-700 bg-gray-50"}`}>
+          {decision.verdict.replace(/_/g, " ")}
         </span>
         <TrustScoreBadge score={decision.trust_score} band={decision.trust_band} />
       </div>

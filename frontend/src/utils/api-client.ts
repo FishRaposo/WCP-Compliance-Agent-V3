@@ -1,10 +1,37 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+function getToken(): string | null {
+  return localStorage.getItem("wcp_token");
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
+  const isFormData = init?.body instanceof FormData;
+  const headers: Record<string, string> = {};
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  if (init?.headers) {
+    Object.assign(headers, init.headers as Record<string, string>);
+  }
+
+  const url = BASE_URL ? `${BASE_URL}${path}` : path;
+  const res = await fetch(url, {
     ...init,
+    headers,
   });
+
+  if (res.status === 401) {
+    localStorage.removeItem("wcp_token");
+    window.location.href = "/login";
+    throw new Error("Session expired. Please log in again.");
+  }
+
   if (!res.ok) {
     const body = await res.text();
     throw new Error(`API error ${res.status}: ${body}`);
@@ -20,6 +47,5 @@ export const apiClient = {
     request<T>(path, {
       method: "POST",
       body: form,
-      headers: {},
     }),
 };

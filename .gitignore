@@ -89,6 +89,16 @@ logs/
 # Archive directory (V2 legacy code)
 _archive/
 
+# Backup files
+*-Prince.py
+*-Prince.yml
+*-Prince.ts
+*-Prince.json
+*-Prince.md
+
+# Stray files
+=
+
 # Test outputs
 test-results/
 playwright-report/

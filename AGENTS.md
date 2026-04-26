@@ -115,3 +115,91 @@ docker-compose up postgres redis elasticsearch phoenix -d
 - **Agent**: ES modules (`"type": "module"`), Node 20+, strict TypeScript. Builds to single esbuild bundle.
 - **Frontend**: `@` path alias → `./src`. TanStack Query for server state, React state for UI.
 - **No root-level lint/test/build** — always run commands per-service.
+
+## Phase 3 Launch Checklist
+
+Before deploying to production, complete all items below:
+
+### Configuration
+- [ ] Set `LLM_MODE=real` in agent environment (mock mode is blocked in production)
+- [ ] Provide valid `OPENAI_API_KEY` (not `mock`)
+- [ ] Set strong `JWT_SECRET` (minimum 32 random characters)
+- [ ] Set `AUTH_DISABLED=false` (or remove the variable)
+- [ ] Configure `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` for observability
+- [ ] Configure `SAM_GOV_API_KEY` if live DBWD rate lookups are required
+
+### Database
+- [ ] Run `poetry run alembic upgrade head` to apply all migrations (including users table)
+- [ ] Create at least one admin user in the `users` table:
+  ```python
+  import bcrypt
+  from sqlalchemy import text
+  hashed = bcrypt.hashpw(b"your-password", bcrypt.gensalt()).decode()
+  # INSERT INTO users (email, password_hash, role) VALUES ('admin@example.com', hashed, 'admin')
+  ```
+
+### Eval Baseline
+- [ ] Seed DBWD data: `poetry run python scripts/seed_dbwd.py`
+- [ ] Seed Elasticsearch: `poetry run python scripts/seed_elasticsearch.py`
+- [ ] Seed vectors: `poetry run python scripts/seed_vectors.py`
+- [ ] Run full eval with real OpenAI key: `poetry run pytest tests/eval/ -v`
+- [ ] Save baseline: copy `eval_report.json` to `tests/eval/baseline_scores.json`
+- [ ] Verify no regressions: `poetry run python tests/eval/regression_test.py`
+
+### Smoke Tests
+- [ ] `docker-compose up --build` starts all services without errors
+- [ ] Backend health: `curl http://localhost:8000/health`
+- [ ] Agent health: `curl http://localhost:3000/health`
+- [ ] Frontend loads: `http://localhost:5173` shows login page
+- [ ] Login flow works: POST `/api/auth/login` returns JWT
+- [ ] Analyze flow works: POST `/api/analyze` returns TrustScoredDecision
+- [ ] SSE stream works: `curl http://localhost:3000/api/decisions/stream`
+
+### Post-Launch
+- [ ] Monitor Langfuse for LLM cost and latency trends
+- [ ] Monitor Phoenix for trace coverage
+- [ ] Set up alerts for trust score drops below 0.60
+- [ ] Schedule weekly eval runs to catch regression
+
+## Auth Setup (Development)
+
+For local development with auth enabled:
+
+1. Run migration 005 to create the `users` table:
+   ```bash
+   cd backend
+   poetry run alembic upgrade 005
+   ```
+
+2. Create a test user (run in Python shell or script):
+   ```python
+   import bcrypt
+   hashed = bcrypt.hashpw(b"password", bcrypt.gensalt()).decode()
+   # INSERT INTO users (email, password_hash, role) VALUES ('dev@example.com', hashed, 'admin')
+   ```
+
+3. In agent `.env`, set:
+   ```
+   JWT_SECRET=dev-secret-change-before-launch
+   AUTH_DISABLED=false
+   ```
+
+4. Log in via frontend at `http://localhost:5173/login`
+
+To disable auth during development:
+```
+AUTH_DISABLED=true
+```
+
+## Mock Mode Removal
+
+**Mock LLM mode is development/CI only.** Before launch:
+
+1. Set `LLM_MODE=real`
+2. Provide a valid `OPENAI_API_KEY`
+3. Verify `generateObject` calls succeed with real model
+4. Run golden set eval to establish real LLM baseline
+5. Remove or gate any `isMockMode` branches that should not run in production
+
+The agent config throws a hard error on startup if `NODE_ENV=production` and `LLM_MODE=mock`.
+

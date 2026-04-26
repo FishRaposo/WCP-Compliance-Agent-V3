@@ -16,10 +16,10 @@
           "check_id": { "type": "string" },
           "check_type": {
             "type": "string",
-            "enum": ["wage_check", "overtime_check", "fringe_check", "signature_check", "total_check"]
+            "enum": ["wage_check", "overtime_check", "fringe_check", "signature_check", "total_check", "classification_check", "data_integrity_check", "minimum_wage_check"]
           },
           "employee_name": { "type": "string" },
-          "status": { "type": "string", "enum": ["passed", "failed", "warning"] },
+          "status": { "type": "string", "enum": ["pass", "fail", "warning"] },
           "expected_value": {},
           "actual_value": {},
           "variance": { "type": "number" },
@@ -28,7 +28,7 @@
         }
       }
     },
-    "overall_status": { "type": "string", "enum": ["clean", "violations", "warnings"] },
+    "overall_status": { "type": "string", "enum": ["pass", "fail", "warnings"] },
     "violation_count": { "type": "integer" },
     "warning_count": { "type": "integer" },
     "dbwd_rates_used": {

@@ -2,53 +2,47 @@
 
 from typing import Any
 
+from sqlalchemy import text
+
 from wcp_backend.config import settings
+from wcp_backend.services.db import engine
+from wcp_backend.services.elasticsearch import get_es_client
+from wcp_backend.services.redis_cache import get_redis
 
 
 async def check_database() -> dict[str, Any]:
     """Check PostgreSQL connectivity."""
     try:
-        from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy import text
-        
-        engine = create_async_engine(settings.database_url, pool_pre_ping=True)
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT 1"))
-            await result.scalar()
-        await engine.dispose()
-        
+            result.scalar()
         return {"status": "ok", "message": "Connected"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except Exception:
+        return {"status": "error", "message": "Database connection failed"}
 
 
 async def check_redis() -> dict[str, Any]:
     """Check Redis connectivity."""
     try:
-        import redis.asyncio as redis
-        
-        r = redis.from_url(settings.redis_url)
+        r = get_redis()
         await r.ping()
-        await r.close()
-        
         return {"status": "ok", "message": "Connected"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except Exception:
+        return {"status": "error", "message": "Redis connection failed"}
 
 
 async def check_elasticsearch() -> dict[str, Any]:
     """Check Elasticsearch connectivity."""
     try:
-        from elasticsearch import AsyncElasticsearch
-        
-        es = AsyncElasticsearch([settings.elasticsearch_url])
+        es = get_es_client()
         health = await es.cluster.health()
-        await es.close()
-        
         status = health.get("status", "unknown")
-        return {"status": "ok" if status in ["green", "yellow"] else "warning", "message": f"Cluster status: {status}"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "ok" if status in ("green", "yellow") else "warning",
+            "message": f"Cluster status: {status}",
+        }
+    except Exception:
+        return {"status": "error", "message": "Elasticsearch connection failed"}
 
 
 async def get_health_status() -> dict[str, Any]:
@@ -56,16 +50,14 @@ async def get_health_status() -> dict[str, Any]:
     db_status = await check_database()
     redis_status = await check_redis()
     es_status = await check_elasticsearch()
-    
-    # Determine overall status
+
     all_ok = all(
-        s["status"] == "ok" 
-        for s in [db_status, redis_status, es_status]
+        s["status"] == "ok" for s in [db_status, redis_status, es_status]
     )
-    
+
     return {
         "status": "ok" if all_ok else "degraded",
-        "version": "0.2.0",
+        "version": "3.0.0",
         "phase": settings.phase,
         "services": {
             "database": db_status,

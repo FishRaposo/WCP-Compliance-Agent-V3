@@ -2,10 +2,9 @@
 
 import pytest
 
+from wcp_backend.models.aliases import IN_MEMORY_ALIASES, resolve_classification
 from wcp_backend.pipeline.extraction import (
     extract_from_text,
-    resolve_classification,
-    IN_MEMORY_ALIASES,
     _extract_float,
     _extract_pattern,
 )

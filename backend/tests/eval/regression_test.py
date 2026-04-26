@@ -1,6 +1,7 @@
 """CI hard-fail regression check — compares current eval scores against baseline.
 
 Fails if trust score drops > 0.05 on any golden set example vs. stored baseline.
+Also checks LLM-in-the-loop trust scores when eval_report.json includes them.
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from pathlib import Path
 BASELINE_PATH = Path(__file__).parent / "baseline_scores.json"
 RESULTS_PATH = Path(__file__).parent.parent.parent / "eval_report.json"
 TRUST_SCORE_REGRESSION_THRESHOLD = 0.05
+LLM_TRUST_REGRESSION_THRESHOLD = 0.05
 
 
 def load_json(path: Path) -> dict:
@@ -25,14 +27,29 @@ def check_regression() -> None:
     results = load_json(RESULTS_PATH)
 
     failures = []
-    for example_id, current_score in results.items():
-        if example_id not in baseline:
+
+    # Deterministic trust score regression
+    for example_id, current_score in results.get("deterministic", {}).items():
+        if example_id not in baseline.get("deterministic", {}):
             continue
-        baseline_score = baseline[example_id]
+        baseline_score = baseline["deterministic"][example_id]
         if baseline_score - current_score > TRUST_SCORE_REGRESSION_THRESHOLD:
             failures.append(
-                f"{example_id}: trust score dropped {baseline_score:.3f} → {current_score:.3f}"
-                f" (threshold: {TRUST_SCORE_REGRESSION_THRESHOLD})"
+                f"{example_id}: deterministic trust score dropped "
+                f"{baseline_score:.3f} → {current_score:.3f} "
+                f"(threshold: {TRUST_SCORE_REGRESSION_THRESHOLD})"
+            )
+
+    # LLM trust score regression
+    for example_id, current_score in results.get("llm", {}).items():
+        if example_id not in baseline.get("llm", {}):
+            continue
+        baseline_score = baseline["llm"][example_id]
+        if baseline_score - current_score > LLM_TRUST_REGRESSION_THRESHOLD:
+            failures.append(
+                f"{example_id}: LLM trust score dropped "
+                f"{baseline_score:.3f} → {current_score:.3f} "
+                f"(threshold: {LLM_TRUST_REGRESSION_THRESHOLD})"
             )
 
     if failures:
@@ -41,7 +58,8 @@ def check_regression() -> None:
             print(f"  {f}")
         sys.exit(1)
 
-    print(f"No regression detected across {len(results)} examples.")
+    total = len(results.get("deterministic", {}))
+    print(f"No regression detected across {total} examples.")
 
 
 if __name__ == "__main__":

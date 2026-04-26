@@ -6,11 +6,13 @@
       "trade_classification": "Electrician",
       "hours_worked": 40,
       "hourly_wage": 51.69,
-      "fringe_benefits": 34.63,
+      "fringe_benefits": 1385.20,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
     "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
     "minimum_trust_score": 0.85,
     "regulations": ["40 U.S.C. § 3142", "40 U.S.C. § 3141(2)(B)"]
@@ -22,13 +24,348 @@
       "trade_classification": "Plumber",
       "hours_worked": 40,
       "hourly_wage": 35.00,
-      "fringe_benefits": 20.00,
+      "fringe_benefits": 1290.00,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
     "expected_checks_failed": ["wage_check"],
     "minimum_trust_score": 0.80,
     "regulations": ["40 U.S.C. § 3142"]
+  },
+  {
+    "id": "eval_003",
+    "description": "Missing fringe benefits — fringe below threshold",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 40,
+      "hourly_wage": 42.75,
+      "fringe_benefits": 500.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": ["fringe_check"],
+    "minimum_trust_score": 0.80,
+    "regulations": ["40 U.S.C. § 3142"]
+  },
+  {
+    "id": "eval_004",
+    "description": "Overtime not paid — worked 50 hours, no OT recorded",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 50,
+      "hourly_wage": 25.50,
+      "fringe_benefits": 850.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["overtime_check"],
+    "minimum_trust_score": 0.70,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)", "29 C.F.R. § 5.32"]
+  },
+  {
+    "id": "eval_005",
+    "description": "Missing certification date — WH-347 not signed",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 1385.20,
+      "overtime_hours": 0,
+      "locality": "Washington, DC",
+      "omit_certification": true
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["signature_check"],
+    "minimum_trust_score": 0.60,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)(B)"]
+  },
+  {
+    "id": "eval_006",
+    "description": "Multiple employees — mixed compliance",
+    "input": {
+      "employees": [
+        {
+          "trade_classification": "Electrician",
+          "hours_worked": 40,
+          "hourly_wage": 51.69,
+          "fringe_benefits": 1385.20,
+          "overtime_hours": 0
+        },
+        {
+          "trade_classification": "Laborer",
+          "hours_worked": 40,
+          "hourly_wage": 20.00,
+          "fringe_benefits": 200.00,
+          "overtime_hours": 0
+        }
+      ],
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": ["wage_check", "fringe_check"],
+    "minimum_trust_score": 0.70,
+    "regulations": ["40 U.S.C. § 3142"]
+  },
+  {
+    "id": "eval_007",
+    "description": "Federal minimum wage violation — below $7.25/hr",
+    "input": {
+      "trade_classification": "Helper",
+      "hours_worked": 40,
+      "hourly_wage": 6.50,
+      "fringe_benefits": 0.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": ["minimum_wage_check", "wage_check"],
+    "minimum_trust_score": 0.60,
+    "regulations": ["29 U.S.C. § 206(a)(1)"]
+  },
+  {
+    "id": "eval_008",
+    "description": "Data integrity issue — negative net wages",
+    "input": {
+      "trade_classification": "Painter",
+      "hours_worked": 40,
+      "hourly_wage": 38.50,
+      "fringe_benefits": 950.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC",
+      "deductions_override": 2000.00
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["data_integrity_check"],
+    "minimum_trust_score": 0.65,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+  },
+  {
+    "id": "eval_009",
+    "description": "Warning-only scenario — minor rounding discrepancy",
+    "input": {
+      "trade_classification": "HVAC Technician",
+      "hours_worked": 40,
+      "hourly_wage": 45.00,
+      "fringe_benefits": 1100.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC",
+      "rounding_error": 0.01
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_passed": ["wage_check"],
+    "minimum_trust_score": 0.75,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+  },
+  {
+    "id": "eval_010",
+    "description": "Unknown trade classification — cannot verify prevailing wage",
+    "input": {
+      "trade_classification": "AlienTech Specialist",
+      "hours_worked": 40,
+      "hourly_wage": 100.00,
+      "fringe_benefits": 2000.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["classification_check"],
+    "minimum_trust_score": 0.70,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+  },
+  {
+    "id": "eval_011",
+    "description": "Compliant plumber with overtime properly recorded",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 50,
+      "hourly_wage": 48.50,
+      "fringe_benefits": 1612.50,
+      "overtime_hours": 10,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "minimum_trust_score": 0.85,
+    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.32"]
+  },
+  {
+    "id": "eval_012",
+    "description": "Missing payroll number — incomplete record",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 1385.20,
+      "overtime_hours": 0,
+      "locality": "Washington, DC",
+      "omit_payroll_number": true
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_passed": ["wage_check", "fringe_check"],
+    "minimum_trust_score": 0.75,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+  },
+  {
+    "id": "eval_013",
+    "description": "Triple violation — wage + fringe + overtime all failed",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 55,
+      "hourly_wage": 30.00,
+      "fringe_benefits": 200.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": ["wage_check", "fringe_check", "overtime_check"],
+    "minimum_trust_score": 0.70,
+    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.32"]
+  },
+  {
+    "id": "eval_014",
+    "description": "Borderline compliant — exactly at prevailing wage threshold",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 1385.20,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "minimum_trust_score": 0.85,
+    "regulations": ["40 U.S.C. § 3142"]
+  },
+  {
+    "id": "eval_015",
+    "description": "Different locality — compliant plumber in New York",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 52.00,
+      "fringe_benefits": 1400.00,
+      "overtime_hours": 0,
+      "locality": "New York, NY"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": ["wage_check", "fringe_check", "total_check"],
+    "minimum_trust_score": 0.85,
+    "regulations": ["40 U.S.C. § 3142"]
+  },
+  {
+    "id": "eval_016",
+    "description": "Zero hours worked — invalid record",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 0,
+      "hourly_wage": 25.50,
+      "fringe_benefits": 0.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["data_integrity_check"],
+    "minimum_trust_score": 0.65,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+  },
+  {
+    "id": "eval_017",
+    "description": "Extreme overtime fraud — 70 hours, zero OT recorded",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 70,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 2429.30,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": ["overtime_check"],
+    "minimum_trust_score": 0.70,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)", "29 C.F.R. § 5.32"]
+  },
+  {
+    "id": "eval_018",
+    "description": "Apprentice rate — valid reduced wage with certificate",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 30.00,
+      "fringe_benefits": 800.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC",
+      "apprentice_certificate": true
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_passed": ["wage_check", "fringe_check"],
+    "minimum_trust_score": 0.75,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+  },
+  {
+    "id": "eval_019",
+    "description": "Empty record — no data to evaluate",
+    "input": {},
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": ["data_integrity_check", "classification_check"],
+    "minimum_trust_score": 0.60,
+    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+  },
+  {
+    "id": "eval_020",
+    "description": "Perfect compliance — all checks, high wage, complete record",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 60.00,
+      "fringe_benefits": 1500.00,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "minimum_trust_score": 0.90,
+    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.5(a)(3)(i)"]
   }
 ]
