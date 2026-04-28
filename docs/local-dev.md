@@ -1,188 +1,283 @@
 # Local Development Guide
 
+This project can run without Docker. The supported no-Docker path is WSL-native Ubuntu with every service bound to `localhost`.
+
+The repo is still three independent services. Always `cd` into the service directory before running package, test, build, or dev-server commands.
+
+For a fresh-machine install checklist, see `docs/install.md`. For the full dependency inventory, see `docs/dependencies.md`.
+
+The fastest install path is:
+
+```bash
+bash scripts/setup-wsl-native.sh
+bash scripts/check-install.sh
+```
+
 ## Prerequisites
 
 | Tool | Version | Install |
-|---|---|---|
-| Python | 3.12+ | [python.org](https://python.org) or `pyenv install 3.12` |
-| Poetry | 1.8+ | `pip install poetry` |
-| Node.js | 20+ | [nodejs.org](https://nodejs.org) or `nvm install 20` |
-| Docker + Docker Compose | Latest | [docker.com](https://docker.com) |
-| Git | Any | pre-installed on most systems |
+|---|---:|---|
+| WSL Ubuntu | 24.04 preferred | Microsoft Store or `wsl --install` |
+| Python | 3.12 | Ubuntu packages |
+| Poetry | 1.8+ | `pipx install poetry` |
+| Node.js | 20+ | NodeSource or `nvm` |
+| PostgreSQL | 16 + pgvector | Ubuntu packages |
+| Redis | 7 | Ubuntu packages |
+| Elasticsearch | 8.x | Elastic APT repo |
+| Phoenix | current CLI | `pipx install arize-phoenix` or a Python venv |
 
----
+Docker and Docker Compose are optional. Do not use Docker commands for the WSL-native workflow.
 
-## Quickest Start: Docker Compose (Full Stack)
+## Native Infrastructure
 
-```bash
-cp .env.example .env
-# Edit .env — set OPENAI_API_KEY (or leave as "mock" for offline dev)
-
-docker-compose up --build
-
-# Services:
-#   Frontend   http://localhost:5173
-#   Agent API  http://localhost:3000
-#   Backend    http://localhost:8000/docs  (FastAPI Swagger)
-#   Phoenix    http://localhost:6006
-#   Flower     http://localhost:5555
-```
-
----
-
-## Running Each Service Independently
-
-Run services individually during active development — faster iteration than rebuilding Docker images.
-
-### 1. Data Layer (always required)
+Install base packages:
 
 ```bash
-# Start PostgreSQL + Redis + Elasticsearch + Phoenix
-docker-compose up postgres redis elasticsearch phoenix -d
-
-# Verify
-docker-compose ps
+sudo apt update
+sudo apt install -y \
+  build-essential curl gpg ca-certificates apt-transport-https pipx \
+  python3.12 python3.12-venv python3-pip \
+  postgresql-16 postgresql-16-pgvector redis-server
+pipx ensurepath
+pipx install poetry
 ```
 
-### 2. Backend (Python / FastAPI)
+Install Node.js 20 with your preferred WSL method. With NodeSource:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+Install Elasticsearch 8.x from Elastic's APT repo:
+
+```bash
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch \
+  | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+sudo apt update
+sudo apt install -y elasticsearch
+```
+
+Configure Elasticsearch for local single-node development:
+
+```bash
+sudo tee -a /etc/elasticsearch/elasticsearch.yml >/dev/null <<'EOF'
+discovery.type: single-node
+xpack.security.enabled: false
+xpack.security.http.ssl.enabled: false
+network.host: 127.0.0.1
+http.port: 9200
+EOF
+```
+
+Start native services:
+
+```bash
+sudo service postgresql start
+sudo service redis-server start
+sudo service elasticsearch start
+```
+
+Create the local PostgreSQL role and databases:
+
+```bash
+sudo -u postgres psql <<'SQL'
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'wcp') THEN
+    CREATE ROLE wcp WITH LOGIN PASSWORD 'wcp';
+  END IF;
+END
+$$;
+ALTER ROLE wcp CREATEDB;
+SQL
+
+sudo -u postgres createdb -O wcp wcp || true
+sudo -u postgres createdb -O wcp wcp_test || true
+sudo -u postgres createdb -O wcp wcp_eval || true
+```
+
+Run Phoenix in a separate terminal:
+
+```bash
+python3.12 -m venv ~/.venvs/phoenix
+~/.venvs/phoenix/bin/pip install arize-phoenix
+~/.venvs/phoenix/bin/phoenix serve
+```
+
+Service URLs:
+
+| Service | URL |
+|---|---|
+| PostgreSQL | `postgresql+asyncpg://wcp:wcp@localhost:5432/wcp` |
+| Redis | `redis://localhost:6379` |
+| Elasticsearch | `http://localhost:9200` |
+| Phoenix | `http://localhost:6006` |
+
+## Backend
 
 ```bash
 cd backend
-
-# Install dependencies
 poetry install
+```
 
-# Copy env
-cp ../.env.example .env
-# Edit: DATABASE_URL, REDIS_URL, ELASTICSEARCH_URL must point to localhost services above
+Use these environment values for normal local development:
 
-# Run migrations
+```bash
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
+export CELERY_BROKER_URL=redis://localhost:6379/0
+export CELERY_RESULT_BACKEND=redis://localhost:6379/1
+export PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006
+export PHASE=2
+```
+
+Run migrations and seed data:
+
+```bash
 poetry run alembic upgrade head
+poetry run python scripts/seed_all.py
+```
 
-# Start dev server (hot-reload)
+Start the backend:
+
+```bash
 poetry run uvicorn wcp_backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-# Verify
+Verify:
+
+```bash
 curl http://localhost:8000/health
-# → {"status":"ok","version":"3.0.0"}
-
-# Swagger UI (full API docs)
-open http://localhost:8000/docs
 ```
 
-**Run backend tests:**
-```bash
-cd backend
-poetry run pytest tests/unit -v                    # Unit tests only (no services needed)
-poetry run pytest tests/integration -v             # Requires postgres + redis
-poetry run pytest tests/eval/ --benchmark-only     # Golden set (requires full stack)
-```
-
-### 3. Agent (TypeScript / Hono / Mastra)
+## Agent
 
 ```bash
 cd agent
+npm ci
+```
 
-npm install
+Use these environment values for deterministic local development:
 
-# Copy env — must point BACKEND_URL to running backend
-cp ../.env.example .env
-# Edit: BACKEND_URL=http://localhost:8000, OPENAI_API_KEY=your-key-or-mock
+```bash
+export BACKEND_URL=http://localhost:8000
+export OPENAI_API_KEY=mock
+export LLM_MODE=mock
+export AUTH_DISABLED=true
+export JWT_SECRET=dev-secret-change-before-launch-min-32-chars
+export PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006
+```
 
-# Start dev server (hot-reload via tsx watch)
+Start the agent:
+
+```bash
 npm run dev
+```
 
-# Verify
+Verify:
+
+```bash
 curl http://localhost:3000/health
-# → {"status":"ok","version":"3.0.0"}
 ```
 
-**Run agent tests:**
-```bash
-cd agent
-npm test
-```
-
-### 4. Frontend (React 19 / Vite)
+## Frontend
 
 ```bash
 cd frontend
+npm ci
+```
 
-npm install
+Use this environment value:
 
-# Copy env — VITE_API_URL must point to running agent
-cp ../.env.example .env
-# Edit: VITE_API_URL=http://localhost:3000
+```bash
+export VITE_API_URL=http://localhost:3000
+```
 
-# Start Vite dev server
+Start Vite:
+
+```bash
 npm run dev
-
-# Open
-open http://localhost:5173
 ```
 
-**Frontend type check:**
-```bash
-cd frontend
-npm run typecheck
-npm run build   # full production build check
-```
+Open `http://localhost:5173`.
 
----
+## Full Deterministic Verification
 
-## Mock Mode (No OpenAI Key Required)
-
-Set `OPENAI_API_KEY=mock` in any `.env` file. The agent will return deterministic verdicts without calling OpenAI — useful for local UI development and CI without API costs.
-
-Reference: `_archive/src/utils/mock-responses.ts` shows the mock response shape (the V3 equivalent lives in `agent/src/prompts/versions/`).
-
-```bash
-# Example .env for full offline dev
-OPENAI_API_KEY=mock
-DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
-REDIS_URL=redis://localhost:6379
-ELASTICSEARCH_URL=http://localhost:9200
-BACKEND_URL=http://localhost:8000
-```
-
----
-
-## Seeding Data
-
-Before running the full pipeline, seed the data layer:
+Run backend verification against `wcp_test`:
 
 ```bash
 cd backend
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_test
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
+export CELERY_BROKER_URL=redis://localhost:6379/0
+export CELERY_RESULT_BACKEND=redis://localhost:6379/1
+export PHASE=2
 
-# 1. Seed DBWD rates (Davis-Bacon prevailing wage table)
-poetry run python scripts/seed_dbwd.py
-
-# 2. Index regulation chunks into Elasticsearch (BM25 retrieval)
-poetry run python scripts/seed_elasticsearch.py
-
-# 3. Generate embeddings and upsert into pgvector
-poetry run python scripts/seed_vectors.py
+poetry run alembic upgrade head
+poetry run python scripts/seed_all.py
+poetry run pytest tests/unit tests/integration -v
 ```
 
-The fallback corpus (20 trades, in-memory) from `_archive/data/dbwd-corpus.json` is bundled into the backend config — no seeding required to get basic decisions working.
+Run the current golden-set eval against `wcp_eval`:
 
----
+```bash
+cd backend
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_eval
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
+export PHASE=2
+
+poetry run alembic upgrade head
+poetry run python scripts/seed_all.py
+poetry run pytest tests/eval/ --benchmark-only -v
+poetry run python tests/eval/regression_test.py
+```
+
+The current eval runner is deterministic and does not require a real `OPENAI_API_KEY`. Real LLM baseline verification is a later launch gate.
+
+Run agent checks:
+
+```bash
+cd agent
+npm ci
+npm run typecheck
+npm test
+npm run build
+```
+
+Run frontend checks:
+
+```bash
+cd frontend
+npm ci
+npm run typecheck
+npm run build
+```
 
 ## Common Issues
 
-**`poetry install` fails on `sentence-transformers`**
-Requires a C compiler. On Ubuntu: `apt install build-essential`. On Mac: `xcode-select --install`.
+**`poetry install` is slow or fails on native packages**
+Install `build-essential`, `python3.12-dev` if needed, and prefer running inside a Linux-native WSL path for long installs. The OneDrive-mounted `/mnt/c` path can be much slower for dependency builds.
 
-**`asyncpg` connection refused**
-Backend is trying to connect before PostgreSQL is ready. Wait ~10s after `docker-compose up postgres` before starting the backend.
+**PostgreSQL connection refused**
+Start PostgreSQL with `sudo service postgresql start` and verify with `pg_isready -h localhost -p 5432`.
 
-**Elasticsearch `health` returns yellow**
-Normal for single-node ES. The system works fine; yellow just means no replica shards.
+**`CREATE EXTENSION vector` fails**
+Install `postgresql-16-pgvector`, then rerun `poetry run alembic upgrade head`.
 
-**Agent can't reach backend**
-Make sure `BACKEND_URL` in `agent/.env` points to `http://localhost:8000` (not the Docker hostname `backend:8000`) when running the agent outside Docker.
+**Elasticsearch health is yellow**
+Yellow is normal for a single-node local cluster because replicas are not allocated. The system can still run.
 
----
+**Agent cannot reach backend**
+Set `BACKEND_URL=http://localhost:8000` when running the agent outside Docker.
+
+**Frontend API calls fail**
+Set `VITE_API_URL=http://localhost:3000` before starting Vite.
 
 ## Dependency Update Policy
 
@@ -192,4 +287,4 @@ Make sure `BACKEND_URL` in `agent/.env` points to `http://localhost:8000` (not t
 | Agent | `package-lock.json` | `npm update` |
 | Frontend | `package-lock.json` | `npm update` |
 
-Pin major versions of `@mastra/core`, `fastapi`, and `@ai-sdk/openai` — these have breaking changes between minors.
+Pin major versions of `@mastra/core`, `fastapi`, and `@ai-sdk/openai`; these have breaking changes between minors.

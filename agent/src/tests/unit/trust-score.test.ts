@@ -42,6 +42,7 @@ describe("Trust score computation", () => {
     reasoning: "test",
     citations: [],
     confidence,
+    referenced_check_ids: ["check-0"],
     rag_context_used: false,
     model: "gpt-4o-mini",
     prompt_version: "v2",

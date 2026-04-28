@@ -17,6 +17,12 @@ describe("Prompt registry", () => {
     expect(wcpVerdictV2.template).toContain("{{rag_context}}");
   });
 
+  it("v2 prompt enforces deterministic check ID citation", () => {
+    expect(wcpVerdictV2.template).toContain("MUST NOT recompute");
+    expect(wcpVerdictV2.template).toContain("referenced_check_ids");
+    expect(wcpVerdictV2.template).toContain("specific check IDs");
+  });
+
   it("local fallback returns v1 when requested", async () => {
     const prompt = await promptRegistry.getPrompt("wcp-verdict", "v1");
     expect(prompt.version).toBe("v1");
@@ -26,7 +32,7 @@ describe("Prompt registry", () => {
   it("local fallback returns v2 when requested", async () => {
     const prompt = await promptRegistry.getPrompt("wcp-verdict", "v2");
     expect(prompt.version).toBe("v2");
-    expect(prompt.template).toContain("chain-of-thought");
+    expect(prompt.template).toContain("MUST NOT recompute");
   });
 
   it("throws for unknown version", async () => {

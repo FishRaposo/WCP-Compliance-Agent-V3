@@ -21,6 +21,7 @@
       }
     },
     "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "referenced_check_ids": { "type": "array", "items": { "type": "string" } },
     "rag_context_used": { "type": "boolean" },
     "model": { "type": "string" },
     "prompt_version": { "type": "string" },

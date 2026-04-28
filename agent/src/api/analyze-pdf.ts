@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { config } from "../config.js";
 import { runPipelineFromExtracted } from "../mastra/workflows/wcp-pipeline.js";
 import { BackendError } from "../utils/errors.js";
-import type { ExtractedWCP } from "../types/index.js";
+import { ExtractedWCPSchema } from "../types/index.js";
 
 export const analyzePdf = new Hono();
 
@@ -32,7 +32,7 @@ analyzePdf.post("/", async (c) => {
       );
     }
 
-    const extracted: ExtractedWCP = await extractRes.json();
+    const extracted = ExtractedWCPSchema.parse(await extractRes.json());
 
     // Step 2-5: Run pipeline from extracted data
     const decision = await runPipelineFromExtracted(extracted);

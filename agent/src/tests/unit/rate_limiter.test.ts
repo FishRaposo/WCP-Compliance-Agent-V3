@@ -16,7 +16,7 @@ describe("Rate limiter middleware", () => {
       headers: { "x-forwarded-for": "1.1.1.1" },
     });
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as { ok: boolean };
     expect(body.ok).toBe(true);
   });
 
@@ -30,7 +30,7 @@ describe("Rate limiter middleware", () => {
 
     const blocked = await app.request("/test", { headers });
     expect(blocked.status).toBe(429);
-    const body = await blocked.json();
+    const body = (await blocked.json()) as { error: string };
     expect(body.error).toBe("Rate limit exceeded");
   });
 

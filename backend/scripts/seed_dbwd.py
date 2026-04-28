@@ -7,8 +7,8 @@ import json
 from datetime import date
 from pathlib import Path
 
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import insert
 
 from wcp_backend.config import settings
 

@@ -50,6 +50,26 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ## Quick Start
 
+### No Docker / WSL Native
+
+The supported no-Docker path is WSL-native Ubuntu:
+
+```bash
+# Clone
+git clone https://github.com/FishRaposo/WCP-Compliance-Agent-V3.git
+cd WCP-Compliance-Agent-V3
+
+# Install system dependencies, native infra, and service dependencies
+bash scripts/setup-wsl-native.sh
+
+# Check whether the machine is ready
+bash scripts/check-install.sh
+```
+
+See `docs/install.md` for the fresh-machine checklist, `docs/dependencies.md` for the full dependency inventory, and `docs/local-dev.md` for service-by-service commands.
+
+### Docker Compose
+
 ```bash
 # Clone
 git clone https://github.com/FishRaposo/WCP-Compliance-Agent-V3.git

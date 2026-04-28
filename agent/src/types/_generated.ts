@@ -40,6 +40,7 @@ export const LLMVerdictSchema = z.object({
   reasoning: z.string(),
   citations: z.array(z.any()),
   confidence: z.number(),
+  referenced_check_ids: z.array(z.any()),
   rag_context_used: z.boolean(),
   model: z.string(),
   prompt_version: z.string(),

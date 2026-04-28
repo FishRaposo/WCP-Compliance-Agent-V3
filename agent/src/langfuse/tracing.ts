@@ -1,11 +1,22 @@
-import { langfuse } from "./client.js";
+import { getLangfuse } from "./client.js";
 
-export async function createTrace(jobId: string, promptVersion: string) {
-  return langfuse.trace({
+interface TraceHandle {
+  id: string;
+}
+
+export async function createTrace(jobId: string, promptVersion: string): Promise<TraceHandle> {
+  const langfuse = getLangfuse();
+  if (!langfuse) {
+    return { id: "" };
+  }
+
+  const trace = langfuse.trace({
     name: "wcp-verdict",
     id: jobId,
     metadata: { prompt_version: promptVersion },
   });
+
+  return { id: trace.id };
 }
 
 export async function logGeneration(
@@ -15,6 +26,11 @@ export async function logGeneration(
   model: string,
   usage: { promptTokens: number; completionTokens: number }
 ) {
+  const langfuse = getLangfuse();
+  if (!langfuse || !traceId) {
+    return;
+  }
+
   const trace = langfuse.trace({ id: traceId });
   trace.generation({
     name: "wcp-verdict-generation",

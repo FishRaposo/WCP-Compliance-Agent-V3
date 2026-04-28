@@ -10,6 +10,10 @@ const app = new Hono();
 
 app.post("/extract", async (c) => {
   const body = await c.req.json();
+  const wageMatch = String(body.text ?? "").match(/Hourly Wage:\s*([0-9.]+)/i);
+  const tradeMatch = String(body.text ?? "").match(/Trade:\s*([A-Za-z ]+)/i);
+  const hourlyWage = wageMatch?.[1] ? Number.parseFloat(wageMatch[1]) : 51.69;
+  const trade = tradeMatch?.[1]?.trim() || "Laborer";
   return c.json({
     job_id: "mock-job-001",
     contractor: { name: "Mock Contractor", address: "", ein: "" },
@@ -17,10 +21,10 @@ app.post("/extract", async (c) => {
     employees: [
       {
         name: "John Doe",
-        trade_classification: body.text?.includes("Electrician") ? "Electrician" : "Laborer",
+        trade_classification: trade,
         hours_worked: 40,
         overtime_hours: 0,
-        hourly_wage: 51.69,
+        hourly_wage: hourlyWage,
         fringe_benefits: 1385.20,
         gross_earnings: 2067.60,
         deductions: 200,
@@ -35,9 +39,11 @@ app.post("/extract", async (c) => {
 
 app.post("/validate", async (c) => {
   const extracted = await c.req.json();
-  // Simple deterministic logic: if wage >= 50, pass; else fail
+  // Simple deterministic logic with trade-specific mock thresholds.
   const wage = extracted.employees?.[0]?.hourly_wage ?? 0;
-  const passes = wage >= 50;
+  const trade = extracted.employees?.[0]?.trade_classification ?? "";
+  const expectedWage = trade === "Plumber" ? 48.5 : 50.0;
+  const passes = wage >= expectedWage;
 
   return c.json({
     job_id: extracted.job_id,
@@ -47,9 +53,9 @@ app.post("/validate", async (c) => {
         check_type: "wage_check",
         employee_name: "John Doe",
         status: passes ? "pass" : "fail",
-        expected_value: 50.0,
+        expected_value: expectedWage,
         actual_value: wage,
-        variance: passes ? 0 : 50 - wage,
+        variance: passes ? 0 : expectedWage - wage,
         regulation_cite: "40 U.S.C. § 3142",
         message: passes ? "Wage meets minimum" : "Wage below minimum",
       },

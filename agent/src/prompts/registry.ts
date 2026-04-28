@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-import { langfuse } from "../langfuse/client.js";
+import { getLangfuse } from "../langfuse/client.js";
 import { wcpVerdictV1 } from "./versions/wcp-verdict-v1.js";
 import { wcpVerdictV2 } from "./versions/wcp-verdict-v2.js";
 
@@ -31,7 +31,12 @@ export const promptRegistry = {
     // Best-effort Langfuse fetch
     if (isLangfuseConfigured()) {
       try {
-        const lfPrompt = await langfuse.getPrompt(name, targetVersion);
+        const langfuse = getLangfuse();
+        if (!langfuse) throw new Error("Langfuse is not configured");
+        const lfPrompt = await langfuse.getPrompt(name, undefined, {
+          label: targetVersion,
+          type: "text",
+        });
         if (lfPrompt?.prompt) {
           return {
             version: targetVersion,

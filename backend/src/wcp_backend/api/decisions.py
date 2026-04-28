@@ -175,7 +175,7 @@ async def get_decision(decision_id: str) -> DecisionSummary:
         try:
             uuid_val = PyUUID(decision_id)
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid decision_id format")
+            raise HTTPException(status_code=404, detail="Decision not found")
 
         async with async_session() as session:
             query = select(decisions_table).where(decisions_table.c.id == uuid_val)

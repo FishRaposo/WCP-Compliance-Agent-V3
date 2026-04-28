@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, cast
 
 import redis.asyncio as aioredis
 
@@ -47,9 +47,18 @@ async def health_check() -> bool:
     Returns:
         True if Redis is reachable and responding, False otherwise
     """
+    client: aioredis.Redis | None = None
     try:
-        client = get_redis()
-        result = await client.ping()
-        return result is True
+        client = aioredis.from_url(  # type: ignore[no-untyped-call]
+            settings.redis_url,
+            decode_responses=True,
+            socket_connect_timeout=2,
+            socket_timeout=2,
+        )
+        result = await cast(Any, client.ping())
+        return result is True or result == "PONG"
     except Exception:
         return False
+    finally:
+        if client is not None:
+            await client.aclose()

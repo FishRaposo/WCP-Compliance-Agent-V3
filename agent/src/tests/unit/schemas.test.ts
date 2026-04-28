@@ -52,6 +52,7 @@ describe("Zod schema validation", () => {
       reasoning: "Wage violation detected.",
       citations: [{ regulation: "40 U.S.C. § 3142", section: "", text: "" }],
       confidence: 0.88,
+      referenced_check_ids: ["wage_1"],
     };
     const parsed = LLMVerdictSchema.safeParse(data);
     expect(parsed.success).toBe(true);
@@ -64,6 +65,7 @@ describe("Zod schema validation", () => {
       reasoning: "test",
       citations: [],
       confidence: 1.5,
+      referenced_check_ids: ["wage_1"],
     };
     const parsed = LLMVerdictSchema.safeParse(data);
     expect(parsed.success).toBe(false);

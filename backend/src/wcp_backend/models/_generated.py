@@ -35,6 +35,7 @@ class LLMVerdict(BaseModel):
     reasoning: str
     citations: list[Any]
     confidence: float
+    referenced_check_ids: list[Any] | None = None
     rag_context_used: bool | None = None
     model: str | None = None
     prompt_version: str | None = None

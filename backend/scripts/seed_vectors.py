@@ -92,7 +92,7 @@ async def seed() -> int:
                 await conn.execute(sql.text("""
                     INSERT INTO regulation_chunks 
                     (chunk_id, text, trade, locality, regulation_cite, wage_determination_number, embedding)
-                    VALUES (:chunk_id, :text, :trade, :locality, :regulation_cite, :wage_determination_number, :embedding::vector(384))
+                    VALUES (:chunk_id, :text, :trade, :locality, :regulation_cite, :wage_determination_number, CAST(:embedding AS vector(384)))
                     ON CONFLICT (chunk_id) DO NOTHING
                 """), {
                     "chunk_id": chunk["chunk_id"],

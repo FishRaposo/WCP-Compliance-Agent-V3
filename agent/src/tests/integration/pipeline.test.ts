@@ -30,14 +30,14 @@ describe("WCP Pipeline Integration", () => {
 
     // Core assertions
     expect(decision.job_id).toBeTruthy();
-    expect(decision.verdict).toBeOneOf(["approved", "rejected", "requires_review"]);
+    expect(["approved", "rejected", "requires_review"]).toContain(decision.verdict);
     expect(decision.trust_score).toBeGreaterThanOrEqual(0);
     expect(decision.trust_score).toBeLessThanOrEqual(1);
-    expect(decision.trust_band).toBeOneOf([
+    expect([
       "auto_approve",
       "flag_for_review",
       "require_human_review",
-    ]);
+    ]).toContain(decision.trust_band);
     expect(typeof decision.requires_human_review).toBe("boolean");
     expect(decision.reasoning_summary).toBeTruthy();
     expect(Array.isArray(decision.citations)).toBe(true);

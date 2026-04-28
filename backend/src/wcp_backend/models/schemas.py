@@ -95,6 +95,7 @@ class LLMVerdict(BaseModel):
     reasoning: str
     citations: list[Citation]
     confidence: float
+    referenced_check_ids: list[str] = Field(default_factory=list)
     rag_context_used: bool = False
     model: str = ""
     prompt_version: str = ""

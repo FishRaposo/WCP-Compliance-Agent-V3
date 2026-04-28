@@ -30,9 +30,10 @@ def upgrade() -> None:
         sa.Column('locality', sa.Text(), nullable=True),
         sa.Column('regulation_cite', sa.Text(), nullable=True),
         sa.Column('wage_determination_number', sa.Text(), nullable=True),
-        sa.Column('embedding', sa.String(), nullable=True),  # vector(384) - use raw SQL for vector type
+        sa.Column('embedding', sa.Text(), nullable=True),  # Converted to vector(384) below.
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('NOW()')),
     )
+    op.execute("ALTER TABLE regulation_chunks ALTER COLUMN embedding TYPE vector(384) USING embedding::vector")
     
     op.create_index('idx_chunks_trade_locality', 'regulation_chunks', ['trade', 'locality'])
     

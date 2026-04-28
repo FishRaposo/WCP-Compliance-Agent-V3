@@ -47,7 +47,9 @@ auth.post("/login", async (c) => {
 });
 
 auth.get("/me", async (c) => {
-  const user = c.get("user");
+  const user = (c as any).get("user") as
+    | { user_id: string; email: string; role: string }
+    | undefined;
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }

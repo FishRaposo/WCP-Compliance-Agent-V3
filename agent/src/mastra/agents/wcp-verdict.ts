@@ -39,6 +39,7 @@ const LLMOutputSchema = z.object({
     })
   ),
   confidence: z.number().min(0).max(1),
+  referenced_check_ids: z.array(z.string()).min(1),
 });
 
 type LLMOutput = z.infer<typeof LLMOutputSchema>;
@@ -77,6 +78,7 @@ function mockVerdict(
     reasoning,
     citations: [],
     confidence,
+    referenced_check_ids: deterministic.checks.map((c) => c.check_id),
     rag_context_used: false,
     model: "mock",
     prompt_version: "mock",
@@ -188,6 +190,7 @@ export async function runVerdictAgent(
       reasoning: "LLM generation failed; decision requires human review.",
       citations: [],
       confidence: 0.0,
+      referenced_check_ids: deterministic.checks.map((c) => c.check_id),
     };
   }
 
@@ -222,6 +225,7 @@ export async function runVerdictAgent(
     reasoning: output.reasoning,
     citations: output.citations,
     confidence: output.confidence,
+    referenced_check_ids: output.referenced_check_ids,
     rag_context_used: ragContext.length > 0 && !ragContext.startsWith("No RAG"),
     model: config.OPENAI_MODEL,
     prompt_version: promptVersion ?? "v2",
