@@ -13,7 +13,7 @@ Three-service AI decision engine:
 - **TypeScript agent** (Mastra.ai): LLM orchestration, tool-use, structured output
 - **React frontend**: Product UI, real-time updates
 
-**Demonstrates:** AI agent orchestration, hybrid RAG, deterministic validation, production observability
+**Demonstrates:** AI agent orchestration, multi-LLM routing, hybrid RAG, deterministic validation, production observability
 
 ---
 
@@ -36,10 +36,11 @@ Three-service AI decision engine:
 - `docs/adrs/ADR-008-redis-asyncio.md` — Why redis.asyncio over aioredis
 - `docs/adrs/ADR-009-excluded-technologies.md` — Technologies explicitly avoided (includes job posting techs)
 
-### Core Implementation (When Built)
-- `backend/src/pipeline/` — Deterministic extraction and validation
-- `backend/src/retrieval/` — Hybrid RAG (BM25 + vector + rerank)
+### Core Implementation
+- `backend/src/wcp_backend/pipeline/` — Deterministic extraction and validation
+- `backend/src/wcp_backend/retrieval/` — Hybrid RAG (BM25 + vector + rerank)
 - `agent/src/mastra/` — Agent orchestration, tools, workflows
+- `agent/src/lib/` — Multi-LLM routing (OpenAI, Anthropic, Ollama) with fallback
 - `frontend/src/` — React 19 components and hooks
 
 ### Evaluation
@@ -74,7 +75,8 @@ Three-service AI decision engine:
 3. **Hybrid RAG:** ES BM25 + pgvector + cross-encoder reranking. Two-stage retrieval with fusion.
 4. **Evaluation:** 100-example golden set, CI hard-fail on regression, LLM-as-judge for quality scoring.
 5. **Observability:** Phoenix for LLM tracing, Langfuse for prompt versioning + cost tracking.
-6. **aioredis deprecated:** Use `from redis.asyncio import Redis` (not `import aioredis`).
+6. **Multi-LLM Routing (V3.1):** `LLM_PROVIDER` env var switches between OpenAI, Anthropic, and Ollama. Compliance-critical decisions always use GPT-4o. Automatic fallback chain.
+7. **aioredis deprecated:** Use `from redis.asyncio import Redis` (not `import aioredis`).
 
 ---
 
@@ -85,4 +87,4 @@ Three-service AI decision engine:
 
 ---
 
-*Last updated: 2026-04-28*
+*Last updated: 2026-06-30*

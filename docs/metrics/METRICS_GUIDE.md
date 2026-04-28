@@ -265,12 +265,12 @@ pass_rate = validation_result.statistics["success_percent"]
 
 | Metric | Code Location | Tool |
 |---|---|---|
-| E2E Latency | `backend/src/pipeline/` | Phoenix spans |
-| RAG Latency | `backend/src/retrieval/` | Custom timing |
+| E2E Latency | `backend/src/wcp_backend/pipeline/` | Phoenix spans |
+| RAG Latency | `backend/src/wcp_backend/retrieval/` | Custom timing |
 | Accuracy | `backend/tests/eval/` | pytest + golden set |
 | Trust Score | `agent/src/mastra/` | Calculated post-LLM |
 | Cost | Both services | Langfuse auto-capture |
-| Data Quality | `backend/src/pipelines/` | Great Expectations |
+| Data Quality | `backend/src/wcp_backend/pipeline/` | Great Expectations |
 
 ### Dashboards to Build
 

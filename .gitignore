@@ -99,3 +99,4 @@ _archive/
 test-results/
 playwright-report/
 playwright/.cache/
+eval_report.json

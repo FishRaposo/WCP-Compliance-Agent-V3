@@ -1,16 +1,27 @@
 // Per-decision cost aggregation via Langfuse.
 
-const MODEL_COST_PER_1K = {
+const MODEL_COST_PER_1K: Record<string, { input: number; output: number }> = {
+  // OpenAI
   "gpt-4o": { input: 0.005, output: 0.015 },
   "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
-} as const;
+
+  // Anthropic
+  "claude-sonnet-4-20250514": { input: 0.003, output: 0.015 },
+  "claude-sonnet-3-5-20241022": { input: 0.003, output: 0.015 },
+  "claude-opus-20240229": { input: 0.015, output: 0.075 },
+
+  // Ollama (free local inference)
+  "llama3.2": { input: 0, output: 0 },
+  "mistral": { input: 0, output: 0 },
+};
+
+const DEFAULT_RATES = { input: 0.005, output: 0.015 };
 
 export function computeCostUsd(
   model: string,
   promptTokens: number,
   completionTokens: number
 ): number {
-  const rates = MODEL_COST_PER_1K[model as keyof typeof MODEL_COST_PER_1K];
-  if (!rates) return 0;
+  const rates = MODEL_COST_PER_1K[model] ?? DEFAULT_RATES;
   return (promptTokens / 1000) * rates.input + (completionTokens / 1000) * rates.output;
 }

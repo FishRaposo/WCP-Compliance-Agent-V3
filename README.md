@@ -6,13 +6,14 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
-## By The Numbers (Phases 1–5 Complete)
+## By The Numbers (Phases 1–5 + V3.1 Complete)
 
 - **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅)
 - **5-step pipeline:** Extract → Validate → LLM Verdict → Trust Score → Persist (✅ end-to-end)
-- **116+ tests passing:** 87 backend unit + 29 agent (unit + integration) + eval suite
+- **127+ tests passing:** 87 backend unit + 40 agent (unit + integration + router) + 100 golden set eval
 - **100-example golden set:** Structured JSON evaluation covering 20 trades, 5 violation categories
 - **11 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics/*`, `/auth`, `/prompt-versions`
+- **Multi-LLM routing (V3.1):** OpenAI + Anthropic + Ollama with automatic fallback chain
 - **7 frontend pages:** Dashboard, Analyze, Decisions, Review Queue, Analytics, Settings, Login
 - **10+ UI components:** shadcn/ui Card, Badge, Button, Input, Select, Skeleton, ErrorBoundary, etc.
 - **CI/CD:** GitHub Actions with Postgres + Redis service containers, scheduled eval, Vercel + Render deploy
@@ -100,7 +101,7 @@ See `docs/install.md` for the fresh-machine checklist, `docs/dependencies.md` fo
 v3/
 ├── backend/              # Python FastAPI + deterministic pipeline
 │   ├── src/
-│   │   ├── api/         # FastAPI routers (9 endpoints)
+│   │   ├── api/         # FastAPI routers (9 modules)
 │   │   ├── pipeline/    # Extraction, validation, checks
 │   │   ├── retrieval/   # Hybrid RAG (BM25 + vector + rerank)
 │   │   ├── services/    # DB, Redis, Celery tasks
@@ -115,10 +116,11 @@ v3/
 │   ├── src/
 │   │   ├── mastra/      # Agents, tools, workflows
 │   │   ├── api/         # Hono routes (9 route files)
+│   │   ├── lib/         # Multi-LLM router + provider config
 │   │   ├── middleware/  # Auth, CORS, rate limiting
 │   │   ├── langfuse/    # Tracing + cost tracking
 │   │   └── prompts/     # Version registry + Langfuse
-│   └── src/tests/       # 29 tests (unit + integration)
+│   └── src/tests/       # 40 tests (unit + integration + router)
 │
 ├── frontend/             # React 19 SPA
 │   └── src/
@@ -237,8 +239,10 @@ React 19 SPA with shadcn/ui. 7 pages, 12 components, TanStack Query hooks. PDF u
 **Phase 5 — Integration + Evaluation ✅**
 100-example golden set (structured + text), E2E integration tests, standalone smoke script, `eval.yml` scheduled workflow, enhanced `ci.yml` with Postgres/Redis service containers, sample WH-347 PDF fixture, ADR-010, README polish.
 
+**Phase 6 / V3.1 — Multi-LLM Routing ✅**
+Provider config (`LLM_PROVIDER` env var), LLM router with automatic fallback chain (OpenAI → Anthropic → Ollama), compliance-critical routing constraints, multi-provider Langfuse cost tracking, 11 router tests, baseline regression scores.
+
 **Future:**
-- **V3.1:** Multi-LLM routing — Anthropic Claude + Ollama support, model-agnostic LLM layer
 - **V4:** Enterprise data platform — Contract/payroll databases at scale, DuckDB OLAP, Prefect bulk ingestion
 
 See [V3_PLAN.md](docs/planning/V3_PLAN.md) for full architecture spec.

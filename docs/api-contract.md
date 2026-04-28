@@ -78,6 +78,22 @@ Submit async job (returns job ID for polling).
 
 Get job status and result.
 
+### `GET /api/decisions/stream`
+
+SSE stream of live decision events.
+
+### `POST /api/auth/login`
+
+Authenticate user. Returns JWT token.
+
+### `GET /api/analytics/*`
+
+Proxy endpoints for analytics data (4 sub-routes).
+
+### `GET /api/prompt-versions`
+
+List all prompt versions and their metadata.
+
 ---
 
 ## Backend API (Agent → Backend)
@@ -200,7 +216,11 @@ Standard error response:
 
 ## Authentication
 
-TBD: API key or JWT per-organization.
+JWT-based authentication via `POST /api/auth/login`.
+
+- Set `AUTH_DISABLED=true` for development
+- Set `AUTH_DISABLED=false` and strong `JWT_SECRET` (32+ chars) for production
+- Protected routes require `Authorization: Bearer <token>` header
 
 ---
 

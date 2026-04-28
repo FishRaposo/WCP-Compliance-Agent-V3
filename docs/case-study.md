@@ -48,12 +48,14 @@ Every WCP form goes through a 5-step decision pipeline:
 `pdfplumber` parses structured fields from PDF payrolls — employee name, trade classification, hours worked, wages paid, fringe benefits.
 
 ### 2. Validate
-Five deterministic check functions run against federal rules:
+Seven deterministic check functions run against federal rules:
 - **Wage check** — Does the reported rate meet the DBWD prevailing wage for this trade × locality?
 - **Fringe check** — Are fringe benefits correctly calculated?
 - **Overtime check** — Are overtime hours paid at 1.5× the base rate?
 - **Signature check** — Is the WCP signed (legally required)?
 - **Totals check** — Do the numbers add up?
+- **Data integrity check** — Is all required data present and valid?
+- **Minimum wage check** — Does pay meet federal minimum wage floor?
 
 Each check cites the specific regulation (e.g., "40 U.S.C. § 3142", "29 CFR 5.5(a)(1)").
 
@@ -61,6 +63,8 @@ Each check cites the specific regulation (e.g., "40 U.S.C. § 3142", "29 CFR 5.5
 The Mastra.ai agent synthesizes all check results into a structured decision. It doesn't do math — it interprets the deterministic results, identifies patterns, and produces a verdict with citations.
 
 **Mock mode:** The system runs end-to-end without an OpenAI key. `LLM_MODE=mock` returns deterministic responses for development and CI.
+
+**Multi-LLM routing (V3.1):** The agent supports OpenAI, Anthropic Claude, and Ollama with automatic fallback. `LLM_PROVIDER` env var switches providers without code changes. Compliance-critical decisions are always routed to GPT-4o.
 
 ### 4. Trust Score
 A composite score (0.0–1.0) computed from:
@@ -133,9 +137,9 @@ This is what separates a demo from a production system.
 | Metric | Value |
 |--------|-------|
 | Services | 3 (Python, TypeScript, React) |
-| Tests | 116 passing (87 backend + 29 agent) |
-| API Endpoints | 9 |
-| Check Functions | 5 (wage, fringe, overtime, signature, totals) |
+| Tests | 127+ passing (87 backend unit + 40 agent + golden set) |
+| API Endpoints | 11 |
+| Check Functions | 7 (wage, fringe, overtime, signature, totals, data integrity, minimum wage) |
 | DBWD Corpus | 20 construction trades |
 | Golden Set | 100 labeled examples |
 | Target Latency | < 5s end-to-end (P99), < 200ms RAG |
@@ -181,7 +185,7 @@ If you're evaluating whether I can build production AI systems:
 
 4. **I think in systems.** Three services, shared schemas, service contracts, cross-service tracing — this architecture scales to multiple teams.
 
-5. **I ship.** 116 tests, 9 endpoints, end-to-end pipeline, mock mode. This isn't a whitepaper — it's running code.
+5. **I ship.** 127+ tests, 11 endpoints, end-to-end pipeline, multi-LLM routing, mock mode. This isn't a whitepaper — it's running code.
 
 ---
 

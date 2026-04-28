@@ -149,7 +149,7 @@ Use these to demonstrate domain knowledge and assess fit:
 
 > "The RAG layer uses Elasticsearch BM25 for candidate generation, pgvector for dense similarity, and a cross-encoder for reranking. The entity model — WCP, Employee, Check, Verdict, TrustScore — is structured for graph expansion."
 
-> "Everything spins up with docker-compose: Postgres, Redis, Elasticsearch, Phoenix, Python backend, Celery workers, TypeScript agent, and React frontend. One command, full stack."
+> "Everything runs WSL-native: Postgres, Redis, Elasticsearch, Phoenix, Python backend, Celery workers, TypeScript agent, and React frontend. One setup script, full stack — no Docker overhead."
 
 ### V4 Data Platform Summary
 

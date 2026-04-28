@@ -4,22 +4,22 @@
  * Receives ExtractedWCP + DeterministicReport + optional RAG context
  * and produces an LLMVerdict.
  *
- * Mock mode (OPENAI_API_KEY=mock): deterministic mock verdicts.
- * Real mode: calls OpenAI via Vercel AI SDK with strict JSON output.
+ * Mock mode (LLM_MODE=mock): deterministic mock verdicts.
+ * Real mode: routes to OpenAI/Anthropic/Ollama via LLM router with strict JSON output.
  *
  * Development/CI only — remove mock path before launch.
  */
 
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
-import { config, isMockMode } from "../../config.js";
+import { isMockMode } from "../../config.js";
 import { logger } from "../../utils/logger.js";
 import { promptRegistry } from "../../prompts/registry.js";
 import { searchTool } from "../tools/search.js";
 import { createTrace, logGeneration } from "../../langfuse/tracing.js";
 import { computeCostUsd } from "../../langfuse/cost_tracking.js";
+import { llmRouter, type RoutingContext } from "../../lib/llm-router.js";
 import type {
   DeterministicReport,
   ExtractedWCP,
@@ -165,13 +165,21 @@ export async function runVerdictAgent(
     rag_context: ragContext,
   });
 
-  // Call LLM with structured output
+  // Determine routing context from deterministic report
+  const routingContext: RoutingContext = {
+    complianceCritical: deterministic.violation_count > 0,
+  };
+
+  // Select model via router and call LLM with structured output
+  const selectedConfig = llmRouter.selectProvider(routingContext);
+  const model = llmRouter.createModel(selectedConfig);
   let output: LLMOutput;
   let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  let activeModel = selectedConfig.model;
 
   try {
     const result = await generateObject({
-      model: openai(config.OPENAI_MODEL),
+      model,
       schema: LLMOutputSchema,
       prompt: filledPrompt,
     });
@@ -200,7 +208,7 @@ export async function runVerdictAgent(
       traceId,
       filledPrompt,
       JSON.stringify(output),
-      config.OPENAI_MODEL,
+      activeModel,
       { promptTokens: usage.promptTokens, completionTokens: usage.completionTokens }
     );
   } catch (err) {
@@ -209,13 +217,21 @@ export async function runVerdictAgent(
 
   const latencyMs = Date.now() - startMs;
   const costUsd = computeCostUsd(
-    config.OPENAI_MODEL,
+    activeModel,
     usage.promptTokens,
     usage.completionTokens
   );
 
   logger.info(
-    { jobId, verdict: output.verdict, confidence: output.confidence, costUsd, latencyMs },
+    {
+      jobId,
+      verdict: output.verdict,
+      confidence: output.confidence,
+      provider: selectedConfig.provider,
+      model: activeModel,
+      costUsd,
+      latencyMs,
+    },
     "LLM verdict completed"
   );
 
@@ -227,7 +243,7 @@ export async function runVerdictAgent(
     confidence: output.confidence,
     referenced_check_ids: output.referenced_check_ids,
     rag_context_used: ragContext.length > 0 && !ragContext.startsWith("No RAG"),
-    model: config.OPENAI_MODEL,
+    model: activeModel,
     prompt_version: promptVersion ?? "v2",
     langfuse_trace_id: traceId,
     token_usage: {

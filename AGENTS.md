@@ -89,19 +89,21 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 ## Environment
 
 - Copy `.env.example` to each service directory or set vars in shell.
-- **Mock mode**: set `OPENAI_API_KEY=mock` to skip real LLM calls (agent returns deterministic responses).
+- **Mock mode**: set `LLM_MODE=mock` to skip real LLM calls (agent returns deterministic responses).
 - **Backend config**: `pydantic-settings` reads `.env` via `wcp_backend.config.Settings`. Fails fast on missing required vars.
-- **Agent config**: uses `dotenv` to load `.env`.
+- **Agent config**: uses `dotenv` to load `.env`. Multi-LLM routing controlled by `LLM_PROVIDER` (openai|anthropic|ollama).
 - **Frontend**: Vite env vars prefixed with `VITE_`. `VITE_API_URL` points to agent (default `http://localhost:3000`). Vite dev server proxies `/api` → agent. Set `VITE_MOCK_API=true` for standalone frontend development with fixture data.
 
 ## Key Architecture Facts
 
 - **Agent calls backend via REST** — `BACKEND_URL` env var (default `http://localhost:8000`).
 - **Backend does all deterministic work** — extraction, validation, rule checks, trust scores, DBWD lookups, RAG. Agent handles LLM reasoning and orchestration only.
-- **Shared JSON schemas** in `shared/schemas/` define cross-service contracts. Codegen (`shared/generate.py`) is TODO — schemas are hand-implemented in both `backend/src/wcp_backend/models/` (Pydantic) and `agent/src/types/` (Zod).
+- **Shared JSON schemas** in `shared/schemas/` define cross-service contracts. Codegen (`python shared/generate.py`) produces `backend/src/wcp_backend/models/_generated.py` (Pydantic) and `agent/src/types/_generated.ts` (Zod). Hand-written models in each service take precedence.
 - **Celery** processes async batch jobs and eval runs. Worker + beat + flower all run from same `wcp_backend.workers.celery_worker` module.
 - **Alembic migrations** in `backend/migrations/` — run with `poetry run alembic upgrade head`. DATABASE_URL must be set.
 - **ES single-node yellow status is normal** — no replica shards, system works fine.
+- **Multi-LLM routing (V3.1):** `agent/src/lib/llm-router.ts` selects provider based on context (compliance-critical → OpenAI, cost mode → Ollama, synthesis → Anthropic). Falls back through chain on failure. Compliance-critical decisions never use Ollama.
+- **Baseline regression scores** in `backend/tests/eval/baseline_scores.json`. Regenerate with `poetry run python scripts/generate_baseline.py`.
 
 ## Conventions
 
