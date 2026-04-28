@@ -1,6 +1,6 @@
 # Fresh Machine Install
 
-This is the shortest path for setting up the repo on another machine without Docker.
+This is the shortest path for setting up the repo on a fresh machine.
 
 ## Supported Path
 

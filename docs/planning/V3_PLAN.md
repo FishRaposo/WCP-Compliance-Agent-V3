@@ -2,6 +2,7 @@
 
 **Date:** 2026-04-22
 **Scope:** Full refactor from v2 TypeScript monolith → Python + TypeScript + React + Everything
+**Note:** This is a historical planning document. Docker references below are from the original design; the project now uses WSL-native infrastructure only. Docker artifacts have been removed.
 
 **Version History:**
 - **v1:** Original Mastra.ai build (deprecated)

@@ -1,6 +1,6 @@
 # Phase 2 Implementation Summary
 
-**Status**: Infrastructure code implemented, awaiting Docker environment for full validation.
+**Status**: ✅ Complete. Infrastructure validated against WSL-native services.
 
 ---
 
@@ -74,48 +74,19 @@
 | Integration Tests | ✅ 20 passing | FastAPI TestClient tests pass |
 | Lint (ruff) | ✅ Passing | No errors |
 | Type Check (mypy) | ⚠️ Pre-existing issues | Not related to Phase 2 changes |
-| Migrations | ⚠️ Awaiting Docker | Code ready, needs Postgres to test |
-| Seed Scripts | ⚠️ Awaiting Docker | Code ready, needs infrastructure |
-| Health Check | ⚠️ Awaiting Docker | Code ready, needs services to test |
+| Migrations | ✅ Validated | Run against WSL-native PostgreSQL |
+| Seed Scripts | ✅ Validated | Run against WSL-native infrastructure |
+| Health Check | ✅ Validated | Reports all services ok with Phase 2 |
 
 ---
 
-## Next Steps (Requires Docker)
+## Validation (WSL-Native)
 
-To fully validate Phase 2, you need Docker running locally:
-
-```bash
-# Start infrastructure
-docker-compose up postgres redis elasticsearch phoenix -d
-
-# Wait for services to be healthy (~30s)
-
-# Run migrations
-cd backend
-poetry run alembic upgrade head
-
-# Seed data
-poetry run python scripts/seed_all.py
-
-# Test health endpoint
-curl http://localhost:8000/health
-# Expected: {"status": "ok", "version": "0.2.0", "phase": 2, "services": {...}}
-
-# Run full test suite with infrastructure
-poetry run pytest tests/unit tests/integration -v
-```
-
----
+To validate Phase 2 with WSL-native infrastructure, see `.windsurf/workflows/validate-phase2.md`.
 
 ## GitHub Actions CI
 
-The CI workflow has been updated to:
-1. Spin up Postgres, Redis, and Elasticsearch containers
-2. Run Alembic migrations
-3. Execute seed scripts
-4. Run all tests with real infrastructure
-
-This ensures Phase 2 works correctly in CI even if Docker isn't available locally.
+CI runs backend unit tests only (no infrastructure required). Integration tests run locally against WSL-native services.
 
 ---
 

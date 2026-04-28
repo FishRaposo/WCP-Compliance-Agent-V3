@@ -1,6 +1,6 @@
 # Local Development Guide
 
-This project can run without Docker. The supported no-Docker path is WSL-native Ubuntu with every service bound to `localhost`.
+This project uses WSL-native Ubuntu with every service bound to `localhost`.
 
 The repo is still three independent services. Always `cd` into the service directory before running package, test, build, or dev-server commands.
 
@@ -26,7 +26,7 @@ bash scripts/check-install.sh
 | Elasticsearch | 8.x | Elastic APT repo |
 | Phoenix | current CLI | `pipx install arize-phoenix` or a Python venv |
 
-Docker and Docker Compose are optional. Do not use Docker commands for the WSL-native workflow.
+All development uses WSL-native services. No Docker required.
 
 ## Native Infrastructure
 
@@ -274,7 +274,7 @@ Install `postgresql-16-pgvector`, then rerun `poetry run alembic upgrade head`.
 Yellow is normal for a single-node local cluster because replicas are not allocated. The system can still run.
 
 **Agent cannot reach backend**
-Set `BACKEND_URL=http://localhost:8000` when running the agent outside Docker.
+Set `BACKEND_URL=http://localhost:8000` in the agent environment.
 
 **Frontend API calls fail**
 Set `VITE_API_URL=http://localhost:3000` before starting Vite.

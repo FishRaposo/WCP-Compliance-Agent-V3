@@ -1,5 +1,5 @@
 ---
-description: Validate Phase 2 end-to-end (Docker local + CI)
+description: Validate Phase 2 end-to-end (WSL-native infra)
 ---
 
 # Phase 2 Validation Runbook
@@ -8,28 +8,31 @@ Validates all Phase 2 exit criteria: PostgreSQL migrations, Redis cache, Elastic
 
 ## Prerequisites
 
-- Docker Desktop running on Windows
-- `.env` file in project root (copy from `.env.example` if present, or set vars below)
+- WSL Ubuntu with native PostgreSQL 16 (pgvector), Redis 7, Elasticsearch 8, Phoenix installed
+- See `docs/local-dev.md` for full setup instructions
 
-## Step 1: Start infrastructure only
+## Step 1: Start native infrastructure
 
-```powershell
-docker-compose up postgres redis elasticsearch phoenix -d
+```bash
+sudo service postgresql start
+sudo service redis-server start
+sudo service elasticsearch start
+# Phoenix in a separate terminal:
+~/.venvs/phoenix/bin/phoenix serve
 ```
 
-Wait for all services to be healthy (~30s for ES):
-
-```powershell
-docker-compose ps
+Verify services are running:
+```bash
+pg_isready -h localhost -p 5432
+redis-cli ping
+curl -s http://localhost:9200/_cluster/health | python3 -m json.tool
 ```
-
-All four services should show `(healthy)`.
 
 ## Step 2: Run migrations
 
-```powershell
-$env:DATABASE_URL="postgresql+asyncpg://wcp:wcp@localhost:5432/wcp"
+```bash
 cd backend
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
 poetry run alembic upgrade head
 ```
 
@@ -37,11 +40,11 @@ Expected: 5 migrations applied (001 through 005), no errors.
 
 ## Step 3: Seed data
 
-```powershell
-$env:DATABASE_URL="postgresql+asyncpg://wcp:wcp@localhost:5432/wcp"
-$env:REDIS_URL="redis://localhost:6379"
-$env:ELASTICSEARCH_URL="http://localhost:9200"
+```bash
 cd backend
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
 poetry run python scripts/seed_all.py
 ```
 
@@ -49,19 +52,19 @@ Expected: DBWD rates seeded, ES index created with regulation chunks, vectors in
 
 ## Step 4: Start backend with Phase 2 enabled
 
-```powershell
-$env:DATABASE_URL="postgresql+asyncpg://wcp:wcp@localhost:5432/wcp"
-$env:REDIS_URL="redis://localhost:6379"
-$env:ELASTICSEARCH_URL="http://localhost:9200"
-$env:CELERY_BROKER_URL="redis://localhost:6379/0"
-$env:PHASE="2"
+```bash
 cd backend
-poetry run uvicorn wcp_backend.main:app --reload
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
+export CELERY_BROKER_URL=redis://localhost:6379/0
+export PHASE=2
+poetry run uvicorn wcp_backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ## Step 5: Verify health endpoint
 
-```powershell
+```bash
 curl http://localhost:8000/health
 ```
 
@@ -72,7 +75,7 @@ Expected response:
   "version": "3.0.0",
   "phase": 2,
   "services": {
-    "postgresql": {"status": "ok", "message": "..."},
+    "database": {"status": "ok", "message": "..."},
     "redis": {"status": "ok", "message": "..."},
     "elasticsearch": {"status": "ok", "message": "..."},
     "phoenix": {"status": "ok", "message": "..."}
@@ -82,10 +85,10 @@ Expected response:
 
 ## Step 6: Smoke test Phase 2 endpoints
 
-```powershell
+```bash
 # Search (requires ES + pgvector)
-curl -X POST http://localhost:8000/search `
-  -H "Content-Type: application/json" `
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
   -d '{"query": "electrician wage rate", "top_k": 3}'
 
 # Decisions list (requires PostgreSQL)
@@ -98,42 +101,19 @@ curl "http://localhost:8000/analytics/volume?days=7"
 curl "http://localhost:8000/dbwd/rate?trade=Electrician&locality=Washington%2C+DC"
 ```
 
-## Step 7: Run integration tests with Phase 2
+## Step 7: Run tests
 
-```powershell
-$env:DATABASE_URL="postgresql+asyncpg://wcp:wcp@localhost:5432/wcp"
-$env:REDIS_URL="redis://localhost:6379"
-$env:ELASTICSEARCH_URL="http://localhost:9200"
-$env:CELERY_BROKER_URL="redis://localhost:6379/0"
-$env:PHASE="2"
+```bash
 cd backend
+export DATABASE_URL=postgresql+asyncpg://wcp:wcp@localhost:5432/wcp
+export REDIS_URL=redis://localhost:6379
+export ELASTICSEARCH_URL=http://localhost:9200
+export CELERY_BROKER_URL=redis://localhost:6379/0
+export PHASE=2
 poetry run pytest tests/unit tests/integration -v
 ```
 
 Expected: All tests pass, Phase-2-gated tests run (not skipped).
-
-## Step 8: Full Docker stack
-
-```powershell
-docker-compose up --build
-```
-
-All services start. Verify:
-- Backend: `curl http://localhost:8000/health`
-- Agent: `curl http://localhost:3000/health`
-- Frontend: open `http://localhost:5173` in browser
-- Phoenix: open `http://localhost:6006` in browser
-- Flower: open `http://localhost:5555` in browser
-
-## CI Verification
-
-Push to `main` or `develop`. GitHub Actions CI (`ci.yml`) will:
-1. Spin up postgres (pgvector:pg16), redis, elasticsearch
-2. Run `alembic upgrade head`
-3. Run `seed_all.py`
-4. Run `pytest tests/unit tests/integration -v` with `PHASE=2`
-
-All three jobs (backend, agent, frontend) must pass green.
 
 ## Phase 2 Exit Criteria Checklist
 
@@ -145,4 +125,4 @@ All three jobs (backend, agent, frontend) must pass green.
 - [ ] `GET /analytics/volume` returns empty list (not 503)
 - [ ] `GET /dbwd/rate?trade=Electrician&locality=Washington,+DC` returns cached rate
 - [ ] Phoenix UI at `:6006` shows traces from pipeline runs
-- [ ] All 120+ tests pass in CI with `PHASE=2`
+- [ ] All tests pass with `PHASE=2`

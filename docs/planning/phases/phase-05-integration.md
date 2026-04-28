@@ -1,6 +1,8 @@
 # Phase 5 — Integration + The Demo
 
-**Goal:** Full stack runs with `docker-compose up --build`. Real PDF upload completes in <2s with Phoenix trace, regulation citations, trust score. CI is green. Golden set passes. Project is deployable.
+> **Historical planning document.** Docker references below are from the original design; the project now uses WSL-native infrastructure only.
+
+**Goal:** Full stack runs end-to-end. Real PDF upload completes in <2s with Phoenix trace, regulation citations, trust score. CI is green. Golden set passes. Project is deployable.
 
 ---
 

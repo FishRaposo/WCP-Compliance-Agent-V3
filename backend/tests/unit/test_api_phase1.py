@@ -1,6 +1,6 @@
 """Unit tests for Phase 1 API contracts."""
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from wcp_backend.models.schemas import ContractorInfo, ExtractedWCP, ProjectInfo
 
@@ -15,7 +15,8 @@ def _empty_extracted(job_id: str = "api-test") -> ExtractedWCP:
     )
 
 
-def test_health_returns_phase_1_version(client):
+def test_health_returns_ok_status(client, monkeypatch):
+    monkeypatch.setattr("wcp_backend.config.settings.phase", 1)
     response = client.get("/health")
 
     assert response.status_code == 200

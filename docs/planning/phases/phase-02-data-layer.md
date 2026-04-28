@@ -1,5 +1,7 @@
 # Phase 2 — Data Layer + Infrastructure
 
+> **Historical planning document.** Docker references below are from the original design; the project now uses WSL-native infrastructure only.
+
 **Goal:** Wire all external services: PostgreSQL (asyncpg), Redis (caching), Elasticsearch (BM25), pgvector (dense retrieval), Phoenix (tracing), Celery (async jobs). Run migrations. Seed data.
 
 ---

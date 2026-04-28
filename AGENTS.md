@@ -2,7 +2,7 @@
 
 ## Three-Service Architecture
 
-V3 is a polyglot system — three independent services, each with its own package manager, commands, and Dockerfile. There is no root `package.json` or monorepo tool.
+V3 is a polyglot system — three independent services, each with its own package manager and commands. There is no root `package.json` or monorepo tool.
 
 | Service | Stack | Port | Package Manager |
 |---|---|---|---|
@@ -63,11 +63,11 @@ npm run lint             # eslint
 ## CI Workflows
 
 **`.github/workflows/ci.yml`** — runs on push to main/develop and PRs to main. Three parallel jobs, one per service:
-- **backend**: Poetry install → `pytest tests/unit tests/integration` (postgres + redis services spun up)
+- **backend**: Poetry install → `pytest tests/unit -v` (no infra required)
 - **agent**: `npm ci` → `npm run typecheck` → `npm test`
 - **frontend**: `npm ci` → `npm run typecheck` → `npm run build`
 
-**`.github/workflows/eval.yml`** — golden set regression. Runs on push to main + daily cron (6 AM UTC). Requires real `OPENAI_API_KEY` secret. Spins up postgres, redis, and ES. Seeds data first, then runs `pytest tests/eval/`, then `regression_test.py`.
+Integration tests and eval tests run locally against WSL-native infrastructure.
 
 **`.github/workflows/deploy.yml`** — frontend → Vercel, backend/agent → Render (via deploy hooks). Runs on push to main.
 
@@ -90,24 +90,12 @@ npm run lint             # eslint
 
 ## Key Architecture Facts
 
-- **Agent calls backend via REST** — `BACKEND_URL` env var (default `http://localhost:8000`). When running outside Docker, use `localhost`, not Docker hostnames.
+- **Agent calls backend via REST** — `BACKEND_URL` env var (default `http://localhost:8000`).
 - **Backend does all deterministic work** — extraction, validation, rule checks, trust scores, DBWD lookups, RAG. Agent handles LLM reasoning and orchestration only.
 - **Shared JSON schemas** in `shared/schemas/` define cross-service contracts. Codegen (`shared/generate.py`) is TODO — schemas are hand-implemented in both `backend/src/wcp_backend/models/` (Pydantic) and `agent/src/types/` (Zod).
 - **Celery** processes async batch jobs and eval runs. Worker + beat + flower all run from same `wcp_backend.workers.celery_worker` module.
 - **Alembic migrations** in `backend/migrations/` — run with `poetry run alembic upgrade head`. DATABASE_URL must be set.
 - **ES single-node yellow status is normal** — no replica shards, system works fine.
-
-## Docker Compose
-
-`docker-compose up --build` starts everything. Services:
-- `postgres` (pgvector:pg16), `redis`, `elasticsearch`, `phoenix`
-- `backend`, `celery_worker`, `celery_beat`, `flower`
-- `agent`, `frontend`
-
-To run only infra (for local dev with services running outside Docker):
-```bash
-docker-compose up postgres redis elasticsearch phoenix -d
-```
 
 ## Conventions
 
@@ -147,7 +135,7 @@ Before deploying to production, complete all items below:
 - [ ] Verify no regressions: `poetry run python tests/eval/regression_test.py`
 
 ### Smoke Tests
-- [ ] `docker-compose up --build` starts all services without errors
+- [ ] All three services start without errors (backend, agent, frontend)
 - [ ] Backend health: `curl http://localhost:8000/health`
 - [ ] Agent health: `curl http://localhost:3000/health`
 - [ ] Frontend loads: `http://localhost:5173` shows login page

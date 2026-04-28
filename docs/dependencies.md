@@ -4,7 +4,7 @@ This repo has three independent services plus local infrastructure. There is no 
 
 ## Fast Path: WSL Native
 
-The easiest no-Docker setup is the WSL installer:
+The easiest setup is the WSL installer:
 
 ```bash
 bash scripts/setup-wsl-native.sh
@@ -22,7 +22,7 @@ For a fresh-machine walkthrough, see `docs/install.md`.
 
 | Dependency | Version | Why it is needed | Install source |
 |---|---:|---|---|
-| WSL Ubuntu | 24.04 preferred | Supported no-Docker development environment | Microsoft Store or `wsl --install` |
+| WSL Ubuntu | 24.04 preferred | Supported development environment | Microsoft Store or `wsl --install` |
 | Python | 3.12 | Backend runtime and tooling | Ubuntu `python3.12` packages |
 | `python3.12-venv` | matching Python | Poetry environments and Phoenix venv | Ubuntu apt |
 | `python3-pip` | distro version | pipx/Phoenix bootstrap fallback | Ubuntu apt |
@@ -72,7 +72,7 @@ Use `npm ci`, not `npm install`, for normal setup because this repo expects lock
 
 ## Local Service URLs
 
-Use these defaults for no-Docker development:
+Use these defaults for local development:
 
 | Variable | Value |
 |---|---|

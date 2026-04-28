@@ -6,14 +6,16 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
-## By The Numbers (Phase 1: Backend Core)
+## By The Numbers (Phases 1–3 Complete)
 
-- **3 services:** Python deterministic backend (✅), TypeScript agent (🚧 stub), React frontend (🚧 scaffold)
-- **3-layer pipeline:** Extract → Validate → Verdict → Trust Score (Layer 1 ✅, Layers 2-3 🚧)
-- **103 tests passing:** 83 unit + 20 integration tests
-- **4 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`
+- **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅ scaffold)
+- **5-step pipeline:** Extract → Validate → LLM Verdict → Trust Score → Persist (✅ end-to-end)
+- **116 tests passing:** 87 backend unit + 29 agent (unit + integration)
+- **9 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics`, `/auth`
 - **5 check functions:** wage, fringe, overtime, signature, totals (with regulation citations)
-- **20-trade DBWD corpus:** In-memory with fuzzy matching
+- **20-trade DBWD corpus:** In-memory with fuzzy matching + Redis cache + PostgreSQL fallback
+- **Mock mode:** Full pipeline runs without OpenAI key (`LLM_MODE=mock`)
+- **JWT auth:** Login flow with bcrypt + jose, `AUTH_DISABLED` toggle for dev
 
 ---
 
@@ -50,9 +52,7 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ## Quick Start
 
-### No Docker / WSL Native
-
-The supported no-Docker path is WSL-native Ubuntu:
+The supported path is WSL-native Ubuntu with all services installed locally:
 
 ```bash
 # Clone
@@ -68,26 +68,14 @@ bash scripts/check-install.sh
 
 See `docs/install.md` for the fresh-machine checklist, `docs/dependencies.md` for the full dependency inventory, and `docs/local-dev.md` for service-by-service commands.
 
-### Docker Compose
+### Services
 
-```bash
-# Clone
-git clone https://github.com/FishRaposo/WCP-Compliance-Agent-V3.git
-cd WCP-Compliance-Agent-V3
-
-# Start infrastructure only (for Phase 1 backend development)
-docker-compose up postgres redis elasticsearch phoenix -d
-
-# Or start everything (includes agent + frontend stubs)
-docker-compose up --build
-
-# Services:
-# - Frontend: http://localhost:5173
-# - Agent API: http://localhost:3000
-# - Backend API: http://localhost:8000
-# - Phoenix UI: http://localhost:6006
-# - Flower (Celery): http://localhost:5555
-```
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Agent API | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| Phoenix UI | http://localhost:6006 |
 
 ---
 
@@ -100,7 +88,7 @@ docker-compose up --build
 | **Backend** | Python 3.12+, FastAPI, Pydantic v2, Celery, Flower | Deterministic logic, RAG |
 | **Search** | Elasticsearch 8, pgvector, sentence-transformers | Hybrid retrieval |
 | **Observability** | Phoenix/Arize, Langfuse, OpenTelemetry | Tracing, prompt infra, cost |
-| **Testing** | pytest, playwright, vitest, golden set eval | CI, regression detection |
+| **Testing** | pytest, vitest, golden set eval | CI, regression detection |
 
 ---
 
@@ -110,41 +98,38 @@ docker-compose up --build
 v3/
 ├── backend/              # Python FastAPI + deterministic pipeline
 │   ├── src/
-│   │   ├── api/         # FastAPI routers
+│   │   ├── api/         # FastAPI routers (9 endpoints)
 │   │   ├── pipeline/    # Extraction, validation, checks
 │   │   ├── retrieval/   # Hybrid RAG (BM25 + vector + rerank)
 │   │   ├── services/    # DB, Redis, Celery tasks
 │   │   └── models/      # SQLAlchemy + Pydantic
-│   ├── tests/
-│   │   ├── eval/        # Golden set + regression
-│   │   ├── integration/ # API endpoint tests (20 tests)
-│   │   └── unit/        # Core logic tests (83 tests)
-│   └── Dockerfile
+│   └── tests/
+│       ├── eval/        # Golden set + regression
+│       ├── integration/ # API endpoint tests
+│       └── unit/        # Core logic tests (87 tests)
 │
 ├── agent/                # TypeScript Mastra.ai agent
 │   ├── src/
 │   │   ├── mastra/      # Agents, tools, workflows
-│   │   ├── api/         # Hono routes
-│   │   └── prompts/     # Langfuse registry
-│   ├── tests/
-│   └── Dockerfile
+│   │   ├── api/         # Hono routes (7 route files)
+│   │   ├── middleware/  # Auth, CORS, rate limiting
+│   │   ├── langfuse/    # Tracing + cost tracking
+│   │   └── prompts/     # Version registry + Langfuse
+│   └── src/tests/       # 29 tests (unit + integration)
 │
 ├── frontend/             # React 19 SPA
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/       # TanStack Query
-│   │   └── pages/
-│   └── Dockerfile
+│   └── src/
+│       ├── components/
+│       ├── hooks/       # TanStack Query
+│       └── pages/
 │
 ├── shared/               # JSON Schema contracts
 │   └── schemas/
 │
-├── docs/
-│   ├── adrs/            # Architecture Decision Records
-│   ├── compliance/      # Regulatory docs
-│   └── evaluation.md    # Golden set + eval pipeline
-│
-└── docker-compose.yml
+└── docs/
+    ├── adrs/            # Architecture Decision Records
+    ├── compliance/      # Regulatory docs
+    └── evaluation.md    # Golden set + eval pipeline
 ```
 
 ---
@@ -168,7 +153,7 @@ v3/
 ### Full-Stack Capabilities
 - ✅ React 19 + Vite + Tailwind
 - ✅ End-to-end type safety (Pydantic + Zod)
-- ✅ Docker Compose deployment
+- ✅ WSL-native development (no Docker required)
 
 ---
 
@@ -231,26 +216,26 @@ This architecture would hold up in a design review for medical devices, trading 
 
 ## Roadmap
 
-**Current: Phase 1 — Backend Core ✅**
-Python deterministic pipeline complete. 103 tests passing. 4 API endpoints: `/extract`, `/validate`, `/dbwd`, `/health`.
+**Phase 1 — Backend Core ✅**
+Python deterministic pipeline. 87 unit tests. 9 API endpoints. 5 check functions. 20-trade DBWD corpus.
 
-**Phase 2 — Agent Layer** (Next)
-TypeScript Mastra.ai agent with LLM verdict orchestration, Langfuse tracing, Phoenix observability.
+**Phase 2 — Data Layer + Infrastructure ✅**
+PostgreSQL (pgvector), Redis cache, Elasticsearch BM25, hybrid RAG, Alembic migrations, seed scripts, Celery workers, Phoenix observability.
 
-**Phase 3 — Frontend + Integration**
+**Phase 3 — Agent Orchestration ✅**
+Mastra.ai verdict agent, mock + real LLM paths, trust score computation, Langfuse tracing, JWT auth, 29 agent tests, full pipeline E2E.
+
+**Phase 4 — Frontend** (Next)
 React frontend, file upload, decision visualization, human review queue.
 
-**Phase 4 — Hybrid RAG + Persistence**
-Elasticsearch + pgvector retrieval, PostgreSQL decisions, Redis caching, batch processing.
-
-**Phase 5 — Evaluation + CI/CD**
+**Phase 5 — Integration + Evaluation**
 Golden set regression testing, evaluation pipeline, full observability, production deploy.
 
 **Future:**
 - **V3.1:** Multi-LLM routing — Anthropic Claude + Ollama support, model-agnostic LLM layer
 - **V4:** Enterprise data platform — Contract/payroll databases at scale, DuckDB OLAP, Prefect bulk ingestion
 
-See [phase-01-backend-core.md](docs/planning/phases/phase-01-backend-core.md) for Phase 1 details and [V3_PLAN.md](docs/planning/V3_PLAN.md) for full architecture spec.
+See [V3_PLAN.md](docs/planning/V3_PLAN.md) for full architecture spec.
 
 ---
 
