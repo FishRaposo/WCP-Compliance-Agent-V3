@@ -112,9 +112,9 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 - **Frontend**: `@` path alias → `./src`. TanStack Query for server state, React state for UI.
 - **No root-level lint/test/build** — always run commands per-service.
 
-## Phase 3 Launch Checklist
+## Production Launch Checklist
 
-Before deploying to production, complete all items below:
+Before deploying V3.1 to production, complete all items below:
 
 ### Configuration
 - [ ] Set `LLM_MODE=real` in agent environment (mock mode is blocked in production)
@@ -139,7 +139,7 @@ Before deploying to production, complete all items below:
 - [ ] Seed Elasticsearch: `poetry run python scripts/seed_elasticsearch.py`
 - [ ] Seed vectors: `poetry run python scripts/seed_vectors.py`
 - [ ] Run full eval with real OpenAI key: `poetry run pytest tests/eval/ -v`
-- [ ] Save baseline: copy `eval_report.json` to `tests/eval/baseline_scores.json`
+- [ ] Generate baseline: `poetry run python scripts/generate_baseline.py`
 - [ ] Verify no regressions: `poetry run python tests/eval/regression_test.py`
 
 ### Smoke Tests
@@ -198,4 +198,24 @@ AUTH_DISABLED=true
 5. Remove or gate any `isMockMode` branches that should not run in production
 
 The agent config throws a hard error on startup if `NODE_ENV=production` and `LLM_MODE=mock`.
+
+## Repository Structure
+
+OSS scaffold files at the repo root:
+
+| File | Purpose |
+|---|---|
+| `LICENSE` | MIT license |
+| `CONTRIBUTING.md` | How to contribute, dev setup, code style |
+| `SECURITY.md` | Security policy, sensitive config inventory |
+| `CODE_OF_CONDUCT.md` | Contributor Covenant v2.1 |
+| `CHANGELOG.md` | Release history (V3.1, V3.0, V2 archived) |
+| `AGENTS.md` | This file — commands, architecture, conventions |
+| `CLAUDE.md` | Claude Code guidance (points here for commands) |
+| `llms.txt` | LLM-friendly project summary |
+| `.github/ISSUE_TEMPLATE/` | Bug report + feature request templates |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR checklist |
+| `.github/workflows/ci.yml` | CI: 3 parallel jobs (backend, agent, frontend) |
+| `.github/workflows/deploy.yml` | Deploy: Vercel (frontend) + Render (backend, agent) |
+| `.github/workflows/eval.yml` | Weekly eval: golden set + regression detection |
 
