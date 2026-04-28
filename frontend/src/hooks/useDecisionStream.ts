@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { DecisionSummary } from "../types/api.ts";
+import { mockDecisionSummaries } from "../utils/mock-data.ts";
+
+const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
 export function useDecisionStream() {
   const [latestDecision, setLatestDecision] = useState<DecisionSummary | null>(null);
@@ -9,6 +12,15 @@ export function useDecisionStream() {
   const retryRef = useRef(0);
 
   const connect = useCallback(() => {
+    if (IS_MOCK) {
+      setConnected(true);
+      const interval = setInterval(() => {
+        const random = mockDecisionSummaries[Math.floor(Math.random() * mockDecisionSummaries.length)];
+        setLatestDecision({ ...random, created_at: new Date().toISOString() });
+      }, 10_000);
+      return () => clearInterval(interval);
+    }
+
     if (esRef.current) {
       esRef.current.close();
     }
@@ -38,11 +50,14 @@ export function useDecisionStream() {
       retryRef.current += 1;
       setTimeout(connect, delay);
     };
+
+    return undefined;
   }, []);
 
   useEffect(() => {
-    connect();
+    const cleanup = connect();
     return () => {
+      cleanup?.();
       if (esRef.current) {
         esRef.current.close();
         esRef.current = null;

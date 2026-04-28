@@ -1,31 +1,54 @@
 import type { TrustScoredDecision } from "../types/api.ts";
 import TrustScoreBadge from "./TrustScoreBadge.tsx";
 import AuditTrail from "./AuditTrail.tsx";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   decision: TrustScoredDecision;
 }
 
-const verdictColors: Record<string, string> = {
-  approved: "text-green-700 bg-green-50",
-  rejected: "text-red-700 bg-red-50",
-  requires_review: "text-yellow-700 bg-yellow-50",
+const verdictVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  approved: "default",
+  rejected: "destructive",
+  requires_review: "secondary",
 };
 
 export default function DecisionCard({ decision }: Props) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <span className={`px-3 py-1 rounded-full text-sm font-semibold capitalize ${verdictColors[decision.verdict] ?? "text-gray-700 bg-gray-50"}`}>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <Badge variant={verdictVariant[decision.verdict] ?? "outline"} className="capitalize text-sm">
           {decision.verdict.replace(/_/g, " ")}
-        </span>
+        </Badge>
         <TrustScoreBadge score={decision.trust_score} band={decision.trust_band} />
-      </div>
-      <p className="text-sm text-gray-700">{decision.reasoning_summary}</p>
-      <AuditTrail citations={decision.citations} traceId={decision.phoenix_trace_id} />
-      {decision.cost_usd != null && (
-        <p className="text-xs text-gray-400">Cost: ${decision.cost_usd.toFixed(4)}</p>
-      )}
-    </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">Violations</p>
+            <p className="font-semibold text-red-600">{decision.violation_count}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Warnings</p>
+            <p className="font-semibold text-yellow-600">{decision.warning_count}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">LLM Confidence</p>
+            <p className="font-semibold">{(decision.llm_confidence * 100).toFixed(0)}%</p>
+          </div>
+        </div>
+        {decision.reasoning_summary && (
+          <div className="rounded-md bg-muted p-4">
+            <h4 className="text-sm font-medium mb-1">Reasoning</h4>
+            <p className="text-sm text-muted-foreground">{decision.reasoning_summary}</p>
+          </div>
+        )}
+        <AuditTrail citations={decision.citations} traceId={decision.phoenix_trace_id} />
+        {decision.cost_usd != null && (
+          <p className="text-xs text-muted-foreground">Cost: ${decision.cost_usd.toFixed(4)} &middot; Latency: {decision.latency_ms}ms</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -1,14 +1,15 @@
 import type { TrustBand } from "../types/api.ts";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   score: number;
   band: TrustBand;
 }
 
-const bandColors: Record<TrustBand, string> = {
-  auto_approve: "bg-green-100 text-green-800",
-  flag_for_review: "bg-yellow-100 text-yellow-800",
-  require_human_review: "bg-red-100 text-red-800",
+const bandStyles: Record<TrustBand, string> = {
+  auto_approve: "border-green-300 bg-green-100 text-green-800",
+  flag_for_review: "border-yellow-300 bg-yellow-100 text-yellow-800",
+  require_human_review: "border-red-300 bg-red-100 text-red-800",
 };
 
 const bandLabels: Record<TrustBand, string> = {
@@ -19,8 +20,9 @@ const bandLabels: Record<TrustBand, string> = {
 
 export default function TrustScoreBadge({ score, band }: Props) {
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bandColors[band]}`}>
-      {(score * 100).toFixed(0)}% trust — {bandLabels[band]}
-    </span>
+    <Badge variant="outline" className={bandStyles[band]}>
+      <span className="font-bold">{(score * 100).toFixed(0)}%</span>
+      <span className="ml-1.5">{bandLabels[band]}</span>
+    </Badge>
   );
 }

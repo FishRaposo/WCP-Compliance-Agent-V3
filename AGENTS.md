@@ -60,6 +60,12 @@ npm run build            # tsc -b && vite build
 npm run lint             # eslint
 ```
 
+**Mock mode** (no backend/agent needed):
+```bash
+VITE_MOCK_API=true npm run dev   # All API calls return fixture data
+```
+Or create `frontend/.env.local` with `VITE_MOCK_API=true`.
+
 ## CI Workflows
 
 **`.github/workflows/ci.yml`** — runs on push to main/develop and PRs to main. Three parallel jobs, one per service:
@@ -78,7 +84,7 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 - **Eval tests need real infra**: postgres, redis, ES seeded with DBWD data, and a real `OPENAI_API_KEY`. Don't run them locally without the full stack.
 - **conftest.py** provides `client` (FastAPI TestClient), `sample_extracted_wcp`, and `sample_dbwd_rate` fixtures.
 - **Agent tests**: vitest, no special infra requirements.
-- **Frontend**: no test script in package.json yet — testing-library deps exist but tests are not wired up.
+- **Frontend**: no test script in package.json yet — testing-library deps exist but tests are not wired up. Build verification: `npm run typecheck && npm run build`.
 
 ## Environment
 
@@ -86,7 +92,7 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 - **Mock mode**: set `OPENAI_API_KEY=mock` to skip real LLM calls (agent returns deterministic responses).
 - **Backend config**: `pydantic-settings` reads `.env` via `wcp_backend.config.Settings`. Fails fast on missing required vars.
 - **Agent config**: uses `dotenv` to load `.env`.
-- **Frontend**: Vite env vars prefixed with `VITE_`. `VITE_API_URL` points to agent (default `http://localhost:3000`). Vite dev server proxies `/api` → agent.
+- **Frontend**: Vite env vars prefixed with `VITE_`. `VITE_API_URL` points to agent (default `http://localhost:3000`). Vite dev server proxies `/api` → agent. Set `VITE_MOCK_API=true` for standalone frontend development with fixture data.
 
 ## Key Architecture Facts
 

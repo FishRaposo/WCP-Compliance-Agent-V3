@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../utils/api-client.ts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface HealthResponse {
   status: string;
@@ -18,36 +21,51 @@ export default function SettingsPanel() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="text-sm font-medium text-gray-700">Prompt Version</label>
-        <p className="text-xs text-gray-400 mt-1">Prompt versioning requires Langfuse (Phase 3+).</p>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700">Model</label>
-        <p className="text-xs text-gray-400 mt-1">gpt-4o-mini (default)</p>
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700">Backend Status</label>
-        {isLoading && <p className="text-xs text-gray-400 mt-1">Checking...</p>}
-        {health && (
-          <div className="mt-2 space-y-1">
-            <p className="text-xs text-gray-600">
-              Version {health.version} &middot; Phase {health.phase} &middot;{" "}
-              <span className={health.status === "ok" ? "text-green-600" : "text-yellow-600"}>
-                {health.status}
-              </span>
-            </p>
-            {health.services && Object.entries(health.services).map(([name, svc]) => (
-              <p key={name} className="text-xs text-gray-500">
-                <span className={svc.status === "ok" ? "text-green-600" : "text-yellow-600"}>
-                  ●
-                </span>{" "}
-                {name}: {svc.message}
-              </p>
-            ))}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">LLM Configuration</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Model</label>
+            <p className="text-sm text-muted-foreground mt-1">gpt-4o-mini (default)</p>
           </div>
-        )}
-      </div>
+          <div>
+            <label className="text-sm font-medium">Prompt Version</label>
+            <p className="text-sm text-muted-foreground mt-1">v2 (managed via Langfuse)</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Backend Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading && <Skeleton className="h-12 w-full" />}
+          {health && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant={health.status === "ok" ? "default" : "secondary"}>
+                  {health.status}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  v{health.version} &middot; Phase {health.phase}
+                </span>
+              </div>
+              {health.services && Object.entries(health.services).map(([name, svc]) => (
+                <div key={name} className="flex items-center gap-2 text-sm">
+                  <span className={svc.status === "ok" ? "text-green-600" : "text-yellow-600"}>
+                    ●
+                  </span>
+                  <span className="capitalize">{name}</span>
+                  <span className="text-muted-foreground">{svc.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

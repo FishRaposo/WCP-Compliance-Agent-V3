@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { apiClient } from "../utils/api-client.ts";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,18 +18,10 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Login failed");
-      }
-
-      const data = await res.json();
+      const data = await apiClient.post<{ token: string; user_id: string; role: string }>(
+        "/api/auth/login",
+        { email, password }
+      );
       localStorage.setItem("wcp_token", data.token);
       localStorage.setItem("wcp_user", JSON.stringify({
         user_id: data.user_id,
@@ -41,50 +37,47 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-lg border border-gray-200 p-8 w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-gray-900 mb-1">WCP Compliance</h1>
-        <p className="text-sm text-gray-500 mb-6">Sign in to your account</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-3 border border-red-200">
-              <p className="text-sm text-red-700">{error}</p>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>WCP Compliance</CardTitle>
+          <CardDescription>Sign in to your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Email</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
             </div>
-          )}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Password</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-      </div>
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 border border-destructive/20">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

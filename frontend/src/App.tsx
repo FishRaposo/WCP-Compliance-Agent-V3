@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import Layout from "./components/Layout.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Analyze from "./pages/Analyze.tsx";
@@ -18,27 +19,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/analyze" element={<Analyze />} />
-                  <Route path="/decisions" element={<Decisions />} />
-                  <Route path="/review" element={<ReviewQueue />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/analyze" element={<Analyze />} />
+                    <Route path="/decisions" element={<Decisions />} />
+                    <Route path="/review" element={<ReviewQueue />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

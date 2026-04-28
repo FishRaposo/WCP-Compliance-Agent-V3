@@ -6,15 +6,15 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
-## By The Numbers (Phases 1–3 Complete)
+## By The Numbers (Phases 1–4 Complete)
 
-- **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅ scaffold)
+- **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅)
 - **5-step pipeline:** Extract → Validate → LLM Verdict → Trust Score → Persist (✅ end-to-end)
 - **116 tests passing:** 87 backend unit + 29 agent (unit + integration)
-- **9 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics`, `/auth`
-- **5 check functions:** wage, fringe, overtime, signature, totals (with regulation citations)
-- **20-trade DBWD corpus:** In-memory with fuzzy matching + Redis cache + PostgreSQL fallback
-- **Mock mode:** Full pipeline runs without OpenAI key (`LLM_MODE=mock`)
+- **11 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics/*`, `/auth`, `/prompt-versions`
+- **7 frontend pages:** Dashboard, Analyze, Decisions, Review Queue, Analytics, Settings, Login
+- **10+ UI components:** shadcn/ui Card, Badge, Button, Input, Select, Skeleton, ErrorBoundary, etc.
+- **Mock mode:** Full pipeline and frontend run without backend (`VITE_MOCK_API=true`, `LLM_MODE=mock`)
 - **JWT auth:** Login flow with bcrypt + jose, `AUTH_DISABLED` toggle for dev
 
 ---
@@ -111,7 +111,7 @@ v3/
 ├── agent/                # TypeScript Mastra.ai agent
 │   ├── src/
 │   │   ├── mastra/      # Agents, tools, workflows
-│   │   ├── api/         # Hono routes (7 route files)
+│   │   ├── api/         # Hono routes (9 route files)
 │   │   ├── middleware/  # Auth, CORS, rate limiting
 │   │   ├── langfuse/    # Tracing + cost tracking
 │   │   └── prompts/     # Version registry + Langfuse
@@ -119,9 +119,11 @@ v3/
 │
 ├── frontend/             # React 19 SPA
 │   └── src/
-│       ├── components/
-│       ├── hooks/       # TanStack Query
-│       └── pages/
+│       ├── components/  # 12 components + shadcn/ui primitives
+│       ├── hooks/       # 6 TanStack Query hooks + SSE stream
+│       ├── pages/       # 7 pages (Dashboard, Analyze, etc.)
+│       ├── types/       # Shared API types
+│       └── utils/       # API client + mock data layer
 │
 ├── shared/               # JSON Schema contracts
 │   └── schemas/
@@ -151,9 +153,10 @@ v3/
 - ✅ CI-based evaluation
 
 ### Full-Stack Capabilities
-- ✅ React 19 + Vite + Tailwind
-- ✅ End-to-end type safety (Pydantic + Zod)
+- ✅ React 19 + Vite + Tailwind + shadcn/ui
+- ✅ End-to-end type safety (Pydantic + Zod + TypeScript)
 - ✅ WSL-native development (no Docker required)
+- ✅ Mock data layer for frontend-only development
 
 ---
 
@@ -225,8 +228,8 @@ PostgreSQL (pgvector), Redis cache, Elasticsearch BM25, hybrid RAG, Alembic migr
 **Phase 3 — Agent Orchestration ✅**
 Mastra.ai verdict agent, mock + real LLM paths, trust score computation, Langfuse tracing, JWT auth, 29 agent tests, full pipeline E2E.
 
-**Phase 4 — Frontend** (Next)
-React frontend, file upload, decision visualization, human review queue.
+**Phase 4 — Frontend ✅**
+React 19 SPA with shadcn/ui. 7 pages, 12 components, TanStack Query hooks. PDF upload + text paste. Pipeline visualizer. Decision cards with trust scores. Analytics dashboard. Human review queue. Mock data layer (`VITE_MOCK_API=true`). ErrorBoundary. Skeleton loaders.
 
 **Phase 5 — Integration + Evaluation**
 Golden set regression testing, evaluation pipeline, full observability, production deploy.

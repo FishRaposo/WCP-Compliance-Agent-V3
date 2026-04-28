@@ -2,8 +2,9 @@ import { useState, useRef, useCallback } from "react";
 import UploadDropzone from "../components/UploadDropzone.tsx";
 import PipelineVisualizer from "../components/PipelineVisualizer.tsx";
 import DecisionCard from "../components/DecisionCard.tsx";
-import { useAnalyzePdf } from "../hooks/useAnalyze.ts";
+import { useAnalyze, useAnalyzePdf } from "../hooks/useAnalyze.ts";
 import type { TrustScoredDecision, PipelineStep } from "../types/api.ts";
+import { Card, CardContent } from "@/components/ui/card";
 
 const STEP_LABELS = ["Extract", "Validate", "Verdict", "Trust Score", "Persist"];
 
@@ -19,7 +20,9 @@ export default function Analyze() {
   const [error, setError] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(-1);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { mutateAsync, isPending } = useAnalyzePdf();
+  const pdfMutation = useAnalyzePdf();
+  const textMutation = useAnalyze();
+  const isPending = pdfMutation.isPending || textMutation.isPending;
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -43,13 +46,12 @@ export default function Analyze() {
     }, 600);
   }, [clearTimer]);
 
-  const handleFile = async (file: File) => {
+  const runAnalysis = async (fn: () => Promise<TrustScoredDecision>) => {
     setError(null);
     setDecision(null);
     startProgress();
-
     try {
-      const result = await mutateAsync(file);
+      const result = await fn();
       clearTimer();
       setStepIndex(STEP_LABELS.length);
       setDecision(result);
@@ -60,6 +62,9 @@ export default function Analyze() {
     }
   };
 
+  const handleFile = (file: File) => runAnalysis(() => pdfMutation.mutateAsync(file));
+  const handleText = (text: string) => runAnalysis(() => textMutation.mutateAsync(text));
+
   const steps = stepIndex >= 0 ? buildSteps(Math.min(stepIndex, STEP_LABELS.length - 1)) : undefined;
   const showDone = stepIndex >= STEP_LABELS.length;
   const pipelineSteps = showDone
@@ -69,13 +74,20 @@ export default function Analyze() {
   return (
     <div className="space-y-6 max-w-2xl">
       <h1 className="text-2xl font-semibold text-gray-900">Analyze Payroll</h1>
-      <UploadDropzone onFile={handleFile} label="Drop WH-347 PDF here" />
-      {isPending && <PipelineVisualizer steps={pipelineSteps} />}
+      <UploadDropzone
+        onFile={handleFile}
+        onTextSubmit={handleText}
+        label="Drop WH-347 PDF here"
+        disabled={isPending}
+      />
+      {(isPending || showDone) && <PipelineVisualizer steps={pipelineSteps} />}
       {error && (
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
-          <p className="text-sm text-red-700 font-medium">Error</p>
-          <p className="text-sm text-red-600 mt-1">{error}</p>
-        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <p className="text-sm text-red-700 font-medium">Error</p>
+            <p className="text-sm text-red-600 mt-1">{error}</p>
+          </CardContent>
+        </Card>
       )}
       {decision && <DecisionCard decision={decision} />}
     </div>

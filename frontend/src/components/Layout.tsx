@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Upload, History, AlertCircle, BarChart3, Settings, LogOut } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
-  { href: "/analyze", label: "Analyze" },
-  { href: "/decisions", label: "Decisions" },
-  { href: "/review", label: "Review Queue" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/settings", label: "Settings" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/analyze", label: "Analyze", icon: Upload },
+  { href: "/decisions", label: "Decisions", icon: History },
+  { href: "/review", label: "Review Queue", icon: AlertCircle },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 function getUser() {
@@ -30,41 +33,44 @@ export default function Layout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <nav className="w-56 bg-white border-r border-gray-200 px-4 py-6 flex flex-col gap-1">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">
-          WCP Compliance
-        </p>
-        {navItems.map(({ href, label }) => (
-          <Link
-            key={href}
-            to={href}
-            className={`px-3 py-2 rounded-md text-sm font-medium ${
-              pathname === href
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+    <div className="flex min-h-screen bg-background">
+      <nav className="w-60 bg-card border-r px-4 py-6 flex flex-col">
+        <div className="px-2 mb-6">
+          <h1 className="text-lg font-bold">WCP Agent</h1>
+          <p className="text-xs text-muted-foreground">v3.0</p>
+        </div>
+        <div className="space-y-1">
+          {navItems.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              to={href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                pathname === href
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Link>
+          ))}
+        </div>
 
-        <div className="mt-auto pt-6 border-t border-gray-100">
+        <div className="mt-auto">
+          <Separator className="mb-4" />
           {user && (
-            <div className="px-2">
-              <p className="text-xs font-medium text-gray-700">{user.email}</p>
-              <p className="text-xs text-gray-400 capitalize">{user.role}</p>
-              <button
-                onClick={handleLogout}
-                className="mt-2 text-xs text-red-600 hover:text-red-700"
-              >
+            <div className="px-2 space-y-2">
+              <p className="text-xs font-medium">{user.email}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+              <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
                 Sign out
-              </button>
+              </Button>
             </div>
           )}
         </div>
       </nav>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 overflow-auto p-8">{children}</main>
     </div>
   );
 }
