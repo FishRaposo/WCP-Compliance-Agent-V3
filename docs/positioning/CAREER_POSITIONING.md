@@ -6,15 +6,13 @@
 
 ## Author Context
 
-*[FILL IN: Your years of experience, background, and career context]*
+**Background:** AI Infrastructure Architect specializing in production LLM systems, RAG pipelines, and agent orchestration. Full-stack with Python (FastAPI, Pydantic, Celery) and TypeScript (Hono, Mastra.ai, React). Built systems for payroll compliance, content platforms, and crypto gaming.
 
-**Background:** [e.g., 5+ years full-stack development, specialized in Python/TypeScript backend systems]
+**Why AI/Compliance:** The market is saturated with AI demos that work in notebooks but fail in production. I build the systems that don't — deterministic validation layers, hybrid RAG, evaluation pipelines, and observability from day one. Regulated domains like federal compliance force the discipline that every AI system needs.
 
-**Why AI/Compliance:** [e.g., Transitioning from traditional software to AI systems; interested in regulated domains where "mostly works" isn't good enough]
+**What I'm Looking For:** Freelance and contract work building production AI systems — RAG pipelines that survive real data, agent workflows that handle edge cases, and infrastructure that scales. Particularly interested in: RAG reliability audits, prototype-to-production conversions, and agent system design.
 
-**What I'm Looking For:** [e.g., Senior AI/ML Engineer or Staff Backend Engineer roles at companies building production AI systems]
-
-**Other Projects:** [Link or brief mention of other relevant work]
+**Other Projects:** [fishraposo.github.io](https://fishraposo.github.io) — portfolio with live projects and case studies. 5-lane autonomous execution engine for career acceleration.
 
 ---
 

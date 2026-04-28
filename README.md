@@ -271,6 +271,7 @@ These targets make the system production-credible and well-documented.
 
 ## Documentation
 
+- [Case Study](docs/case-study.md) — Full writeup: problem, architecture, pipeline, RAG, evaluation, lessons
 - [Architecture Overview](docs/architecture.md)
 - [API Contract](docs/api-contract.md)
 - [Evaluation Pipeline](docs/evaluation.md)

@@ -44,6 +44,7 @@ Three-service AI decision engine:
 
 ### Evaluation
 - `docs/evaluation.md` — Golden set, CI regression, LLM-as-judge
+- `docs/case-study.md` — Full case study: problem, architecture, pipeline, RAG, evaluation, outcomes
 - `backend/tests/eval/golden_set.json` — 100 labeled examples
 
 ### Compliance
@@ -84,4 +85,4 @@ Three-service AI decision engine:
 
 ---
 
-*Last updated: 2026-04-22*
+*Last updated: 2026-04-28*
