@@ -16,11 +16,16 @@ A three-service AI decision engine that validates WH-347 federal construction pa
 
 ## Implementation Status
 
-**Phase 1 (Backend Core): COMPLETE.** Python deterministic pipeline fully implemented with 83 unit tests + 20 integration tests (103 total). All Phase 1 endpoints working: `/extract`, `/validate`, `/dbwd`, `/health`.
+**All phases complete through V3.1.**
 
-**Phase 2 (Data Layer + Infrastructure): IN PROGRESS.** PostgreSQL with migrations, Redis caching, Elasticsearch BM25, pgvector, Phoenix observability. Seed scripts operational. Health endpoint checks all services.
+- **Phase 1 (Backend Core):** Python deterministic pipeline. 87 unit tests. 9 API router modules.
+- **Phase 2 (Data Layer):** PostgreSQL (pgvector), Redis, Elasticsearch, hybrid RAG, Alembic migrations, seed scripts, Celery, Phoenix.
+- **Phase 3 (Agent):** Mastra.ai verdict agent, mock + real LLM, trust scores, Langfuse tracing, JWT auth, 29 agent tests.
+- **Phase 4 (Frontend):** React 19 SPA, 7 pages, 12 components, shadcn/ui, TanStack Query, mock data layer.
+- **Phase 5 (Eval):** 100-example golden set, E2E integration tests, scheduled eval CI, regression detection.
+- **Phase 6 / V3.1 (Multi-LLM):** OpenAI + Anthropic + Ollama routing with fallback chain, 11 router tests, baseline scores.
 
-**Phase 3-5: Not started.** Agent layer (TypeScript/Mastra) and React frontend are scaffolded with TODOs.
+**Test counts:** 87 backend unit + 40 agent (unit + integration + router) + 100 golden set eval = 227 total.
 
 ---
 
@@ -31,10 +36,10 @@ Layer 1 (Python backend)     Layer 2 (Agent/TypeScript)    Layer 3 (Agent/TypeSc
 ─────────────────────────    ──────────────────────────    ──────────────────────────
 PDF → pdfplumber extract      Mastra agent with tools        Trust score computation
 ↓                             ↓                              ↓
-ExtractedWCP (Pydantic)       LLM call (GPT-4o-mini)         0.35 × deterministic
-↓                             LLMVerdict (Zod)               0.25 × classification
-Rule engine:                  + Langfuse trace               0.20 × llm_self_confidence
-  wage_check  (§ 3142)                                       0.20 × agreement
+ExtractedWCP (Pydantic)       LLM call via router            0.35 × deterministic
+↓                             (OpenAI/Anthropic/Ollama)      0.25 × classification
+Rule engine:                  LLMVerdict (Zod)               0.20 × llm_self_confidence
+  wage_check  (§ 3142)       + Langfuse trace               0.20 × agreement
   fringe_check (§ 3141)                                      ─────────────────
   overtime_check (§ 5.32)                                    ≥ 0.85 → auto-approve
   signature_check (§ 5.5)                                    0.60–0.84 → flag
@@ -65,9 +70,9 @@ DBWD rate lookup (prevailing wage) follows a cache-aside chain: Redis (24h TTL) 
 
 ## Cross-Service Contracts
 
-Schemas live in `shared/schemas/*.json` (JSON Schema). They are **hand-implemented** in both services — Pydantic v2 in `backend/src/wcp_backend/models/schemas.py` and Zod in `agent/src/types/index.ts`. `shared/generate.py` (codegen) is a stub.
+Schemas live in `shared/schemas/*.json` (JSON Schema). Codegen (`python shared/generate.py`) produces `backend/src/wcp_backend/models/_generated.py` (Pydantic) and `agent/src/types/_generated.ts` (Zod). Hand-written models in each service take precedence.
 
-When modifying a schema: update the JSON Schema first, then update both Pydantic and Zod manually. The TypeScript agent must validate all data crossing service boundaries with Zod before passing it to the LLM or returning it to the frontend.
+When modifying a schema: update the JSON Schema first, then run `python shared/generate.py`. The TypeScript agent must validate all data crossing service boundaries with Zod before passing it to the LLM or returning it to the frontend.
 
 ---
 
@@ -102,3 +107,4 @@ Regulation chunks must be seeded before any full pipeline run (`scripts/seed_ela
 | End-to-end data flow diagrams | `docs/architecture/data-flow.md` |
 | Local dev + mock mode | `docs/local-dev.md` |
 | ADRs (technology decisions) | `docs/adrs/` |
+| Changelog | `CHANGELOG.md` |

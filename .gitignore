@@ -27,6 +27,7 @@ ENV/
 
 # Pytest
 .pytest_cache/
+.benchmarks/
 .coverage
 htmlcov/
 .tox/
@@ -60,6 +61,13 @@ dist-ssr/
 *.swo
 *~
 
+# AI tool configs (local per-machine)
+.claude/
+.codex
+.remember/
+.windsurf/
+.cursor/
+
 # OS
 .DS_Store
 Thumbs.db
@@ -71,6 +79,10 @@ logs/
 # Database
 *.db
 *.sqlite
+
+# Linting / type checking caches
+.mypy_cache/
+.ruff_cache/
 
 # Temporary files
 *.tmp

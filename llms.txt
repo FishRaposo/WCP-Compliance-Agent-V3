@@ -87,4 +87,4 @@ Three-service AI decision engine:
 
 ---
 
-*Last updated: 2026-06-30*
+*Last updated: 2026-04-28 — see [CHANGELOG.md](CHANGELOG.md) for release history.*

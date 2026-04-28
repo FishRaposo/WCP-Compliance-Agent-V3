@@ -1,24 +1,23 @@
-# WCP Compliance Agent — v3
+# WCP Compliance Agent
+
+[![CI](https://github.com/FishRaposo/WCP-Compliance-Agent-V3/actions/workflows/ci.yml/badge.svg)](https://github.com/FishRaposo/WCP-Compliance-Agent-V3/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Node 20+](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 
 **Three-service AI decision engine for Davis-Bacon Act payroll compliance.**
 
-Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observability. Production-grade evaluation.
+Automates WH-347 federal construction payroll review using a deterministic Python backend, a TypeScript LLM orchestration agent, and a React frontend. Every compliance decision includes regulation citations, trust scores, and a full audit trail — built for the kind of scrutiny that federal inspectors bring.
 
----
-
-## By The Numbers (Phases 1–5 + V3.1 Complete)
-
-- **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅)
-- **5-step pipeline:** Extract → Validate → LLM Verdict → Trust Score → Persist (✅ end-to-end)
-- **127+ tests passing:** 87 backend unit + 40 agent (unit + integration + router) + 100 golden set eval
-- **100-example golden set:** Structured JSON evaluation covering 20 trades, 5 violation categories
-- **11 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics/*`, `/auth`, `/prompt-versions`
-- **Multi-LLM routing (V3.1):** OpenAI + Anthropic + Ollama with automatic fallback chain
-- **7 frontend pages:** Dashboard, Analyze, Decisions, Review Queue, Analytics, Settings, Login
-- **10+ UI components:** shadcn/ui Card, Badge, Button, Input, Select, Skeleton, ErrorBoundary, etc.
-- **CI/CD:** GitHub Actions with Postgres + Redis service containers, scheduled eval, Vercel + Render deploy
-- **Mock mode:** Full pipeline and frontend run without backend (`VITE_MOCK_API=true`, `LLM_MODE=mock`)
-- **JWT auth:** Login flow with bcrypt + jose, `AUTH_DISABLED` toggle for dev
+| Metric | Value |
+|---|---|
+| **Services** | 3 (Python backend + TypeScript agent + React frontend) |
+| **Tests** | 127+ passing (87 backend + 40 agent + 100 golden set eval) |
+| **Pipeline** | Extract → Validate → LLM Verdict → Trust Score → Persist |
+| **LLM Routing** | OpenAI + Anthropic + Ollama with automatic fallback |
+| **Frontend** | 7 pages, 12 components, mock mode for standalone dev |
+| **CI/CD** | GitHub Actions, scheduled eval, Vercel + Render deploy |
 
 ---
 
@@ -53,15 +52,40 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
+## Demo
+
+<!-- TODO: Add 3-4 screenshots of the frontend running in mock mode -->
+<!-- Suggested: Dashboard overview, Analyze page with WH-347, Decision card with trust score, Analytics charts -->
+
+> **Screenshots coming soon.** Run the frontend in mock mode to see the full UI:
+> ```bash
+> cd frontend && npm ci && VITE_MOCK_API=true npm run dev
+> ```
+
+---
+
 ## Quick Start
 
-The supported path is WSL-native Ubuntu with all services installed locally:
+### Try It Now (no infrastructure needed)
+
+Mock mode runs the full UI and agent pipeline with fixture data — no database, no API keys:
 
 ```bash
-# Clone
 git clone https://github.com/FishRaposo/WCP-Compliance-Agent-V3.git
 cd WCP-Compliance-Agent-V3
 
+# Frontend only (fixture data, no backend needed)
+cd frontend && npm ci && VITE_MOCK_API=true npm run dev
+
+# Agent with mock LLM (deterministic verdicts)
+cd agent && npm ci && LLM_MODE=mock npm run dev
+```
+
+### Full Stack Setup
+
+**Prerequisites:** Python 3.12+, Node.js 20+, PostgreSQL 16 (pgvector), Redis 7, Elasticsearch 8
+
+```bash
 # Install system dependencies, native infra, and service dependencies
 bash scripts/setup-wsl-native.sh
 
@@ -69,7 +93,7 @@ bash scripts/setup-wsl-native.sh
 bash scripts/check-install.sh
 ```
 
-See `docs/install.md` for the fresh-machine checklist, `docs/dependencies.md` for the full dependency inventory, and `docs/local-dev.md` for service-by-service commands.
+See [docs/install.md](docs/install.md) for the fresh-machine checklist, [docs/dependencies.md](docs/dependencies.md) for the full dependency inventory, and [docs/local-dev.md](docs/local-dev.md) for service-by-service commands.
 
 ### Services
 
@@ -284,9 +308,12 @@ These targets make the system production-credible and well-documented.
 - [Evaluation Pipeline](docs/evaluation.md)
 - [ADRs](docs/adrs/) — Including [ADR-010 React frontend](docs/adrs/ADR-010-react-frontend.md), [excluded technologies](docs/adrs/ADR-009-excluded-technologies.md)
 - [Compliance](docs/compliance/)
+- [Changelog](CHANGELOG.md) — Release history
+- [Contributing](CONTRIBUTING.md) — How to contribute
+- [Security](SECURITY.md) — Security policy and responsible disclosure
 
 ---
 
 ## License
 
-MIT © 2026 Vinícius Raposo
+[MIT](LICENSE) © 2026 Vinícius Raposo

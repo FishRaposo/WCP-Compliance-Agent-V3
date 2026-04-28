@@ -255,7 +255,7 @@ pytest tests/eval/test_golden_set.py -k "eval_001" -v
 pytest tests/eval/ --benchmark-only
 
 # Update baseline (careful!)
-python tests/eval/update_baseline.py
+python scripts/generate_baseline.py
 ```
 
 ---

@@ -213,7 +213,7 @@ Query: "Electrician prevailing wage Boston 2024"
 
 **Services:**
 - `db.py` — asyncpg connection pool
-- `redis_cache.py` — aioredis wrapper
+- `redis_cache.py` — redis.asyncio wrapper
 - `elasticsearch.py` — ES client
 - `audit.py` — Decision persistence
 - `job_queue.py` — Celery task definitions
@@ -317,7 +317,7 @@ VerdictNode
 
 CI runs:
 1. Golden set → produces `eval_report.json`
-2. Compare to `baseline.json`
+2. Compare to `baseline_scores.json`
 3. Hard-fail if:
    - Any example drops > 0.05 trust score
    - Overall accuracy drops > 2%
@@ -405,13 +405,13 @@ This separation means:
 
 ## Scaling Considerations
 
-**Current:** Single-node Docker Compose
-**Phase 2:**
-- Kubernetes deployment
+**Current:** WSL-native development, single-node services
+**Future (V4):**
 - Horizontal Celery worker scaling
 - Read replicas for PostgreSQL
 - ES cluster mode
-- Neo4j for entity graph (deferred)
+- DuckDB OLAP for analytics
+- Prefect for bulk ingestion
 
 ---
 
