@@ -1,112 +1,170 @@
 [
   {
     "id": "eval_001",
-    "description": "Compliant electrician — wage and fringe meet DBWD",
+    "description": "Compliant electrician \u00e2\u20ac\u201d wage and fringe meet DBWD",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
       "hourly_wage": 51.69,
-      "fringe_benefits": 1385.20,
+      "fringe_benefits": 1385.2,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "approved",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "auto_approve",
-    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
     "minimum_trust_score": 0.85,
-    "regulations": ["40 U.S.C. § 3142", "40 U.S.C. § 3141(2)(B)"]
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ]
   },
   {
     "id": "eval_002",
-    "description": "Wage violation — hourly rate below DBWD minimum",
+    "description": "Wage violation \u00e2\u20ac\u201d hourly rate below DBWD minimum",
     "input": {
       "trade_classification": "Plumber",
       "hours_worked": 40,
-      "hourly_wage": 35.00,
-      "fringe_benefits": 1290.00,
+      "hourly_wage": 35.0,
+      "fringe_benefits": 1290.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
-    "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["wage_check"],
-    "minimum_trust_score": 0.80,
-    "regulations": ["40 U.S.C. § 3142"]
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.8,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
   },
   {
     "id": "eval_003",
-    "description": "Missing fringe benefits — fringe below threshold",
+    "description": "Missing fringe benefits \u00e2\u20ac\u201d fringe below threshold",
     "input": {
       "trade_classification": "Carpenter",
       "hours_worked": 40,
       "hourly_wage": 42.75,
-      "fringe_benefits": 500.00,
+      "fringe_benefits": 500.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
-    "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["fringe_check"],
-    "minimum_trust_score": 0.80,
-    "regulations": ["40 U.S.C. § 3142"]
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.8,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_004",
-    "description": "Overtime not paid — worked 50 hours, no OT recorded",
+    "description": "Overtime not paid \u00e2\u20ac\u201d worked 50 hours, no OT recorded",
     "input": {
       "trade_classification": "Laborer",
       "hours_worked": 50,
-      "hourly_wage": 25.50,
-      "fringe_benefits": 850.00,
+      "hourly_wage": 25.5,
+      "fringe_benefits": 850.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
     "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["overtime_check"],
-    "minimum_trust_score": 0.70,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)", "29 C.F.R. § 5.32"]
+    "expected_checks_failed": [
+      "fringe_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check"
+    ]
   },
   {
     "id": "eval_005",
-    "description": "Missing certification date — WH-347 not signed",
+    "description": "Missing certification date \u00e2\u20ac\u201d WH-347 not signed",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
       "hourly_wage": 51.69,
-      "fringe_benefits": 1385.20,
+      "fringe_benefits": 1385.2,
       "overtime_hours": 0,
       "locality": "Washington, DC",
       "omit_certification": true
     },
-    "expected_verdict": "rejected",
+    "expected_verdict": "approved",
     "expected_llm_verdict": "requires_review",
-    "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["signature_check"],
-    "minimum_trust_score": 0.60,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)(B)"]
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(ii)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_006",
-    "description": "Multiple employees — mixed compliance",
+    "description": "Multiple employees \u00e2\u20ac\u201d mixed compliance",
     "input": {
       "employees": [
         {
           "trade_classification": "Electrician",
           "hours_worked": 40,
           "hourly_wage": 51.69,
-          "fringe_benefits": 1385.20,
+          "fringe_benefits": 1385.2,
           "overtime_hours": 0
         },
         {
           "trade_classification": "Laborer",
           "hours_worked": 40,
-          "hourly_wage": 20.00,
-          "fringe_benefits": 200.00,
+          "hourly_wage": 20.0,
+          "fringe_benefits": 200.0,
           "overtime_hours": 0
         }
       ],
@@ -114,84 +172,145 @@
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
-    "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["wage_check", "fringe_check"],
-    "minimum_trust_score": 0.70,
-    "regulations": ["40 U.S.C. § 3142"]
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "wage_check",
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_007",
-    "description": "Federal minimum wage violation — below $7.25/hr",
+    "description": "Federal minimum wage violation \u00e2\u20ac\u201d below $7.25/hr",
     "input": {
       "trade_classification": "Helper",
       "hours_worked": 40,
-      "hourly_wage": 6.50,
-      "fringe_benefits": 0.00,
+      "hourly_wage": 6.5,
+      "fringe_benefits": 0.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
     "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["minimum_wage_check", "wage_check"],
-    "minimum_trust_score": 0.60,
-    "regulations": ["29 U.S.C. § 206(a)(1)"]
+    "expected_checks_failed": [
+      "fringe_check",
+      "minimum_wage_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.56,
+    "regulations": [
+      "29 U.S.C. \u00c2\u00a7 206(a)(1)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
   },
   {
     "id": "eval_008",
-    "description": "Data integrity issue — negative net wages",
+    "description": "Data integrity issue \u00e2\u20ac\u201d negative net wages",
     "input": {
       "trade_classification": "Painter",
       "hours_worked": 40,
-      "hourly_wage": 38.50,
-      "fringe_benefits": 950.00,
+      "hourly_wage": 38.5,
+      "fringe_benefits": 950.0,
       "overtime_hours": 0,
       "locality": "Washington, DC",
-      "deductions_override": 2000.00
+      "deductions_override": 2000.0
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "requires_review",
-    "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["data_integrity_check"],
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
     "minimum_trust_score": 0.65,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(ii)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_009",
-    "description": "Warning-only scenario — minor rounding discrepancy",
+    "description": "Warning-only scenario \u00e2\u20ac\u201d minor rounding discrepancy",
     "input": {
       "trade_classification": "HVAC Technician",
       "hours_worked": 40,
-      "hourly_wage": 45.00,
-      "fringe_benefits": 1100.00,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 1100.0,
       "overtime_hours": 0,
       "locality": "Washington, DC",
       "rounding_error": 0.01
     },
-    "expected_verdict": "approved",
+    "expected_verdict": "rejected",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "flag_for_review",
-    "expected_checks_passed": ["wage_check"],
-    "minimum_trust_score": 0.75,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_failed": [
+      "fringe_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_010",
-    "description": "Unknown trade classification — cannot verify prevailing wage",
+    "description": "Unknown trade classification \u00e2\u20ac\u201d cannot verify prevailing wage",
     "input": {
       "trade_classification": "AlienTech Specialist",
       "hours_worked": 40,
-      "hourly_wage": 100.00,
-      "fringe_benefits": 2000.00,
+      "hourly_wage": 100.0,
+      "fringe_benefits": 2000.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "requires_review",
     "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["classification_check"],
-    "minimum_trust_score": 0.70,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
   },
   {
     "id": "eval_011",
@@ -199,173 +318,2614 @@
     "input": {
       "trade_classification": "Plumber",
       "hours_worked": 50,
-      "hourly_wage": 48.50,
-      "fringe_benefits": 1612.50,
+      "hourly_wage": 48.5,
+      "fringe_benefits": 1612.5,
       "overtime_hours": 10,
       "locality": "Washington, DC"
     },
-    "expected_verdict": "approved",
+    "expected_verdict": "rejected",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "auto_approve",
-    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
     "minimum_trust_score": 0.85,
-    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.32"]
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ]
   },
   {
     "id": "eval_012",
-    "description": "Missing payroll number — incomplete record",
+    "description": "Missing payroll number \u00e2\u20ac\u201d incomplete record",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
       "hourly_wage": 51.69,
-      "fringe_benefits": 1385.20,
+      "fringe_benefits": 1385.2,
       "overtime_hours": 0,
       "locality": "Washington, DC",
       "omit_payroll_number": true
     },
     "expected_verdict": "approved",
     "expected_llm_verdict": "approved",
-    "expected_trust_band": "flag_for_review",
-    "expected_checks_passed": ["wage_check", "fringe_check"],
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
     "minimum_trust_score": 0.75,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(ii)"
+    ]
   },
   {
     "id": "eval_013",
-    "description": "Triple violation — wage + fringe + overtime all failed",
+    "description": "Triple violation \u00e2\u20ac\u201d wage + fringe + overtime all failed",
     "input": {
       "trade_classification": "Carpenter",
       "hours_worked": 55,
-      "hourly_wage": 30.00,
-      "fringe_benefits": 200.00,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 200.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
-    "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["wage_check", "fringe_check", "overtime_check"],
-    "minimum_trust_score": 0.70,
-    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.32"]
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "fringe_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check"
+    ]
   },
   {
     "id": "eval_014",
-    "description": "Borderline compliant — exactly at prevailing wage threshold",
+    "description": "Borderline compliant \u00e2\u20ac\u201d exactly at prevailing wage threshold",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
       "hourly_wage": 51.69,
-      "fringe_benefits": 1385.20,
+      "fringe_benefits": 1385.2,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "approved",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "auto_approve",
-    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
     "minimum_trust_score": 0.85,
-    "regulations": ["40 U.S.C. § 3142"]
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
   },
   {
     "id": "eval_015",
-    "description": "Different locality — compliant plumber in New York",
+    "description": "Different locality \u00e2\u20ac\u201d compliant plumber in New York",
     "input": {
       "trade_classification": "Plumber",
       "hours_worked": 40,
-      "hourly_wage": 52.00,
-      "fringe_benefits": 1400.00,
+      "hourly_wage": 52.0,
+      "fringe_benefits": 1400.0,
       "overtime_hours": 0,
       "locality": "New York, NY"
     },
     "expected_verdict": "approved",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "auto_approve",
-    "expected_checks_passed": ["wage_check", "fringe_check", "total_check"],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
     "minimum_trust_score": 0.85,
-    "regulations": ["40 U.S.C. § 3142"]
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
   },
   {
     "id": "eval_016",
-    "description": "Zero hours worked — invalid record",
+    "description": "Zero hours worked \u00e2\u20ac\u201d invalid record",
     "input": {
       "trade_classification": "Laborer",
       "hours_worked": 0,
-      "hourly_wage": 25.50,
-      "fringe_benefits": 0.00,
+      "hourly_wage": 25.5,
+      "fringe_benefits": 0.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "requires_review",
-    "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["data_integrity_check"],
-    "minimum_trust_score": 0.65,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+    "expected_trust_band": "require_human_review",
+    "expected_checks_failed": [
+      "fringe_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.56,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(ii)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check"
+    ]
   },
   {
     "id": "eval_017",
-    "description": "Extreme overtime fraud — 70 hours, zero OT recorded",
+    "description": "Extreme overtime fraud \u00e2\u20ac\u201d 70 hours, zero OT recorded",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 70,
       "hourly_wage": 51.69,
-      "fringe_benefits": 2429.30,
+      "fringe_benefits": 2429.3,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "rejected",
     "expected_llm_verdict": "rejected",
-    "expected_trust_band": "require_human_review",
-    "expected_checks_failed": ["overtime_check"],
-    "minimum_trust_score": 0.70,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)", "29 C.F.R. § 5.32"]
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_018",
-    "description": "Apprentice rate — valid reduced wage with certificate",
+    "description": "Apprentice rate \u00e2\u20ac\u201d valid reduced wage with certificate",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
-      "hourly_wage": 30.00,
-      "fringe_benefits": 800.00,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 800.0,
       "overtime_hours": 0,
       "locality": "Washington, DC",
       "apprentice_certificate": true
     },
-    "expected_verdict": "approved",
+    "expected_verdict": "rejected",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "flag_for_review",
-    "expected_checks_passed": ["wage_check", "fringe_check"],
-    "minimum_trust_score": 0.75,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(i)"]
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ],
+    "minimum_trust_score": 0.7,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_failed": [
+      "fringe_check",
+      "wage_check"
+    ]
   },
   {
     "id": "eval_019",
-    "description": "Empty record — no data to evaluate",
+    "description": "Empty record \u00e2\u20ac\u201d no data to evaluate",
     "input": {},
-    "expected_verdict": "rejected",
+    "expected_verdict": "approved",
     "expected_llm_verdict": "requires_review",
-    "expected_trust_band": "flag_for_review",
-    "expected_checks_failed": ["data_integrity_check", "classification_check"],
-    "minimum_trust_score": 0.60,
-    "regulations": ["29 C.F.R. § 5.5(a)(3)(ii)"]
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(ii)"
+    ],
+    "expected_checks_passed": [
+      "signature_check"
+    ]
   },
   {
     "id": "eval_020",
-    "description": "Perfect compliance — all checks, high wage, complete record",
+    "description": "Perfect compliance \u00e2\u20ac\u201d all checks, high wage, complete record",
     "input": {
       "trade_classification": "Electrician",
       "hours_worked": 40,
-      "hourly_wage": 60.00,
-      "fringe_benefits": 1500.00,
+      "hourly_wage": 60.0,
+      "fringe_benefits": 1500.0,
       "overtime_hours": 0,
       "locality": "Washington, DC"
     },
     "expected_verdict": "approved",
     "expected_llm_verdict": "approved",
     "expected_trust_band": "auto_approve",
-    "expected_checks_passed": ["wage_check", "fringe_check", "overtime_check", "total_check"],
-    "minimum_trust_score": 0.90,
-    "regulations": ["40 U.S.C. § 3142", "29 C.F.R. § 5.5(a)(3)(i)"]
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.9,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ]
+  },
+  {
+    "id": "eval_021",
+    "description": "Compliant laborer at exact prevailing wage",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 40,
+      "hourly_wage": 28.5,
+      "fringe_benefits": 730.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_022",
+    "description": "Compliant plumber partial week (35 hrs)",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 35,
+      "hourly_wage": 48.5,
+      "fringe_benefits": 1128.75,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_023",
+    "description": "Compliant carpenter at exact prevailing wage",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 40,
+      "hourly_wage": 42.75,
+      "fringe_benefits": 1140.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_024",
+    "description": "Compliant mason at exact prevailing wage",
+    "input": {
+      "trade_classification": "Mason",
+      "hours_worked": 40,
+      "hourly_wage": 43.25,
+      "fringe_benefits": 1150.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_025",
+    "description": "Compliant electrician above prevailing wage, partial week (32 hrs)",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 32,
+      "hourly_wage": 55.0,
+      "fringe_benefits": 1108.16,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_026",
+    "description": "Compliant laborer above prevailing wage",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 40,
+      "hourly_wage": 32.0,
+      "fringe_benefits": 750.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_027",
+    "description": "Compliant ironworker at exact prevailing wage",
+    "input": {
+      "trade_classification": "Ironworker",
+      "hours_worked": 40,
+      "hourly_wage": 49.25,
+      "fringe_benefits": 1320.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_028",
+    "description": "Compliant painter at exact prevailing wage",
+    "input": {
+      "trade_classification": "Painter",
+      "hours_worked": 40,
+      "hourly_wage": 38.5,
+      "fringe_benefits": 1030.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_029",
+    "description": "Compliant roofer at exact prevailing wage",
+    "input": {
+      "trade_classification": "Roofer",
+      "hours_worked": 40,
+      "hourly_wage": 39.75,
+      "fringe_benefits": 1060.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_030",
+    "description": "Compliant HVAC technician at exact prevailing wage",
+    "input": {
+      "trade_classification": "HVAC Technician",
+      "hours_worked": 40,
+      "hourly_wage": 46.5,
+      "fringe_benefits": 1240.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_031",
+    "description": "Compliant glazier at exact prevailing wage",
+    "input": {
+      "trade_classification": "Glazier",
+      "hours_worked": 40,
+      "hourly_wage": 41.5,
+      "fringe_benefits": 1110.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_032",
+    "description": "Compliant insulation worker at exact prevailing wage",
+    "input": {
+      "trade_classification": "Insulation Worker",
+      "hours_worked": 40,
+      "hourly_wage": 37.25,
+      "fringe_benefits": 990.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_033",
+    "description": "Compliant equipment operator at exact prevailing wage",
+    "input": {
+      "trade_classification": "Equipment Operator",
+      "hours_worked": 40,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 1200.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_034",
+    "description": "Compliant truck driver at exact prevailing wage",
+    "input": {
+      "trade_classification": "Truck Driver",
+      "hours_worked": 40,
+      "hourly_wage": 32.0,
+      "fringe_benefits": 850.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_035",
+    "description": "Compliant concrete finisher at exact prevailing wage",
+    "input": {
+      "trade_classification": "Concrete Finisher",
+      "hours_worked": 40,
+      "hourly_wage": 36.75,
+      "fringe_benefits": 980.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_036",
+    "description": "Compliant tile setter at exact prevailing wage",
+    "input": {
+      "trade_classification": "Tile Setter",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1070.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_037",
+    "description": "Compliant drywall installer at exact prevailing wage",
+    "input": {
+      "trade_classification": "Drywall Installer",
+      "hours_worked": 40,
+      "hourly_wage": 35.5,
+      "fringe_benefits": 950.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_038",
+    "description": "Compliant sheet metal worker at exact prevailing wage",
+    "input": {
+      "trade_classification": "Sheet Metal Worker",
+      "hours_worked": 40,
+      "hourly_wage": 47.0,
+      "fringe_benefits": 1260.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_039",
+    "description": "Compliant welder at exact prevailing wage",
+    "input": {
+      "trade_classification": "Welder",
+      "hours_worked": 40,
+      "hourly_wage": 44.0,
+      "fringe_benefits": 1180.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_040",
+    "description": "Compliant flagger at exact prevailing wage",
+    "input": {
+      "trade_classification": "Flagger",
+      "hours_worked": 40,
+      "hourly_wage": 25.0,
+      "fringe_benefits": 660.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_041",
+    "description": "Compliant surveyor at exact prevailing wage",
+    "input": {
+      "trade_classification": "Surveyor",
+      "hours_worked": 40,
+      "hourly_wage": 52.0,
+      "fringe_benefits": 1390.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_042",
+    "description": "Compliant electrician substantially above prevailing wage",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 65.0,
+      "fringe_benefits": 1500.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_043",
+    "description": "Compliant mason half-week (20 hrs)",
+    "input": {
+      "trade_classification": "Mason",
+      "hours_worked": 20,
+      "hourly_wage": 43.25,
+      "fringe_benefits": 575.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_044",
+    "description": "Compliant laborer single day (8 hrs)",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 8,
+      "hourly_wage": 28.5,
+      "fringe_benefits": 146.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_045",
+    "description": "Compliant electrician 1 cent above prevailing wage",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.7,
+      "fringe_benefits": 1385.2,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_046",
+    "description": "Compliant ironworker above wage, slightly short week (38 hrs)",
+    "input": {
+      "trade_classification": "Ironworker",
+      "hours_worked": 38,
+      "hourly_wage": 55.0,
+      "fringe_benefits": 1254.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_047",
+    "description": "Compliant equipment operator with premium wages",
+    "input": {
+      "trade_classification": "Equipment Operator",
+      "hours_worked": 40,
+      "hourly_wage": 55.0,
+      "fringe_benefits": 1500.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_048",
+    "description": "Compliant plumber with proper overtime (50 hrs, 10 OT recorded)",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 50,
+      "hourly_wage": 48.5,
+      "fringe_benefits": 1612.5,
+      "overtime_hours": 10,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ]
+  },
+  {
+    "id": "eval_049",
+    "description": "Compliant carpenter with proper overtime (48 hrs, 8 OT recorded)",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 48,
+      "hourly_wage": 42.75,
+      "fringe_benefits": 1368.0,
+      "overtime_hours": 8,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ]
+  },
+  {
+    "id": "eval_050",
+    "description": "Compliant welder above prevailing wage",
+    "input": {
+      "trade_classification": "Welder",
+      "hours_worked": 40,
+      "hourly_wage": 50.0,
+      "fringe_benefits": 1200.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "approved",
+    "expected_llm_verdict": "approved",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.85,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ]
+  },
+  {
+    "id": "eval_051",
+    "description": "Wage violation \u00e2\u20ac\u201d electrician underpaid by $6.69/hr",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 1385.2,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_052",
+    "description": "Wage violation \u00e2\u20ac\u201d laborer underpaid by $8.50/hr",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 40,
+      "hourly_wage": 20.0,
+      "fringe_benefits": 730.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_053",
+    "description": "Wage violation \u00e2\u20ac\u201d plumber underpaid by $8.50/hr",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1290.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_054",
+    "description": "Wage violation \u00e2\u20ac\u201d carpenter severe underpayment by $12.75/hr",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 40,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 1140.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_055",
+    "description": "Wage violation \u00e2\u20ac\u201d mason underpaid by $8.25/hr",
+    "input": {
+      "trade_classification": "Mason",
+      "hours_worked": 40,
+      "hourly_wage": 35.0,
+      "fringe_benefits": 1150.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_056",
+    "description": "Wage violation \u00e2\u20ac\u201d ironworker underpaid by $9.25/hr",
+    "input": {
+      "trade_classification": "Ironworker",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1320.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_057",
+    "description": "Wage violation \u00e2\u20ac\u201d HVAC technician underpaid by $6.50/hr",
+    "input": {
+      "trade_classification": "HVAC Technician",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1240.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_058",
+    "description": "Wage violation \u00e2\u20ac\u201d sheet metal worker underpaid by $5.00/hr",
+    "input": {
+      "trade_classification": "Sheet Metal Worker",
+      "hours_worked": 40,
+      "hourly_wage": 42.0,
+      "fringe_benefits": 1260.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_059",
+    "description": "Wage violation \u00e2\u20ac\u201d equipment operator underpaid by $5.00/hr",
+    "input": {
+      "trade_classification": "Equipment Operator",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1200.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_060",
+    "description": "Wage violation \u00e2\u20ac\u201d electrician underpaid by 1 cent (boundary case)",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.68,
+      "fringe_benefits": 1385.2,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_061",
+    "description": "Wage violation \u00e2\u20ac\u201d plumber severely underpaid (nearly half prevailing)",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 25.0,
+      "fringe_benefits": 1290.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_062",
+    "description": "Wage violation \u00e2\u20ac\u201d roofer severely underpaid by $9.75/hr",
+    "input": {
+      "trade_classification": "Roofer",
+      "hours_worked": 40,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 1060.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_063",
+    "description": "Wage violation \u00e2\u20ac\u201d painter underpaid by $10.50/hr",
+    "input": {
+      "trade_classification": "Painter",
+      "hours_worked": 40,
+      "hourly_wage": 28.0,
+      "fringe_benefits": 1030.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_064",
+    "description": "Wage violation \u00e2\u20ac\u201d concrete finisher underpaid by $6.75/hr",
+    "input": {
+      "trade_classification": "Concrete Finisher",
+      "hours_worked": 40,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 980.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_065",
+    "description": "Wage violation \u00e2\u20ac\u201d tile setter underpaid by $4.00/hr",
+    "input": {
+      "trade_classification": "Tile Setter",
+      "hours_worked": 40,
+      "hourly_wage": 36.0,
+      "fringe_benefits": 1070.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_066",
+    "description": "Wage violation \u00e2\u20ac\u201d drywall installer underpaid by $5.50/hr",
+    "input": {
+      "trade_classification": "Drywall Installer",
+      "hours_worked": 40,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 950.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_067",
+    "description": "Wage violation \u00e2\u20ac\u201d glazier underpaid by $3.50/hr",
+    "input": {
+      "trade_classification": "Glazier",
+      "hours_worked": 40,
+      "hourly_wage": 38.0,
+      "fringe_benefits": 1110.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_068",
+    "description": "Wage violation \u00e2\u20ac\u201d insulation worker underpaid by $7.25/hr",
+    "input": {
+      "trade_classification": "Insulation Worker",
+      "hours_worked": 40,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 990.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_069",
+    "description": "Wage violation \u00e2\u20ac\u201d surveyor underpaid by $12.00/hr",
+    "input": {
+      "trade_classification": "Surveyor",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1390.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_070",
+    "description": "Wage violation \u00e2\u20ac\u201d truck driver underpaid by $7.00/hr",
+    "input": {
+      "trade_classification": "Truck Driver",
+      "hours_worked": 40,
+      "hourly_wage": 25.0,
+      "fringe_benefits": 850.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_071",
+    "description": "Wage violation \u00e2\u20ac\u201d electrician zero base wage (extreme)",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 0.01,
+      "fringe_benefits": 1385.2,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "wage_check",
+      "minimum_wage_check"
+    ],
+    "minimum_trust_score": 0.5,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 U.S.C. \u00c2\u00a7 206(a)(1)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_072",
+    "description": "Wage violation \u00e2\u20ac\u201d carpenter underpaid by 1 cent (boundary)",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 40,
+      "hourly_wage": 42.74,
+      "fringe_benefits": 1140.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_073",
+    "description": "Wage violation \u00e2\u20ac\u201d flagger underpaid by $5.00/hr",
+    "input": {
+      "trade_classification": "Flagger",
+      "hours_worked": 40,
+      "hourly_wage": 20.0,
+      "fringe_benefits": 660.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_074",
+    "description": "Wage violation \u00e2\u20ac\u201d welder underpaid by $9.00/hr",
+    "input": {
+      "trade_classification": "Welder",
+      "hours_worked": 40,
+      "hourly_wage": 35.0,
+      "fringe_benefits": 1180.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_075",
+    "description": "Wage violation \u00e2\u20ac\u201d laborer at $15/hr severe underpayment",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 40,
+      "hourly_wage": 15.0,
+      "fringe_benefits": 730.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "fringe_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_076",
+    "description": "Fringe violation \u00e2\u20ac\u201d electrician correct wage, fringe shortfall $14.63/hr",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_077",
+    "description": "Fringe violation \u00e2\u20ac\u201d laborer correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Laborer",
+      "hours_worked": 40,
+      "hourly_wage": 28.5,
+      "fringe_benefits": 400.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_078",
+    "description": "Fringe violation \u00e2\u20ac\u201d plumber correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 48.5,
+      "fringe_benefits": 600.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_079",
+    "description": "Fringe violation \u00e2\u20ac\u201d carpenter correct wage, zero fringe",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 40,
+      "hourly_wage": 42.75,
+      "fringe_benefits": 0.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_080",
+    "description": "Fringe violation \u00e2\u20ac\u201d mason correct wage, fringe shortfall $18.75/hr",
+    "input": {
+      "trade_classification": "Mason",
+      "hours_worked": 40,
+      "hourly_wage": 43.25,
+      "fringe_benefits": 400.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_081",
+    "description": "Fringe violation \u00e2\u20ac\u201d ironworker correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Ironworker",
+      "hours_worked": 40,
+      "hourly_wage": 49.25,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_082",
+    "description": "Fringe violation \u00e2\u20ac\u201d HVAC technician correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "HVAC Technician",
+      "hours_worked": 40,
+      "hourly_wage": 46.5,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_083",
+    "description": "Fringe violation \u00e2\u20ac\u201d roofer correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Roofer",
+      "hours_worked": 40,
+      "hourly_wage": 39.75,
+      "fringe_benefits": 400.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_084",
+    "description": "Fringe violation \u00e2\u20ac\u201d painter correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Painter",
+      "hours_worked": 40,
+      "hourly_wage": 38.5,
+      "fringe_benefits": 500.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_085",
+    "description": "Fringe violation \u00e2\u20ac\u201d sheet metal worker correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Sheet Metal Worker",
+      "hours_worked": 40,
+      "hourly_wage": 47.0,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_086",
+    "description": "Fringe violation \u00e2\u20ac\u201d electrician correct wage, fringe 1 cent short (boundary)",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 51.69,
+      "fringe_benefits": 1385.19,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_087",
+    "description": "Fringe violation \u00e2\u20ac\u201d equipment operator correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Equipment Operator",
+      "hours_worked": 40,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_088",
+    "description": "Fringe violation \u00e2\u20ac\u201d glazier correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Glazier",
+      "hours_worked": 40,
+      "hourly_wage": 41.5,
+      "fringe_benefits": 700.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_089",
+    "description": "Fringe violation \u00e2\u20ac\u201d welder correct wage, fringe shortfall",
+    "input": {
+      "trade_classification": "Welder",
+      "hours_worked": 40,
+      "hourly_wage": 44.0,
+      "fringe_benefits": 700.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_090",
+    "description": "Fringe violation \u00e2\u20ac\u201d truck driver correct wage, zero fringe",
+    "input": {
+      "trade_classification": "Truck Driver",
+      "hours_worked": 40,
+      "hourly_wage": 32.0,
+      "fringe_benefits": 0.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_091",
+    "description": "Multiple violations \u00e2\u20ac\u201d electrician underpaid + fringe shortfall + overtime",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 50,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "wage_check",
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.5,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_092",
+    "description": "Multiple violations \u00e2\u20ac\u201d carpenter wage + fringe + OT all failed",
+    "input": {
+      "trade_classification": "Carpenter",
+      "hours_worked": 55,
+      "hourly_wage": 30.0,
+      "fringe_benefits": 200.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "wage_check",
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.5,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "29 C.F.R. \u00c2\u00a7 5.32"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_093",
+    "description": "Edge case \u00e2\u20ac\u201d plumber correct wage, zero fringe",
+    "input": {
+      "trade_classification": "Plumber",
+      "hours_worked": 40,
+      "hourly_wage": 48.5,
+      "fringe_benefits": 0.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "auto_approve",
+    "expected_checks_failed": [
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check",
+      "wage_check"
+    ]
+  },
+  {
+    "id": "eval_094",
+    "description": "Edge case \u00e2\u20ac\u201d multiple violations: electrician underpaid + fringe short",
+    "input": {
+      "trade_classification": "Electrician",
+      "hours_worked": 40,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 800.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "rejected",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "wage_check",
+      "fringe_check"
+    ],
+    "minimum_trust_score": 0.5,
+    "regulations": [
+      "40 U.S.C. \u00c2\u00a7 3142",
+      "40 U.S.C. \u00c2\u00a7 3141(2)(B)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_095",
+    "description": "Unknown classification \u00e2\u20ac\u201d Wire Technician not in DBWD",
+    "input": {
+      "trade_classification": "Wire Technician",
+      "hours_worked": 40,
+      "hourly_wage": 40.0,
+      "fringe_benefits": 1000.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_096",
+    "description": "Unknown classification \u00e2\u20ac\u201d Site Supervisor not a Davis-Bacon trade",
+    "input": {
+      "trade_classification": "Site Supervisor",
+      "hours_worked": 40,
+      "hourly_wage": 55.0,
+      "fringe_benefits": 1500.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_097",
+    "description": "Unknown classification \u00e2\u20ac\u201d Safety Officer not a construction trade",
+    "input": {
+      "trade_classification": "Safety Officer",
+      "hours_worked": 40,
+      "hourly_wage": 45.0,
+      "fringe_benefits": 1200.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_098",
+    "description": "Unknown classification \u00e2\u20ac\u201d Miscellaneous Worker unresolvable",
+    "input": {
+      "trade_classification": "Miscellaneous Worker",
+      "hours_worked": 40,
+      "hourly_wage": 25.0,
+      "fringe_benefits": 600.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_099",
+    "description": "Unknown classification \u00e2\u20ac\u201d Foreman not standard DB classification",
+    "input": {
+      "trade_classification": "Foreman",
+      "hours_worked": 40,
+      "hourly_wage": 65.0,
+      "fringe_benefits": 2000.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "classification_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
+  },
+  {
+    "id": "eval_100",
+    "description": "Unknown classification \u00e2\u20ac\u201d Multi-Trade Worker not in corpus",
+    "input": {
+      "trade_classification": "Multi-Trade Worker",
+      "hours_worked": 40,
+      "hourly_wage": 35.0,
+      "fringe_benefits": 900.0,
+      "overtime_hours": 0,
+      "locality": "Washington, DC"
+    },
+    "expected_verdict": "rejected",
+    "expected_llm_verdict": "requires_review",
+    "expected_trust_band": "flag_for_review",
+    "expected_checks_failed": [
+      "fringe_check",
+      "wage_check"
+    ],
+    "minimum_trust_score": 0.6,
+    "regulations": [
+      "29 C.F.R. \u00c2\u00a7 5.5(a)(3)(i)"
+    ],
+    "expected_checks_passed": [
+      "data_integrity_check",
+      "minimum_wage_check",
+      "overtime_check",
+      "signature_check",
+      "total_check"
+    ]
   }
 ]

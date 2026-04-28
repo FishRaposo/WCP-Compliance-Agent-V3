@@ -44,6 +44,13 @@ mypy = "^1.13.0"
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+markers = [
+    "unit: Unit tests (no infra needed)",
+    "integration: Integration tests (needs postgres + redis)",
+    "eval: Golden set evaluation tests",
+    "e2e: End-to-end tests (needs full stack running)",
+    "benchmark: Performance benchmark tests",
+]
 
 [tool.ruff]
 line-length = 100

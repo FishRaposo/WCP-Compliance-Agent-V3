@@ -1,0 +1,456 @@
+[
+  {
+    "id": "text_001",
+    "description": "Compliant electrician at exact prevailing wage",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 51.69, Fringe: 34.63",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_002",
+    "description": "Compliant laborer at exact prevailing wage",
+    "input_text": "Role: Laborer, Hours: 40, Wage: 28.50, Fringe: 18.25",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_003",
+    "description": "Compliant plumber partial week",
+    "input_text": "Role: Plumber, Hours: 35, Wage: 48.50, Fringe: 32.25",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_004",
+    "description": "Compliant carpenter at exact prevailing wage",
+    "input_text": "Role: Carpenter, Hours: 40, Wage: 42.75, Fringe: 28.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_005",
+    "description": "Compliant mason at exact prevailing wage",
+    "input_text": "Role: Mason, Hours: 40, Wage: 43.25, Fringe: 28.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_006",
+    "description": "Compliant electrician above prevailing wage",
+    "input_text": "Role: Electrician, Hours: 32, Wage: 55.00, Fringe: 35.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_007",
+    "description": "Compliant laborer above prevailing wage",
+    "input_text": "Role: Laborer, Hours: 40, Wage: 32.00, Fringe: 20.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_008",
+    "description": "Compliant ironworker at exact prevailing wage",
+    "input_text": "Role: Ironworker, Hours: 40, Wage: 49.25, Fringe: 33.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_009",
+    "description": "Compliant painter at exact prevailing wage",
+    "input_text": "Role: Painter, Hours: 40, Wage: 38.50, Fringe: 25.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_010",
+    "description": "Compliant roofer at exact prevailing wage",
+    "input_text": "Role: Roofer, Hours: 40, Wage: 39.75, Fringe: 26.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_011",
+    "description": "Compliant HVAC technician",
+    "input_text": "Role: HVAC Technician, Hours: 40, Wage: 46.50, Fringe: 31.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_012",
+    "description": "Compliant glazier",
+    "input_text": "Role: Glazier, Hours: 40, Wage: 41.50, Fringe: 27.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_013",
+    "description": "Compliant insulation worker",
+    "input_text": "Role: Insulation Worker, Hours: 40, Wage: 37.25, Fringe: 24.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_014",
+    "description": "Compliant equipment operator",
+    "input_text": "Role: Equipment Operator, Hours: 40, Wage: 45.00, Fringe: 30.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_015",
+    "description": "Compliant truck driver",
+    "input_text": "Role: Truck Driver, Hours: 40, Wage: 32.00, Fringe: 21.25",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_016",
+    "description": "Compliant concrete finisher",
+    "input_text": "Role: Concrete Finisher, Hours: 40, Wage: 36.75, Fringe: 24.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_017",
+    "description": "Compliant tile setter",
+    "input_text": "Role: Tile Setter, Hours: 40, Wage: 40.00, Fringe: 26.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_018",
+    "description": "Compliant drywall installer",
+    "input_text": "Role: Drywall Installer, Hours: 40, Wage: 35.50, Fringe: 23.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_019",
+    "description": "Compliant sheet metal worker",
+    "input_text": "Role: Sheet Metal Worker, Hours: 40, Wage: 47.00, Fringe: 31.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_020",
+    "description": "Compliant welder",
+    "input_text": "Role: Welder, Hours: 40, Wage: 44.00, Fringe: 29.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_021",
+    "description": "Compliant flagger",
+    "input_text": "Role: Flagger, Hours: 40, Wage: 25.00, Fringe: 16.50",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_022",
+    "description": "Compliant surveyor",
+    "input_text": "Role: Surveyor, Hours: 40, Wage: 52.00, Fringe: 34.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_023",
+    "description": "Compliant electrician substantially above prevailing wage",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 65.00, Fringe: 40.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_024",
+    "description": "Compliant plumber with named worker and week ending",
+    "input_text": "Name: John Smith, Role: Plumber, Hours: 40, Wage: 48.50, Fringe: 32.25, Week Ending: 2026-06-07",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_025",
+    "description": "Compliant mason half week",
+    "input_text": "Role: Mason, Hours: 20, Wage: 43.25, Fringe: 28.75",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_026",
+    "description": "Compliant laborer single day",
+    "input_text": "Role: Laborer, Hours: 8, Wage: 28.50, Fringe: 18.25",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_027",
+    "description": "Compliant electrician 1 cent above",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 51.70, Fringe: 34.63",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_028",
+    "description": "Compliant ironworker slightly short week",
+    "input_text": "Role: Ironworker, Hours: 38, Wage: 55.00, Fringe: 35.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_029",
+    "description": "Compliant equipment operator with premium wages",
+    "input_text": "Role: Equipment Operator, Hours: 40, Wage: 55.00, Fringe: 38.00",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_030",
+    "description": "Compliant welder above prevailing",
+    "input_text": "Role: Welder, Hours: 40, Wage: 50.00, Fringe: 30.00",
+    "expected_verdict": "approved"
+  },
+
+  {
+    "id": "text_031",
+    "description": "Wage violation — electrician underpaid by $6.69/hr",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 45.00, Fringe: 34.63",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_032",
+    "description": "Wage violation — laborer underpaid by $8.50/hr",
+    "input_text": "Role: Laborer, Hours: 40, Wage: 20.00, Fringe: 18.25",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_033",
+    "description": "Wage violation — plumber underpaid by $8.50/hr",
+    "input_text": "Role: Plumber, Hours: 40, Wage: 40.00, Fringe: 32.25",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_034",
+    "description": "Wage violation — carpenter severe underpayment",
+    "input_text": "Role: Carpenter, Hours: 40, Wage: 30.00, Fringe: 28.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_035",
+    "description": "Wage violation — mason underpaid by $8.25/hr",
+    "input_text": "Role: Mason, Hours: 40, Wage: 35.00, Fringe: 28.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_036",
+    "description": "Wage violation — ironworker underpaid by $9.25/hr",
+    "input_text": "Role: Ironworker, Hours: 40, Wage: 40.00, Fringe: 33.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_037",
+    "description": "Wage violation — HVAC technician underpaid",
+    "input_text": "Role: HVAC Technician, Hours: 40, Wage: 40.00, Fringe: 31.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_038",
+    "description": "Wage violation — sheet metal worker underpaid",
+    "input_text": "Role: Sheet Metal Worker, Hours: 40, Wage: 42.00, Fringe: 31.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_039",
+    "description": "Wage violation — equipment operator underpaid",
+    "input_text": "Role: Equipment Operator, Hours: 40, Wage: 40.00, Fringe: 30.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_040",
+    "description": "Wage violation — electrician 1 cent under (boundary)",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 51.68, Fringe: 34.63",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_041",
+    "description": "Wage violation — plumber severely underpaid",
+    "input_text": "Role: Plumber, Hours: 40, Wage: 25.00, Fringe: 32.25",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_042",
+    "description": "Wage violation — roofer severely underpaid",
+    "input_text": "Role: Roofer, Hours: 40, Wage: 30.00, Fringe: 26.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_043",
+    "description": "Wage violation — painter underpaid by $10.50/hr",
+    "input_text": "Role: Painter, Hours: 40, Wage: 28.00, Fringe: 25.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_044",
+    "description": "Wage violation — concrete finisher underpaid",
+    "input_text": "Role: Concrete Finisher, Hours: 40, Wage: 30.00, Fringe: 24.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_045",
+    "description": "Wage violation — tile setter underpaid",
+    "input_text": "Role: Tile Setter, Hours: 40, Wage: 36.00, Fringe: 26.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_046",
+    "description": "Wage violation — drywall installer underpaid",
+    "input_text": "Role: Drywall Installer, Hours: 40, Wage: 30.00, Fringe: 23.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_047",
+    "description": "Wage violation — glazier underpaid",
+    "input_text": "Role: Glazier, Hours: 40, Wage: 38.00, Fringe: 27.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_048",
+    "description": "Wage violation — insulation worker underpaid",
+    "input_text": "Role: Insulation Worker, Hours: 40, Wage: 30.00, Fringe: 24.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_049",
+    "description": "Wage violation — surveyor underpaid by $12/hr",
+    "input_text": "Role: Surveyor, Hours: 40, Wage: 40.00, Fringe: 34.75",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_050",
+    "description": "Wage violation — truck driver underpaid",
+    "input_text": "Role: Truck Driver, Hours: 40, Wage: 25.00, Fringe: 21.25",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_051",
+    "description": "Wage violation — carpenter 1 cent under (boundary)",
+    "input_text": "Role: Carpenter, Hours: 40, Wage: 42.74, Fringe: 28.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_052",
+    "description": "Wage violation — flagger underpaid",
+    "input_text": "Role: Flagger, Hours: 40, Wage: 20.00, Fringe: 16.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_053",
+    "description": "Wage violation — welder underpaid by $9/hr",
+    "input_text": "Role: Welder, Hours: 40, Wage: 35.00, Fringe: 29.50",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_054",
+    "description": "Wage violation — laborer severe $15/hr",
+    "input_text": "Role: Laborer, Hours: 40, Wage: 15.00, Fringe: 18.25",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_055",
+    "description": "Wage violation — electrician near-zero wage",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 0.01, Fringe: 34.63",
+    "expected_verdict": "rejected"
+  },
+
+  {
+    "id": "text_056",
+    "description": "Fringe violation — electrician correct wage, low fringe",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 51.69, Fringe: 20.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_057",
+    "description": "Fringe violation — laborer correct wage, low fringe",
+    "input_text": "Role: Laborer, Hours: 40, Wage: 28.50, Fringe: 10.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_058",
+    "description": "Fringe violation — plumber correct wage, low fringe",
+    "input_text": "Role: Plumber, Hours: 40, Wage: 48.50, Fringe: 15.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_059",
+    "description": "Fringe violation — carpenter correct wage, zero fringe",
+    "input_text": "Role: Carpenter, Hours: 40, Wage: 42.75, Fringe: 0",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_060",
+    "description": "Fringe violation — mason correct wage, low fringe",
+    "input_text": "Role: Mason, Hours: 40, Wage: 43.25, Fringe: 10.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_061",
+    "description": "Fringe violation — ironworker correct wage, low fringe",
+    "input_text": "Role: Ironworker, Hours: 40, Wage: 49.25, Fringe: 20.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_062",
+    "description": "Fringe violation — HVAC correct wage, low fringe",
+    "input_text": "Role: HVAC Technician, Hours: 40, Wage: 46.50, Fringe: 20.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_063",
+    "description": "Fringe violation — roofer correct wage, low fringe",
+    "input_text": "Role: Roofer, Hours: 40, Wage: 39.75, Fringe: 10.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_064",
+    "description": "Fringe violation — painter correct wage, low fringe",
+    "input_text": "Role: Painter, Hours: 40, Wage: 38.50, Fringe: 12.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_065",
+    "description": "Fringe violation — sheet metal correct wage, low fringe",
+    "input_text": "Role: Sheet Metal Worker, Hours: 40, Wage: 47.00, Fringe: 20.00",
+    "expected_verdict": "rejected"
+  },
+
+  {
+    "id": "text_066",
+    "description": "Unknown classification — Wire Technician not in DBWD",
+    "input_text": "Role: Wire Technician, Hours: 40, Wage: 40.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_067",
+    "description": "Unknown classification — Site Supervisor",
+    "input_text": "Role: Site Supervisor, Hours: 40, Wage: 55.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_068",
+    "description": "Unknown classification — Safety Officer",
+    "input_text": "Role: Safety Officer, Hours: 40, Wage: 45.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_069",
+    "description": "Unknown classification — Miscellaneous Worker",
+    "input_text": "Role: Miscellaneous Worker, Hours: 40, Wage: 25.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_070",
+    "description": "Unknown classification — Foreman",
+    "input_text": "Role: Foreman, Hours: 40, Wage: 65.00",
+    "expected_verdict": "rejected"
+  },
+
+  {
+    "id": "text_071",
+    "description": "Edge case — electrician underpaid + fringe shortfall",
+    "input_text": "Role: Electrician, Hours: 40, Wage: 45.00, Fringe: 20.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_072",
+    "description": "Edge case — plumber correct wage, zero fringe",
+    "input_text": "Role: Plumber, Hours: 40, Wage: 48.50, Fringe: 0",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_073",
+    "description": "Edge case — carpenter extreme: wage + fringe + overtime all bad",
+    "input_text": "Role: Carpenter, Hours: 55, Wage: 30.00, Fringe: 5.00",
+    "expected_verdict": "rejected"
+  },
+  {
+    "id": "text_074",
+    "description": "Compliant full-detail WCP",
+    "input_text": "Name: Test Worker, Role: Electrician, Hours: 40, Wage: 51.69, Fringe: 34.63, Week Ending: 2026-06-07, Project: FED-CONTRACT-001",
+    "expected_verdict": "approved"
+  },
+  {
+    "id": "text_075",
+    "description": "Compliant plumber with day-by-day hours",
+    "input_text": "Role: Plumber, Hours: 40, Wage: 48.50, Fringe: 32.25, Mon: 8, Tue: 8, Wed: 8, Thu: 8, Fri: 8",
+    "expected_verdict": "approved"
+  }
+]

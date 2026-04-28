@@ -6,14 +6,16 @@ Python backend × TypeScript agent × React frontend. Hybrid RAG. Full observabi
 
 ---
 
-## By The Numbers (Phases 1–4 Complete)
+## By The Numbers (Phases 1–5 Complete)
 
 - **3 services:** Python deterministic backend (✅), TypeScript agent (✅), React frontend (✅)
 - **5-step pipeline:** Extract → Validate → LLM Verdict → Trust Score → Persist (✅ end-to-end)
-- **116 tests passing:** 87 backend unit + 29 agent (unit + integration)
+- **116+ tests passing:** 87 backend unit + 29 agent (unit + integration) + eval suite
+- **100-example golden set:** Structured JSON evaluation covering 20 trades, 5 violation categories
 - **11 API endpoints:** `/extract`, `/validate`, `/dbwd`, `/health`, `/decisions`, `/jobs`, `/search`, `/analytics/*`, `/auth`, `/prompt-versions`
 - **7 frontend pages:** Dashboard, Analyze, Decisions, Review Queue, Analytics, Settings, Login
 - **10+ UI components:** shadcn/ui Card, Badge, Button, Input, Select, Skeleton, ErrorBoundary, etc.
+- **CI/CD:** GitHub Actions with Postgres + Redis service containers, scheduled eval, Vercel + Render deploy
 - **Mock mode:** Full pipeline and frontend run without backend (`VITE_MOCK_API=true`, `LLM_MODE=mock`)
 - **JWT auth:** Login flow with bcrypt + jose, `AUTH_DISABLED` toggle for dev
 
@@ -88,7 +90,7 @@ See `docs/install.md` for the fresh-machine checklist, `docs/dependencies.md` fo
 | **Backend** | Python 3.12+, FastAPI, Pydantic v2, Celery, Flower | Deterministic logic, RAG |
 | **Search** | Elasticsearch 8, pgvector, sentence-transformers | Hybrid retrieval |
 | **Observability** | Phoenix/Arize, Langfuse, OpenTelemetry | Tracing, prompt infra, cost |
-| **Testing** | pytest, vitest, golden set eval | CI, regression detection |
+| **Testing** | pytest (100-example golden set), vitest, E2E smoke | CI, regression detection |
 
 ---
 
@@ -104,8 +106,9 @@ v3/
 │   │   ├── services/    # DB, Redis, Celery tasks
 │   │   └── models/      # SQLAlchemy + Pydantic
 │   └── tests/
-│       ├── eval/        # Golden set + regression
-│       ├── integration/ # API endpoint tests
+│       ├── eval/        # Golden set (100 examples) + regression
+│       ├── integration/ # API endpoint + E2E pipeline tests
+│       ├── fixtures/    # Sample WH-347 PDF for tests
 │       └── unit/        # Core logic tests (87 tests)
 │
 ├── agent/                # TypeScript Mastra.ai agent
@@ -231,8 +234,8 @@ Mastra.ai verdict agent, mock + real LLM paths, trust score computation, Langfus
 **Phase 4 — Frontend ✅**
 React 19 SPA with shadcn/ui. 7 pages, 12 components, TanStack Query hooks. PDF upload + text paste. Pipeline visualizer. Decision cards with trust scores. Analytics dashboard. Human review queue. Mock data layer (`VITE_MOCK_API=true`). ErrorBoundary. Skeleton loaders.
 
-**Phase 5 — Integration + Evaluation**
-Golden set regression testing, evaluation pipeline, full observability, production deploy.
+**Phase 5 — Integration + Evaluation ✅**
+100-example golden set (structured + text), E2E integration tests, standalone smoke script, `eval.yml` scheduled workflow, enhanced `ci.yml` with Postgres/Redis service containers, sample WH-347 PDF fixture, ADR-010, README polish.
 
 **Future:**
 - **V3.1:** Multi-LLM routing — Anthropic Claude + Ollama support, model-agnostic LLM layer
@@ -275,7 +278,7 @@ These targets make the system production-credible and well-documented.
 - [Architecture Overview](docs/architecture.md)
 - [API Contract](docs/api-contract.md)
 - [Evaluation Pipeline](docs/evaluation.md)
-- [ADRs](docs/adrs/) — Including [excluded technologies](docs/adrs/ADR-009-excluded-technologies.md)
+- [ADRs](docs/adrs/) — Including [ADR-010 React frontend](docs/adrs/ADR-010-react-frontend.md), [excluded technologies](docs/adrs/ADR-009-excluded-technologies.md)
 - [Compliance](docs/compliance/)
 
 ---

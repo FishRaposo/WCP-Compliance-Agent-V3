@@ -1,0 +1,92 @@
+name: Evaluation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/tests/eval/**'
+      - 'backend/src/wcp_backend/pipeline/**'
+      - 'backend/src/wcp_backend/data/**'
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  golden-set:
+    name: Golden Set Evaluation
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: wcp
+          POSTGRES_PASSWORD: wcp
+          POSTGRES_DB: wcp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wcp"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://wcp:wcp@localhost:5432/wcp_test
+      REDIS_URL: redis://localhost:6379/0
+      OPENAI_API_KEY: mock
+      PHASE: 1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        working-directory: backend
+        run: poetry install --no-interaction
+
+      - name: Run database migrations
+        working-directory: backend
+        run: poetry run alembic upgrade head
+
+      - name: Run golden set (structured)
+        working-directory: backend
+        run: poetry run pytest tests/eval/test_golden_set.py -m eval -v --tb=long
+
+      - name: Run golden set (text format)
+        working-directory: backend
+        run: poetry run pytest tests/eval/test_golden_set_text.py -m eval -v --tb=long
+
+      - name: Run regression check
+        working-directory: backend
+        run: |
+          if [ -f tests/eval/baseline_scores.json ]; then
+            poetry run python tests/eval/regression_test.py
+          else
+            echo "No baseline_scores.json found — skipping regression check"
+          fi
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: |
+            backend/eval_report.json
+            backend/tests/eval/baseline_scores.json
+          if-no-files-found: ignore

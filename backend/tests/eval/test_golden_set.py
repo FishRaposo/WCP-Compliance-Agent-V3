@@ -21,6 +21,40 @@ def load_golden_set() -> list[dict]:
 def _build_wh347_text(example: dict) -> str:
     """Convert structured golden-set input to WH-347 text format."""
     inp = example["input"]
+
+    # Multi-employee examples
+    if "employees" in inp:
+        employees_text = ""
+        for i, emp in enumerate(inp["employees"]):
+            hw = emp.get("hours_worked", 0)
+            wage = emp.get("hourly_wage", 0)
+            employees_text += (
+                f"\nName: Worker {i + 1}\n"
+                f"Trade: {emp.get('trade_classification', 'Unknown')}\n"
+                f"Hours: {hw}\n"
+                f"Hourly Wage: {wage}\n"
+                f"Fringe: {emp.get('fringe_benefits', 0.0)}\n"
+                f"Gross: {hw * wage}\n"
+                f"Deductions: 0.00\n"
+                f"Net: {hw * wage}\n"
+            )
+        return (
+            f"Contractor: Test Contractor\n"
+            f"Project: Test Project\n"
+            f"Location: {inp.get('locality', 'Washington, DC')}\n"
+            f"Certified: 2026-01-15\n"
+            f"{employees_text}"
+        )
+
+    # Empty input
+    if "trade_classification" not in inp:
+        return (
+            "Contractor: Test Contractor\n"
+            "Project: Test Project\n"
+            "Location: Washington, DC\n"
+            "Certified: 2026-01-15\n"
+        )
+
     return f"""
 Contractor: Test Contractor
 Project: Test Project
