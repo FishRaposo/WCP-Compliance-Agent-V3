@@ -7,25 +7,12 @@ from uuid import UUID as PyUUID
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    Integer,
-    MetaData,
-    Table,
-    Text,
-    desc,
-    func,
-    select,
-)
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy import desc, select
 
 from wcp_backend.config import settings
 from wcp_backend.models.schemas import TrustScoredDecision
 from wcp_backend.services.db import async_session
+from wcp_backend.services.tables import decisions_table
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -43,27 +30,6 @@ class DecisionSummary(BaseModel):
     violation_count: int
     warning_count: int
     created_at: str
-
-
-# Inline table definition matching migration 001
-decisions_table = Table(
-    "decisions",
-    MetaData(),
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
-    Column("job_id", Text(), nullable=False, unique=True),
-    Column("verdict", Text(), nullable=False),
-    Column("trust_score", Float(), nullable=False),
-    Column("trust_band", Text(), nullable=False),
-    Column("requires_human_review", Boolean(), nullable=False, server_default="false"),
-    Column("violation_count", Integer(), nullable=False, server_default="0"),
-    Column("warning_count", Integer(), nullable=False, server_default="0"),
-    Column("reasoning_summary", Text(), nullable=True),
-    Column("citations", JSONB(), nullable=True, server_default="[]"),
-    Column("cost_usd", Float(), nullable=True),
-    Column("latency_ms", Integer(), nullable=True),
-    Column("phoenix_trace_id", Text(), nullable=True),
-    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
-)
 
 
 def _row_to_summary(row: Any) -> DecisionSummary:

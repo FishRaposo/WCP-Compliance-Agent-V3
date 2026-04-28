@@ -261,7 +261,6 @@ async def refresh_rates_from_sam_gov(trade: str, locality: str) -> list[DBWDRate
     """
     Fetch latest rates from SAM.gov and upsert into PostgreSQL + Redis.
 
-    Note: SAM.gov integration is future work (Phase 3+).
+    Note: Use `backend/scripts/etl_sam_gov.py` to refresh rates from SAM.gov.
     """
-    # Phase 2: Return empty list — SAM.gov integration is future work
     return []

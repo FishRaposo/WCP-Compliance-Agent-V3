@@ -100,3 +100,6 @@ jobs:
       - name: Build
         working-directory: frontend
         run: npm run build
+      - name: Run tests
+        working-directory: frontend
+        run: npm test

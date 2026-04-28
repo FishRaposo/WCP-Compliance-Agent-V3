@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from wcp_backend.config import settings
@@ -13,9 +14,13 @@ async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncS
 
 
 async def init_db() -> None:
-    """Initialize DB connection pool; called on app startup."""
-    async with engine.begin():
-        pass  # TODO: run Alembic migrations programmatically if needed
+    """Initialize DB connection pool; called on app startup.
+
+    Migrations are managed separately via `alembic upgrade head`.
+    This function verifies the database is reachable.
+    """
+    async with engine.begin() as conn:
+        await conn.execute(text("SELECT 1"))
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

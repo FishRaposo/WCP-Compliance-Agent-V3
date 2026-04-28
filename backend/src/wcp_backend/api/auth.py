@@ -7,22 +7,13 @@ import logging
 import bcrypt
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import Column, MetaData, Table, Text, select
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy import select
 
 from wcp_backend.services.db import async_session
+from wcp_backend.services.tables import users_table
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-users_table = Table(
-    "users",
-    MetaData(),
-    Column("id", PgUUID(), primary_key=True),
-    Column("email", Text(), nullable=False, unique=True),
-    Column("password_hash", Text(), nullable=False),
-    Column("role", Text(), nullable=False),
-)
 
 
 class AuthValidateRequest(BaseModel):

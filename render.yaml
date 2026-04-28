@@ -1,0 +1,59 @@
+services:
+  backend:
+    type: web
+    name: wcp-backend
+    runtime: python
+    build:
+      dockerfilePath: ./backend/Dockerfile
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: ELASTICSEARCH_URL
+        sync: false
+      - key: CELERY_BROKER_URL
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+      - key: PHASE
+        value: "2"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /health
+
+  agent:
+    type: web
+    name: wcp-agent
+    runtime: node
+    build:
+      dockerfilePath: ./agent/Dockerfile
+    plan: starter
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: wcp-backend
+          type: env
+          property: hostport
+      - key: NODE_ENV
+        value: production
+      - key: LLM_MODE
+        value: real
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: JWT_SECRET
+        sync: false
+      - key: AUTH_DISABLED
+        value: "false"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PORT
+        value: "3000"
+    healthCheckPath: /health

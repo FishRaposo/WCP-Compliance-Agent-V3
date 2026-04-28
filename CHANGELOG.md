@@ -2,6 +2,37 @@
 
 All notable changes to this project are documented in this file. Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [3.1.1] - 2026-04-28
+
+### Added
+- Frontend test suite: 12 tests across 4 files (Login, TrustScoreBadge, apiClient, App routing)
+- Frontend vitest.config.ts and setupTests.ts infrastructure
+- Agent HTTP route tests: health, auth/login, analyze endpoints
+- Agent auth middleware tests: JWT signing, AUTH_DISABLED bypass
+- Backend centralized table definitions (`services/tables.py`)
+- Backend config production validation (rejects localhost URLs in production)
+- Backend SAM.gov ETL pipeline (`scripts/etl_sam_gov.py`): fetch → validate → upsert
+- Backend graph.py `to_dict()` serialization for Phoenix/audit traces
+- Agent external API rate limiter with token bucket implementation
+- Backend Dockerfile (multi-stage Poetry build)
+- Agent Dockerfile (multi-stage esbuild bundle)
+- render.yaml (Render Blueprint for backend + agent)
+- vercel.json (Vercel config for frontend)
+- `@testing-library/user-event` and `jsdom` as frontend dev dependencies
+
+### Changed
+- Deduplicated inline SQLAlchemy Table() definitions from decisions.py, analytics.py, auth.py, jobs.py into shared `services/tables.py`
+- Fixed `users_table` missing `created_at` column to match migration 005
+- `db.py init_db()` now verifies database connectivity with `SELECT 1`
+- Agent CORS middleware re-exports from config.ts (removed hardcoded duplicate)
+- `dbwd_lookup.py` docstring updated to reference SAM.gov ETL script
+- deploy.yml: added pre-deploy build verification and post-deploy health checks
+- ci.yml: added `npm test` step to frontend job
+- Root `.env.example` updated with production checklist comments
+
+### Removed
+- 5 TODO comments from production source code (all resolved)
+
 ## [3.1.0] - 2026-04-28
 
 ### Added

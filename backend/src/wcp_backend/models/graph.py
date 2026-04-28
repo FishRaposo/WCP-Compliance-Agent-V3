@@ -60,5 +60,42 @@ class ComplianceGraph:
     trust_score: TrustScoreNode | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        # TODO: implement serialization for Phoenix/audit trace
-        raise NotImplementedError
+        """Serialize the compliance graph to a dict suitable for Phoenix/audit traces."""
+        result: dict[str, Any] = {
+            "wcp": {
+                "job_id": self.wcp.job_id,
+                "contractor_name": self.wcp.contractor_name,
+                "project_name": self.wcp.project_name,
+                "week_ending": self.wcp.week_ending,
+            },
+            "employees": [
+                {"name": e.name, "trade": e.trade, "job_id": e.job_id}
+                for e in self.employees
+            ],
+            "checks": [
+                {
+                    "check_id": c.check_id,
+                    "check_type": c.check_type,
+                    "status": c.status,
+                    "employee_name": c.employee_name,
+                }
+                for c in self.checks
+            ],
+        }
+
+        if self.verdict is not None:
+            result["verdict"] = {
+                "job_id": self.verdict.job_id,
+                "verdict": self.verdict.verdict,
+                "confidence": self.verdict.confidence,
+            }
+
+        if self.trust_score is not None:
+            result["trust_score"] = {
+                "job_id": self.trust_score.job_id,
+                "score": self.trust_score.score,
+                "band": self.trust_score.band,
+                "requires_review": self.trust_score.requires_review,
+            }
+
+        return result

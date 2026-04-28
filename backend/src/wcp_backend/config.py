@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +24,16 @@ class Settings(BaseSettings):
     trust_score_medium_band: float = 0.60
 
     phase: int = 1
+
+    @field_validator("database_url", "redis_url")
+    @classmethod
+    def _validate_not_placeholder_in_production(cls, v: str, info) -> str:
+        if info.data.get("environment") == "production" and "localhost" in v:
+            raise ValueError(
+                f"{info.field_name} must not point to localhost in production. "
+                "Set the environment variable to a real service URL."
+            )
+        return v
 
 
 settings = Settings()

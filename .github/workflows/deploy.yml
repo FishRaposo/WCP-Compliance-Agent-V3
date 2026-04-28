@@ -6,8 +6,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  verify:
+    name: Verify Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Verify backend
+        working-directory: backend
+        run: |
+          poetry install
+          poetry run ruff check .
+          poetry run pytest tests/unit -v
+
+      - name: Verify agent
+        working-directory: agent
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+
+      - name: Verify frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npm test
+
   deploy-frontend:
     name: Deploy Frontend (Vercel)
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +67,7 @@ jobs:
 
   deploy-backend:
     name: Deploy Backend (Render)
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,9 +77,37 @@ jobs:
 
   deploy-agent:
     name: Deploy Agent (Render)
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Trigger Render deploy (agent)
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_AGENT }}"
+
+  health-check:
+    name: Post-Deploy Health Check
+    needs: [deploy-frontend, deploy-backend, deploy-agent]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Backend Health
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf "${{ secrets.BACKEND_URL }}/health" | grep -q '"ok"'; then
+              echo "Backend healthy"
+              break
+            fi
+            echo "Waiting for backend... attempt $i"
+            sleep 15
+          done
+
+      - name: Check Agent Health
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf "${{ secrets.AGENT_URL }}/health" | grep -q '"ok"'; then
+              echo "Agent healthy"
+              break
+            fi
+            echo "Waiting for agent... attempt $i"
+            sleep 15
+          done

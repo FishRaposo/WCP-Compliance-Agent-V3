@@ -7,32 +7,16 @@ from celery import Celery  # type: ignore[import-untyped]
 from celery.result import AsyncResult  # type: ignore[import-untyped]
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import Column, DateTime, MetaData, Table, Text, select
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy import select
 from sqlalchemy.sql import func
 
 from wcp_backend.config import settings
 from wcp_backend.models.enums import JobStatus
 from wcp_backend.services.db import async_session
+from wcp_backend.services.tables import jobs_table
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-# Inline jobs table matching migration 003
-jobs_table = Table(
-    "jobs",
-    MetaData(),
-    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
-    Column("job_id", Text(), nullable=False, unique=True),
-    Column("celery_task_id", Text(), nullable=True),
-    Column("status", Text(), nullable=False, server_default="pending"),
-    Column("payload", JSONB(), nullable=True, server_default="{}"),
-    Column("result", JSONB(), nullable=True),
-    Column("error", Text(), nullable=True),
-    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
-    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
-)
 
 # Celery setup - allow graceful fallback if not configured
 try:
