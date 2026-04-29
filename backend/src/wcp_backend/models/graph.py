@@ -7,7 +7,7 @@ Graph shape:
   WCP → Employee → Check → Verdict → TrustScore
 """
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 
@@ -60,5 +60,5 @@ class ComplianceGraph:
     trust_score: TrustScoreNode | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        # TODO: implement serialization for Phoenix/audit trace
-        raise NotImplementedError
+        """Serialize the graph for Phoenix/audit trace."""
+        return asdict(self)
