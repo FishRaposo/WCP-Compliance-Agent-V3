@@ -33,6 +33,13 @@ if (raw.NODE_ENV === "production" && raw.LLM_MODE === "mock") {
   );
 }
 
+// Ensure JWT secret is not the default value in production.
+if (raw.NODE_ENV === "production" && raw.JWT_SECRET === "change-me-before-launch") {
+  throw new Error(
+    "Default JWT_SECRET is not allowed in production. Set a secure JWT_SECRET before launch."
+  );
+}
+
 export const config = raw;
 export type Config = typeof config;
 

@@ -14,13 +14,16 @@ import { jobs } from "./api/jobs.js";
 import { analytics } from "./api/analytics.js";
 import { promptVersions } from "./api/prompt-versions.js";
 import { authMiddleware } from "./middleware/auth.js";
-import { rateLimiter } from "./middleware/rate_limiter.js";
+import { rateLimiter, createRateLimiter } from "./middleware/rate_limiter.js";
 import { logger } from "./utils/logger.js";
 
 const app = new Hono();
 
 app.use("*", cors({ origin: corsOrigins, credentials: true }));
 app.use("/api/*", rateLimiter());
+
+const loginRateLimiter = createRateLimiter({ windowMs: 60_000, maxRequests: 5 });
+app.use("/api/auth/login", loginRateLimiter);
 
 app.route("/health", health);
 app.route("/api/auth", auth);
