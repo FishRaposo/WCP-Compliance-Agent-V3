@@ -31,20 +31,21 @@ export default function Analyze() {
     }
   }, []);
 
+  const tick = useCallback(() => {
+    setStepIndex((prev) => {
+      if (prev >= STEP_LABELS.length - 1) {
+        clearTimer();
+        return STEP_LABELS.length;
+      }
+      return prev + 1;
+    });
+  }, [clearTimer]);
+
   const startProgress = useCallback(() => {
     setStepIndex(0);
     clearTimer();
-    let idx = 0;
-    timerRef.current = setInterval(() => {
-      idx += 1;
-      if (idx >= STEP_LABELS.length) {
-        clearTimer();
-        setStepIndex(STEP_LABELS.length);
-        return;
-      }
-      setStepIndex(idx);
-    }, 600);
-  }, [clearTimer]);
+    timerRef.current = setInterval(tick, 600);
+  }, [clearTimer, tick]);
 
   const runAnalysis = async (fn: () => Promise<TrustScoredDecision>) => {
     setError(null);

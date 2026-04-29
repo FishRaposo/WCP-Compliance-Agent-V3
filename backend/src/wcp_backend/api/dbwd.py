@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from wcp_backend.pipeline.dbwd_lookup import get_dbwd_rate as get_dbwd_rate_service
-
+from wcp_backend.pipeline.dbwd_lookup import get_dbwd_rate as _get_dbwd_rate_service
+from wcp_backend.pipeline.extraction import extract_from_pdf, extract_from_text
 router = APIRouter()
 
 

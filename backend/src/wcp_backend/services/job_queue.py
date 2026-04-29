@@ -31,6 +31,8 @@ celery_app.conf.update(
     task_track_started=True,
 )
 
+MS_PER_SEC = 1000  # conversion factor for time.time() → milliseconds
+
 
 @celery_app.task(bind=True, max_retries=3)  # type: ignore[untyped-decorator]
 def process_payroll_batch(
@@ -94,7 +96,7 @@ def process_payroll_batch(
                     reasoning_summary=reasoning,
                     citations=[],
                     cost_usd=0.0,
-                    latency_ms=int((time.time() - start_time) * 1000),
+                    latency_ms=int((time.time() - start_time) * MS_PER_SEC),
                     phoenix_trace_id="",
                     created_at=datetime.utcnow(),
                 )
@@ -133,7 +135,7 @@ def process_payroll_batch(
         "batch_job_id": job_id,
         "processed": len(payloads),
         "results": results,
-        "elapsed_ms": int((time.time() - start_time) * 1000),
+        "elapsed_ms": int((time.time() - start_time) * MS_PER_SEC),
     }
 
 

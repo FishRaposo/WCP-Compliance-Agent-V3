@@ -13,7 +13,7 @@ export async function searchTool(
   trade?: string,
   locality?: string
 ): Promise<SearchResult[]> {
-  return httpClient.post<SearchResult[]>("/search", {
+  return await httpClient.post<SearchResult[]>("/search", {
     query,
     trade,
     locality,

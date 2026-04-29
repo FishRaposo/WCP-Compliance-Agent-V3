@@ -220,6 +220,7 @@ def _extract_employees(text: str) -> list[EmployeeRecord]:
                 net_wages=net
             ))
         except (ValueError, IndexError):
+            # Row parsing failed — skip malformed employee row
             continue
     
     # If no structured rows found, try simpler pattern matching
@@ -323,7 +324,7 @@ def extract_from_pdf(pdf_bytes: bytes) -> ExtractedWCP:
             if all_text.strip():
                 return extract_from_text(all_text)
     except Exception:
-        # If PDF extraction fails, return minimal structure
+        # PDF extraction failed — return empty structure below
         pass
     
     # Return empty structure with generated job_id

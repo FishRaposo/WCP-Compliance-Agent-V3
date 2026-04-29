@@ -4,5 +4,5 @@ import type { DeterministicReport, ExtractedWCP } from "../../types/index.js";
 export async function validateTool(
   extracted: ExtractedWCP
 ): Promise<DeterministicReport> {
-  return httpClient.post<DeterministicReport>("/validate", extracted);
+  return await httpClient.post<DeterministicReport>("/validate", extracted);
 }

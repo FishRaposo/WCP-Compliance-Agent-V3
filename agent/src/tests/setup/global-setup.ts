@@ -13,7 +13,7 @@ export async function setup() {
   process.env["LLM_MODE"] = "mock";
   process.env["OPENAI_API_KEY"] = "mock";
   process.env["AUTH_DISABLED"] = "true";
-  server = startMockBackend(9999);
+  server = await startMockBackend(9999);
 }
 
 export async function teardown() {

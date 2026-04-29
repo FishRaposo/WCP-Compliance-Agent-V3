@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 from sentence_transformers import CrossEncoder
 
-_model: CrossEncoder | None = None
 MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 
+@lru_cache(maxsize=1)
 def get_cross_encoder() -> CrossEncoder:
-    global _model
-    if _model is None:
-        _model = CrossEncoder(MODEL_NAME)
-    return _model
+    return CrossEncoder(MODEL_NAME)
 
 
 async def rerank(query: str, candidates: list[dict[str, Any]], top_k: int = 5) -> list[dict[str, Any]]:

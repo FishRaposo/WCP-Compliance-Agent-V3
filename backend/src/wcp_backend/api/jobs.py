@@ -103,6 +103,8 @@ async def enqueue_job(job: JobCreate) -> JobStatusResponse:
             created_at=datetime.utcnow().isoformat(),
             updated_at=None,
         )
+    except HTTPException:
+        raise
     except Exception:
         logger.exception("enqueue_job failed")
         raise HTTPException(status_code=500, detail="Failed to enqueue job")
@@ -167,7 +169,7 @@ async def get_job_status(job_id: str) -> JobStatusResponse:
                         status = celery_status
                         updated_at = datetime.utcnow().isoformat()
                 except Exception:
-                    pass
+                    logger.debug("Celery state unavailable, using DB status")
 
             return JobStatusResponse(
                 job_id=job_id,

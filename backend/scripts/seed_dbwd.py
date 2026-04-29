@@ -12,8 +12,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from wcp_backend.config import settings
 
-
+# Paths
 CORPUS_PATH = Path(__file__).parent.parent / "src/wcp_backend/data/dbwd_corpus.json"
+_SEEDED_MESSAGE = "Seeded {0} DBWD rate records"
 
 
 async def seed() -> int:
@@ -67,7 +68,8 @@ async def seed() -> int:
                 await conn.execute(stmt)
                 inserted += 1
             except Exception as e:
-                print(f"Warning: Could not insert {item.get('trade')}: {e}")
+                print(f"Warning: Could not insert {item.get('trade')}: {e}")  # noqa: T201
+                # Non-fatal: continue seeding other records
         
         await conn.commit()
     

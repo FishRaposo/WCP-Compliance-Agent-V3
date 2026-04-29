@@ -235,6 +235,7 @@ async def get_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDR
             try:
                 await cache_set(cache_key, db_rate.model_dump(mode="json"))
             except Exception:
+                # Non-fatal: cache write failure should not block returning the rate
                 pass
             return db_rate
     except Exception:

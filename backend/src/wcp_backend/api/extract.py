@@ -50,9 +50,7 @@ async def extract_wcp(
                 parsed_body = raw_text
             if isinstance(parsed_body, str):
                 return extract_from_text(parsed_body)
-            if isinstance(parsed_body, dict) and isinstance(
-                parsed_body.get("text"), str
-            ):
+            if isinstance(parsed_body, dict) and parsed_body.get("text"):
                 return extract_from_text(parsed_body["text"])
         raise HTTPException(status_code=400, detail="Provide 'text' or 'file'")
     except HTTPException:

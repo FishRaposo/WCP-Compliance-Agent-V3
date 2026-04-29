@@ -1,6 +1,11 @@
-export { extractTool } from "./extract.js";
-export { validateTool } from "./validate.js";
-export { persistTool } from "./persist.js";
-export { searchTool } from "./search.js";
-export { dbwdLookupTool } from "./dbwd_lookup.js";
-export { jobStatusTool } from "./job_status.js";
+/**
+ * @deprecated This facade is no longer used. Tools are imported directly from their
+ * individual modules to avoid unnecessary indirection. Import from:
+ * - ./extract.js
+ * - ./validate.js
+ * - ./persist.js
+ * - ./search.js
+ * - ./dbwd_lookup.js
+ * - ./job_status.js
+ */
+// Re-export removed — direct imports are preferred.

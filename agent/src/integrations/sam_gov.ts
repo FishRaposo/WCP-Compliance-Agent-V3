@@ -47,7 +47,7 @@ export async function fetchSamGovRates(
     }
 
     const data = (await res.json()) as { rates?: Record<string, string | number | undefined>[] };
-    const rates: DBWDRateRecord[] = (data.rates || []).map((r: any) => ({
+    const rates: DBWDRateRecord[] = (data.rates || []).map((r) => ({
       trade: r.trade || trade,
       locality: r.locality || locality,
       rate: parseFloat(r.rate),

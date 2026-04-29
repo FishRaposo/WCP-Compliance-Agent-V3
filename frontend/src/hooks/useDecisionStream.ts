@@ -46,6 +46,10 @@ export function useDecisionStream() {
       setConnected(false);
       es.close();
       esRef.current = null;
+      scheduleReconnect();
+    };
+
+    const scheduleReconnect = () => {
       const delay = Math.min(1000 * 2 ** retryRef.current, 30_000);
       retryRef.current += 1;
       setTimeout(connect, delay);

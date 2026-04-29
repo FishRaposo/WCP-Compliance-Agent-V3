@@ -20,6 +20,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         init_phoenix()
     except Exception:
         logger.warning("Phoenix initialization failed", exc_info=True)
+        # Phoenix is optional — non-fatal if unavailable
     yield
 
 

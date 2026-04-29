@@ -3,27 +3,24 @@
 from __future__ import annotations
 
 import json
+from functools import lru_cache
 from typing import Any, cast
 
 import redis.asyncio as aioredis
 
 from wcp_backend.config import settings
 
-_pool: aioredis.Redis | None = None
-
 DBWD_CACHE_TTL = 3600 * 24  # 24 hours
 
 
+@lru_cache(maxsize=1)
 def get_redis() -> aioredis.Redis:
-    global _pool
-    if _pool is None:
-        _pool = aioredis.from_url(  # type: ignore[no-untyped-call]
-            settings.redis_url,
-            decode_responses=True,
-            socket_connect_timeout=2,
-            socket_timeout=2,
-        )
-    return _pool
+    return aioredis.from_url(  # type: ignore[no-untyped-call]
+        settings.redis_url,
+        decode_responses=True,
+        socket_connect_timeout=2,
+        socket_timeout=2,
+    )
 
 
 async def cache_get(key: str) -> Any | None:

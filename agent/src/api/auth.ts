@@ -1,10 +1,17 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import type { Context } from "hono";
 
 import { config } from "../config.js";
 import { httpClient } from "../utils/http-client.js";
 import { signToken } from "../middleware/auth.js";
 import { logger } from "../utils/logger.js";
+
+interface AuthUser {
+  user_id: string;
+  email: string;
+  role: string;
+}
 
 export const auth = new Hono();
 
@@ -46,10 +53,8 @@ auth.post("/login", async (c) => {
   }
 });
 
-auth.get("/me", async (c) => {
-  const user = (c as any).get("user") as
-    | { user_id: string; email: string; role: string }
-    | undefined;
+auth.get("/me", async (c: Context) => {
+  const user = c.get("user") as AuthUser | undefined;
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }

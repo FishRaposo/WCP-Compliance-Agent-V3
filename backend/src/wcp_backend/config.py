@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379"
     elasticsearch_url: str = "http://localhost:9200"
     celery_broker_url: str = "redis://localhost:6379/0"
-    phoenix_collector_endpoint: str = "http://localhost:6006"
+    phoenix_collector_endpoint: str = "http://localhost:6006"  # dev default; override via PHOENIX_COLLECTOR_ENDPOINT
 
     openai_api_key: str = ""
     sam_gov_api_key: str = ""

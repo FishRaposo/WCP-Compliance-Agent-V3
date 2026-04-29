@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from wcp_backend.config import settings
+from wcp_backend.services.health_check import get_health_status
 
 router = APIRouter()
 
@@ -27,8 +28,6 @@ async def health_check() -> HealthResponse:
             version="3.0.0",
             phase=settings.phase,
         )
-
-    from wcp_backend.services.health_check import get_health_status
 
     status = await get_health_status()
     return HealthResponse(

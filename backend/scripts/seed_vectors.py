@@ -106,7 +106,8 @@ async def seed() -> int:
                 stored += 1
                 print(f"Stored embedding for {chunk['chunk_id']}")
             except Exception as e:
-                print(f"Warning: Could not store embedding for {chunk['chunk_id']}: {e}")
+                print(f"Warning: Could not store embedding for {chunk['chunk_id']}: {e}")  # noqa: T201
+                # Non-fatal: continue with other chunks
         
         await conn.commit()
     

@@ -2,21 +2,19 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 from elasticsearch import AsyncElasticsearch
 
 from wcp_backend.config import settings
 
-_client: AsyncElasticsearch | None = None
 DBWD_INDEX = "regulation_chunks"
 
 
+@lru_cache(maxsize=1)
 def get_es_client() -> AsyncElasticsearch:
-    global _client
-    if _client is None:
-        _client = AsyncElasticsearch([settings.elasticsearch_url])
-    return _client
+    return AsyncElasticsearch([settings.elasticsearch_url])
 
 
 async def bm25_search(

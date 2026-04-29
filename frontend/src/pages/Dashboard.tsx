@@ -5,6 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const VERDICT_STYLES: Record<string, string> = {
+  approved: "bg-green-50 text-green-700",
+  rejected: "bg-red-50 text-red-700",
+};
+
+function getVerdictStyle(verdict: string): string {
+  return VERDICT_STYLES[verdict] ?? "bg-yellow-50 text-yellow-700";
+}
+
 export default function Dashboard() {
   const { latestDecision } = useDecisionStream();
   const { data: recentDecisions, isLoading: loadingDecisions } = useDecisions(10);

@@ -78,7 +78,7 @@ async def stream_decisions() -> StreamingResponse:
                 data = await queue.get()
                 yield f"data: {data}\n\n"
         except asyncio.CancelledError:
-            pass
+            logger.debug("SSE stream cancelled for decision subscription")
         finally:
             if queue in _decision_subscribers:
                 _decision_subscribers.remove(queue)

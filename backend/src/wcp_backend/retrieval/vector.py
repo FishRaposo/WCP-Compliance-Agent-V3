@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 from sentence_transformers import SentenceTransformer
@@ -9,15 +10,12 @@ from sqlalchemy import text
 
 from wcp_backend.services.db import engine
 
-_model: SentenceTransformer | None = None
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 
+@lru_cache(maxsize=1)
 def get_embedding_model() -> SentenceTransformer:
-    global _model
-    if _model is None:
-        _model = SentenceTransformer(MODEL_NAME)
-    return _model
+    return SentenceTransformer(MODEL_NAME)
 
 
 async def vector_retrieve(
