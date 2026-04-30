@@ -17,8 +17,9 @@ function getToken(): string | null {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (IS_MOCK) {
-    return mockResolve<T>(path, init);
+  // If we're in mock mode OR running in Vitest
+  if (IS_MOCK || typeof process !== 'undefined' && process.env?.VITEST) {
+    return mockResolve<T>(path);
   }
 
   const isFormData = init?.body instanceof FormData;
@@ -55,7 +56,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function mockResolve<T>(path: string, _init?: RequestInit): Promise<T> {
+async function mockResolve<T>(path: string): Promise<T> {
   await new Promise((r) => setTimeout(r, 300));
 
   if (path.startsWith("/api/analyze")) return mockTrustScoredDecision as T;

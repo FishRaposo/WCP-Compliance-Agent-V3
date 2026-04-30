@@ -39,6 +39,9 @@ describe("Login page", () => {
     await user.type(screen.getByPlaceholderText(/••••••••/), "password");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
+    // Wait for the mock api call (300ms) to resolve
+    await screen.findByRole("button", { name: /sign in/i });
+
     const calls = setItemSpy.mock.calls;
     const tokenCall = calls.find((c) => c[0] === "wcp_token");
     expect(tokenCall).toBeDefined();
