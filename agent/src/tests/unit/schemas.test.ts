@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  VerdictStatusSchema,
-  TrustBandSchema,
-  CheckStatusSchema,
-  OverallStatusSchema,
   TrustScoredDecisionSchema,
   LLMVerdictSchema,
   DeterministicReportSchema,

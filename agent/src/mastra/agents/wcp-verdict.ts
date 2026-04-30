@@ -175,7 +175,7 @@ export async function runVerdictAgent(
   const model = llmRouter.createModel(selectedConfig);
   let output: LLMOutput;
   let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
-  let activeModel = selectedConfig.model;
+  const activeModel = selectedConfig.model;
 
   try {
     const result = await generateObject({

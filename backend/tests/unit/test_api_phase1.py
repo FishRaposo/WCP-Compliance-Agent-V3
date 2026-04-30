@@ -1,6 +1,6 @@
 """Unit tests for Phase 1 API contracts."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 from wcp_backend.models.schemas import ContractorInfo, ExtractedWCP, ProjectInfo
 

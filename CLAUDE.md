@@ -20,12 +20,12 @@ A three-service AI decision engine that validates WH-347 federal construction pa
 
 - **Phase 1 (Backend Core):** Python deterministic pipeline. 87 unit tests. 9 API router modules.
 - **Phase 2 (Data Layer):** PostgreSQL (pgvector), Redis, Elasticsearch, hybrid RAG, Alembic migrations, seed scripts, Celery, Phoenix.
-- **Phase 3 (Agent):** Mastra.ai verdict agent, mock + real LLM, trust scores, Langfuse tracing, JWT auth, 29 agent tests.
+- **Phase 3 (Agent):** Mastra.ai verdict agent, mock + real LLM, trust scores, Langfuse tracing, JWT auth, 46 agent tests.
 - **Phase 4 (Frontend):** React 19 SPA, 7 pages, 12 components, shadcn/ui, TanStack Query, mock data layer.
 - **Phase 5 (Eval):** 100-example golden set, E2E integration tests, scheduled eval CI, regression detection.
 - **Phase 6 / V3.1 (Multi-LLM):** OpenAI + Anthropic + Ollama routing with fallback chain, 11 router tests, baseline scores.
 
-**Test counts:** 87 backend unit + 40 agent (unit + integration + router) + 100 golden set eval = 227 total.
+**Test counts:** 87 backend unit + 46 agent (unit + integration + router) + 12 frontend + 100 golden set eval = 245 total.
 
 ---
 

@@ -57,7 +57,7 @@ export const promptRegistry = {
     );
   },
 
-  async listVersions(_name: string): Promise<string[]> {
+  async listVersions(): Promise<string[]> {
     return Object.keys(LOCAL_REGISTRY);
   },
 };

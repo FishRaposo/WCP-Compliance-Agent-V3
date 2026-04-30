@@ -38,12 +38,12 @@ export async function fetchDolWdoRates(
 
     const data = (await res.json()) as { rates?: Record<string, string | number | undefined>[] };
     const rates: DBWDRateRecord[] = (data.rates || []).map((r) => ({
-      trade: r.trade || trade,
-      locality: r.locality || locality,
-      rate: parseFloat(r.rate),
-      fringe: parseFloat(r.fringe || 0),
-      effective_date: r.effective_date || new Date().toISOString().split("T")[0],
-      wage_determination_number: r.wd_number || "",
+      trade: String(r.trade ?? trade),
+      locality: String(r.locality ?? locality),
+      rate: parseFloat(String(r.rate ?? "0")),
+      fringe: parseFloat(String(r.fringe ?? "0")),
+      effective_date: String(r.effective_date ?? new Date().toISOString().split("T")[0]),
+      wage_determination_number: String(r.wd_number ?? ""),
     }));
 
     return { rates };

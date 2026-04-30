@@ -100,6 +100,7 @@ describe("LLMRouter", () => {
 
   describe("generateWithFallback", () => {
     it("activates fallback on primary failure", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(router as any, "generate")
         .mockRejectedValueOnce(new Error("Primary failed"))
         .mockResolvedValueOnce({
@@ -118,6 +119,7 @@ describe("LLMRouter", () => {
     });
 
     it("throws after all providers fail", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       vi.spyOn(router as any, "generate").mockRejectedValue(
         new Error("Provider failed")
       );
@@ -131,6 +133,7 @@ describe("LLMRouter", () => {
       process.env.OLLAMA_BASE_URL = "http://localhost:11434";
 
       const generateSpy = vi
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .spyOn(router as any, "generate")
         .mockRejectedValue(new Error("Provider failed"));
 
@@ -142,6 +145,7 @@ describe("LLMRouter", () => {
 
       // Verify Ollama was never tried
       const calledProviders = generateSpy.mock.calls.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ([cfg]: any[]) => cfg.provider
       );
       expect(calledProviders).not.toContain("ollama");

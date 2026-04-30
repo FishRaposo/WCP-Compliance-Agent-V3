@@ -3,12 +3,6 @@ import { useDecisionVolume, useApprovalByTrade, useTrustBandDistribution } from 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const TRUST_BAND_COLORS: Record<string, string> = {
-  auto_approve: "bg-green-50 border-green-200",
-  flag_for_review: "bg-yellow-50 border-yellow-200",
-  require_human_review: "bg-red-50 border-red-200",
-};
-
 export default function Analytics() {
   const { data: volume, isLoading: loadingVolume } = useDecisionVolume(30);
   const { data: approval, isLoading: loadingApproval } = useApprovalByTrade();

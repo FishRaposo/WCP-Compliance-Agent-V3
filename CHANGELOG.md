@@ -33,6 +33,17 @@ All notable changes to this project are documented in this file. Format based on
 ### Removed
 - 5 TODO comments from production source code (all resolved)
 
+### Fixed (V3.1.1 Finalization)
+- TypeScript type errors in `sam_gov.ts` and `dol_wdo.ts` (string/number conversions)
+- Removed dead code: unused `TRUST_BAND_COLORS` from Analytics.tsx, `getVerdictStyle` from Dashboard.tsx
+- Fixed backend `dbwd.py` import error (`get_dbwd_rate_service` → `get_dbwd_rate`)
+- Removed unused `AsyncMock` import from `test_api_phase1.py`
+- Fixed all ruff lint errors (F401 unused imports, F821 undefined name)
+- Fixed all agent eslint errors (unused imports, const vs let, test file any types)
+- Fixed frontend eslint error (unused `_init` parameter in `api-client.ts`)
+- Added missing `typescript-eslint` to frontend devDependencies
+- Added missing `eslint.config.js` and `globals` to agent devDependencies
+
 ## [3.1.0] - 2026-04-28
 
 ### Added

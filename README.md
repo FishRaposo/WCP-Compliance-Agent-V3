@@ -13,7 +13,7 @@ Automates WH-347 federal construction payroll review using a deterministic Pytho
 | Metric | Value |
 |---|---|
 | **Services** | 3 (Python backend + TypeScript agent + React frontend) |
-| **Tests** | 127+ passing (87 backend + 40 agent + 100 golden set eval) |
+| **Tests** | 245+ passing (87 backend + 46 agent + 12 frontend + 100 golden set eval) |
 | **Pipeline** | Extract → Validate → LLM Verdict → Trust Score → Persist |
 | **LLM Routing** | OpenAI + Anthropic + Ollama with automatic fallback |
 | **Frontend** | 7 pages, 12 components, mock mode for standalone dev |
@@ -144,7 +144,7 @@ v3/
 │   │   ├── middleware/  # Auth, CORS, rate limiting
 │   │   ├── langfuse/    # Tracing + cost tracking
 │   │   └── prompts/     # Version registry + Langfuse
-│   └── src/tests/       # 40 tests (unit + integration + router)
+│   └── src/tests/       # 46 tests (unit + integration + router)
 │
 ├── frontend/             # React 19 SPA
 │   └── src/
@@ -255,7 +255,7 @@ Python deterministic pipeline. 87 unit tests. 9 API endpoints. 5 check functions
 PostgreSQL (pgvector), Redis cache, Elasticsearch BM25, hybrid RAG, Alembic migrations, seed scripts, Celery workers, Phoenix observability.
 
 **Phase 3 — Agent Orchestration ✅**
-Mastra.ai verdict agent, mock + real LLM paths, trust score computation, Langfuse tracing, JWT auth, 29 agent tests, full pipeline E2E.
+Mastra.ai verdict agent, mock + real LLM paths, trust score computation, Langfuse tracing, JWT auth, 46 agent tests, full pipeline E2E.
 
 **Phase 4 — Frontend ✅**
 React 19 SPA with shadcn/ui. 7 pages, 12 components, TanStack Query hooks. PDF upload + text paste. Pipeline visualizer. Decision cards with trust scores. Analytics dashboard. Human review queue. Mock data layer (`VITE_MOCK_API=true`). ErrorBoundary. Skeleton loaders.

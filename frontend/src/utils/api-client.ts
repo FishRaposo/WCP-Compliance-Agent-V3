@@ -55,7 +55,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function mockResolve<T>(path: string, _init?: RequestInit): Promise<T> {
+async function mockResolve<T>(path: string): Promise<T> {
   await new Promise((r) => setTimeout(r, 300));
 
   if (path.startsWith("/api/analyze")) return mockTrustScoredDecision as T;

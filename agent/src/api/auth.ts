@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { z } from "zod";
 import type { Context } from "hono";
 
-import { config } from "../config.js";
 import { httpClient } from "../utils/http-client.js";
 import { signToken } from "../middleware/auth.js";
 import { logger } from "../utils/logger.js";
