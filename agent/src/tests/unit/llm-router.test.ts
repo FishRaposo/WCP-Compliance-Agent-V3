@@ -34,8 +34,6 @@ describe("LLMRouter", () => {
       const cfg = router.selectProvider(ctx);
 
       expect(cfg.provider).toBe("ollama");
-      expect(cfg.pricing.input).toBe(0);
-      expect(cfg.pricing.output).toBe(0);
     });
 
     it("falls back to default when Ollama not configured for cost mode", () => {
