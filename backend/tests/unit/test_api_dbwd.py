@@ -13,7 +13,7 @@ def test_get_dbwd_rate_success(client):
         wage_determination_number="WD 2025-0001"
     )
 
-    with patch("wcp_backend.api.dbwd.get_dbwd_rate_service", new_callable=AsyncMock) as mock_service:
+    with patch("wcp_backend.api.dbwd.dbwd_lookup.get_dbwd_rate", new_callable=AsyncMock) as mock_service:
         mock_service.return_value = mock_record
         response = client.get("/dbwd/Electrician/Washington,%20DC/2026-01-01")
 
@@ -27,7 +27,7 @@ def test_get_dbwd_rate_success(client):
     assert data["wage_determination_number"] == "WD 2025-0001"
 
 def test_get_dbwd_rate_not_found(client):
-    with patch("wcp_backend.api.dbwd.get_dbwd_rate_service", new_callable=AsyncMock) as mock_service:
+    with patch("wcp_backend.api.dbwd.dbwd_lookup.get_dbwd_rate", new_callable=AsyncMock) as mock_service:
         mock_service.side_effect = ValueError("Trade not found")
         response = client.get("/dbwd/NonExistent/DC/2026-01-01")
 
@@ -35,7 +35,7 @@ def test_get_dbwd_rate_not_found(client):
     assert "Trade not found" in response.json()["detail"]
 
 def test_get_dbwd_rate_server_error(client):
-    with patch("wcp_backend.api.dbwd.get_dbwd_rate_service", new_callable=AsyncMock) as mock_service:
+    with patch("wcp_backend.api.dbwd.dbwd_lookup.get_dbwd_rate", new_callable=AsyncMock) as mock_service:
         mock_service.side_effect = Exception("Database connection failed")
         response = client.get("/dbwd/Electrician/DC/2026-01-01")
 

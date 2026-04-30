@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from wcp_backend.pipeline.dbwd_lookup import get_dbwd_rate as get_dbwd_rate_service
+from wcp_backend.pipeline import dbwd_lookup
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ class DBWDRate(BaseModel):
 async def get_dbwd_rate_endpoint(trade: str, locality: str, date: str) -> DBWDRate:
     """Get DBWD rate for a specific trade, locality, and effective date."""
     try:
-        rate_record = await get_dbwd_rate_service(trade, locality, date)
+        rate_record = await dbwd_lookup.get_dbwd_rate(trade, locality, date)
         return DBWDRate(
             trade=rate_record.trade,
             locality=rate_record.locality,
