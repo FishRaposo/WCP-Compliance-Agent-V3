@@ -31,6 +31,7 @@ describe("Login page", () => {
   });
 
   it("stores token from mock login response", async () => {
+    (window as unknown as { __MOCK_API__?: boolean }).__MOCK_API__ = true;
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 
     renderLogin();
@@ -39,11 +40,15 @@ describe("Login page", () => {
     await user.type(screen.getByPlaceholderText(/••••••••/), "password");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
+    // Wait for the mock api call to complete (300ms)
+    await new Promise((r) => setTimeout(r, 450));
+
     const calls = setItemSpy.mock.calls;
     const tokenCall = calls.find((c) => c[0] === "wcp_token");
     expect(tokenCall).toBeDefined();
     expect(tokenCall![1]).toBe("mock-jwt-token");
 
     setItemSpy.mockRestore();
+    delete (window as unknown as { __MOCK_API__?: boolean }).__MOCK_API__;
   });
 });

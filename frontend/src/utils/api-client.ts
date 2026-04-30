@@ -10,7 +10,7 @@ import {
 } from "./mock-data";
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
+const IS_MOCK = import.meta.env?.VITE_MOCK_API === "true" || process.env?.VITE_MOCK_API === "true" || (typeof window !== 'undefined' && (window as unknown as { __MOCK_API__?: boolean }).__MOCK_API__);
 
 function getToken(): string | null {
   return localStorage.getItem("wcp_token");
@@ -36,7 +36,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     Object.assign(headers, init.headers as Record<string, string>);
   }
 
-  const url = BASE_URL ? `${BASE_URL}${path}` : path;
+  const url = BASE_URL ? `${BASE_URL}${path}` : `http://localhost${path}`;
   const res = await fetch(url, {
     ...init,
     headers,
