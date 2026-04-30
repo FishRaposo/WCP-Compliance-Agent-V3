@@ -1,9 +1,14 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 describe("apiClient (mock mode)", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    (window as unknown as { __MOCK_API__?: boolean }).__MOCK_API__ = true;
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { __MOCK_API__?: boolean }).__MOCK_API__;
   });
 
   it("returns mock health response", async () => {

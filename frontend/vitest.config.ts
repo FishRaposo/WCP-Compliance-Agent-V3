@@ -9,6 +9,9 @@ export default defineConfig({
     setupFiles: ["./src/setupTests.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     globals: true,
+    env: {
+      VITE_MOCK_API: "true"
+    }
   },
   resolve: {
     alias: {
