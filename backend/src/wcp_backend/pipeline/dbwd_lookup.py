@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 import string
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 
 from sqlalchemy import text
@@ -94,6 +95,7 @@ def _matches_lookup(record: DBWDRateRecord, locality: str, lookup_date: date) ->
     )
 
 
+@lru_cache(maxsize=1024)
 def _levenshtein_distance(a: str, b: str) -> int:
     """Calculate Levenshtein edit distance between two strings."""
     if len(a) < len(b):

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { TrustBand } from "../types/api.ts";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,11 +19,11 @@ const bandLabels: Record<TrustBand, string> = {
   require_human_review: "Requires Human Review",
 };
 
-export default function TrustScoreBadge({ score, band }: Props) {
+export default memo(function TrustScoreBadge({ score, band }: Props) {
   return (
     <Badge variant="outline" className={bandStyles[band]}>
       <span className="font-bold">{(score * 100).toFixed(0)}%</span>
       <span className="ml-1.5">{bandLabels[band]}</span>
     </Badge>
   );
-}
+});

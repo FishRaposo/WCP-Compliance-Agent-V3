@@ -39,10 +39,14 @@ describe("Login page", () => {
     await user.type(screen.getByPlaceholderText(/••••••••/), "password");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-    const calls = setItemSpy.mock.calls;
-    const tokenCall = calls.find((c) => c[0] === "wcp_token");
-    expect(tokenCall).toBeDefined();
-    expect(tokenCall![1]).toBe("mock-jwt-token");
+    // The component redirects on success, or sets state on failure
+    // We can just wait for the spy to be called with wcp_token
+    await vi.waitFor(() => {
+      const calls = setItemSpy.mock.calls;
+      const tokenCall = calls.find((c) => c[0] === "wcp_token");
+      expect(tokenCall).toBeDefined();
+      expect(tokenCall![1]).toBe("mock-jwt-token");
+    }, { timeout: 2000 });
 
     setItemSpy.mockRestore();
   });
