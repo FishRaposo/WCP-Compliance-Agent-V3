@@ -415,13 +415,46 @@ This separation means:
 
 ---
 
+## V4 Data Platform (Extension of V3)
+
+V4 is an **additive data platform layer** built on top of V3. All V3 components remain unchanged. V4 adds:
+
+- **Contract/payroll database** — Full CRUD with PostgreSQL partitioning for millions of records
+- **DuckDB analytics** — In-process OLAP engine reading live PostgreSQL + Parquet archives
+- **Prefect ETL pipelines** — Scheduled DBWD refresh, Parquet export, bulk ingestion
+- **Redis Streams** — Real-time decision event streaming to analytics dashboard
+- **Great Expectations** — Data quality validation on every ingestion pipeline
+- **Enterprise connectors** — Extensible framework for ERP/HR/SFTP integration
+- **Analytics dashboard** — 4 Recharts pages: overview, compliance, wages, LLM cost
+
+```
+V3 (unchanged)                       V4 (additive)
+├── /analyze                         ├── /contracts
+├── /decisions                       ├── /payrolls
+├── /review                          ├── /ingestion
+└── /settings                        └── /analytics/*
+```
+
+**V4 Documentation:**
+- [V4 Architecture Deep-Dive](architecture/v4-data-platform.md) — Module responsibilities, system design
+- [V4 Data Model & Schema](architecture/v4-data-model.md) — Full DDL, partitioning, Parquet schema
+- [V4 Data Flows](architecture/v4-data-flows.md) — Sequence diagrams for all 5 data flows
+- [V4 API Contract](v4-api-contract.md) — New endpoint specifications
+- [V4 Analytics Dashboard](v4-analytics-dashboard.md) — Wireframe-level component specs
+- [V4 Implementation Phases](planning/v4-phases/) — 6 phase docs with V3-style detail
+- [V3/V4 Boundary](planning/V3_V4_BOUNDARY.md) — Clean handoff specification
+- [V4 Plan](planning/V4_PLAN.md) — Original planning document
+
+---
+
 ## Related Documentation
 
 - [ADR-001: Three Services](adrs/ADR-001-three-services.md)
 - [ADR-005: Hybrid RAG](adrs/ADR-005-hybrid-rag.md)
 - [API Contract](api-contract.md)
+- [V4 API Contract](v4-api-contract.md)
 - [Evaluation Pipeline](evaluation.md)
 
 ---
 
-*Generated: 2026-04-22*
+*Generated: 2026-04-30*

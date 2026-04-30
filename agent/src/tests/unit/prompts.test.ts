@@ -42,7 +42,7 @@ describe("Prompt registry", () => {
   });
 
   it("lists local versions", async () => {
-    const versions = await promptRegistry.listVersions("wcp-verdict");
+    const versions = await promptRegistry.listVersions();
     expect(versions).toContain("v1");
     expect(versions).toContain("v2");
   });

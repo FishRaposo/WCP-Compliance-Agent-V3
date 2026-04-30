@@ -266,10 +266,26 @@ React 19 SPA with shadcn/ui. 7 pages, 12 components, TanStack Query hooks. PDF u
 **Phase 6 / V3.1 — Multi-LLM Routing ✅**
 Provider config (`LLM_PROVIDER` env var), LLM router with automatic fallback chain (OpenAI → Anthropic → Ollama), compliance-critical routing constraints, multi-provider Langfuse cost tracking, 11 router tests, baseline regression scores.
 
-**Future:**
-- **V4:** Enterprise data platform — Contract/payroll databases at scale, DuckDB OLAP, Prefect bulk ingestion
+**V4 — Enterprise Data Platform (Planned)**
 
-See [V3_PLAN.md](docs/planning/V3_PLAN.md) for full architecture spec.
+V4 extends V3 (not a rewrite) with enterprise-scale data management:
+
+- **Contract/payroll database** — PostgreSQL partitioned tables, millions of records, full CRUD
+- **DuckDB OLAP analytics** — In-process analytics engine reading live PostgreSQL + Parquet archives
+- **Prefect ETL pipelines** — Scheduled DBWD refresh, Parquet export, bulk ingestion orchestration
+- **Redis Streams** — Real-time decision events streaming to analytics dashboard (< 500ms)
+- **Great Expectations** — Data quality validation on every ingestion pipeline (> 99% pass rate)
+- **Enterprise connectors** — Extensible framework for SFTP, API, and database integration
+- **Analytics dashboard** — 4 Recharts pages (overview, compliance, wages, LLM cost/performance)
+
+| Metric | V3 | V4 Target |
+|---|---|---|
+| Concurrent contracts | 1-10 | 1,000+ |
+| Payroll records | Thousands | Millions |
+| Historical depth | Current batch | 10 years |
+| Bulk ingestion | 100/batch | 10,000/batch |
+
+See [V4_PLAN.md](docs/planning/V4_PLAN.md) for full architecture spec.
 
 ---
 
@@ -303,10 +319,17 @@ These targets make the system production-credible and well-documented.
 ## Documentation
 
 - [Case Study](docs/case-study.md) — Full writeup: problem, architecture, pipeline, RAG, evaluation, lessons
-- [Architecture Overview](docs/architecture.md)
-- [API Contract](docs/api-contract.md)
+- [Architecture Overview](docs/architecture.md) — V3 system design + V4 data platform overview
+- [V4 Architecture](docs/architecture/v4-data-platform.md) — V4 module responsibilities and system design
+- [V4 Data Model](docs/architecture/v4-data-model.md) — Full DDL, partitioning, Parquet schema
+- [V4 Data Flows](docs/architecture/v4-data-flows.md) — Sequence diagrams for all 5 V4 data flows
+- [API Contract](docs/api-contract.md) — V3 endpoint specifications
+- [V4 API Contract](docs/v4-api-contract.md) — V4 endpoint specifications
+- [V4 Analytics Dashboard](docs/v4-analytics-dashboard.md) — Wireframe-level component specs
 - [Evaluation Pipeline](docs/evaluation.md)
-- [ADRs](docs/adrs/) — Including [ADR-010 React frontend](docs/adrs/ADR-010-react-frontend.md), [excluded technologies](docs/adrs/ADR-009-excluded-technologies.md)
+- [ADRs](docs/adrs/) — Including [ADR-010 React frontend](docs/adrs/ADR-010-react-frontend.md), [ADR-011 DuckDB OLAP](docs/adrs/ADR-011-duckdb-olap.md), [excluded technologies](docs/adrs/ADR-009-excluded-technologies.md)
+- [V4 Implementation Phases](docs/planning/v4-phases/) — 6 phase docs with V3-style detail
+- [V3/V4 Boundary](docs/planning/V3_V4_BOUNDARY.md) — Clean handoff specification
 - [Compliance](docs/compliance/)
 - [Changelog](CHANGELOG.md) — Release history
 - [Contributing](CONTRIBUTING.md) — How to contribute

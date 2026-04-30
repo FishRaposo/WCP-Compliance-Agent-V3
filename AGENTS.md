@@ -12,6 +12,8 @@ V3 is a polyglot system — three independent services, each with its own packag
 
 Data layer: PostgreSQL 16 (pgvector), Redis 7, Elasticsearch 8, Arize Phoenix.
 
+**V4** (planned, additive extension) adds: DuckDB OLAP, Prefect ETL, Redis Streams, Great Expectations, Parquet archival, enterprise connectors. See [V4 documentation](docs/architecture/v4-data-platform.md).
+
 ## Commands
 
 **Always `cd` into the service directory before running commands.** Each service is independent.
@@ -35,6 +37,21 @@ poetry run alembic upgrade head             # Run migrations
 poetry run python scripts/seed_dbwd.py           # DBWD prevailing wage rates
 poetry run python scripts/seed_elasticsearch.py   # Regulation chunks → ES
 poetry run python scripts/seed_vectors.py         # Embeddings → pgvector
+```
+
+**V4 commands** (additive, after V4 implementation):
+```bash
+poetry run alembic upgrade head             # Migration 006+ adds V4 tables
+poetry run python -m prefect deploy          # Deploy V4 ETL flows
+poetry run python -m prefect worker start    # Start Prefect worker (ETL)
+poetry run pytest tests/unit/test_analytics.py -v    # DuckDB analytics tests
+poetry run pytest tests/unit/test_pipelines.py -v    # Prefect + GE tests
+poetry run pytest tests/unit/test_events.py -v       # Redis Streams tests
+poetry run pytest tests/unit/test_storage.py -v      # Parquet export tests
+poetry run pytest tests/unit/test_connectors.py -v   # Connector framework tests
+poetry run pytest tests/unit/test_contracts.py -v    # Contract CRUD tests
+poetry run pytest tests/unit/test_payrolls.py -v     # Payroll import tests
+poetry run pytest tests/unit/test_ingestion.py -v    # Bulk ingestion tests
 ```
 
 ### Agent (TypeScript)
@@ -104,6 +121,8 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 - **ES single-node yellow status is normal** — no replica shards, system works fine.
 - **Multi-LLM routing (V3.1):** `agent/src/lib/llm-router.ts` selects provider based on context (compliance-critical → OpenAI, cost mode → Ollama, synthesis → Anthropic). Falls back through chain on failure. Compliance-critical decisions never use Ollama.
 - **Baseline regression scores** in `backend/tests/eval/baseline_scores.json`. Regenerate with `poetry run python scripts/generate_baseline.py`.
+- **V4 is additive** — all V4 modules live in new directories (`analytics/`, `pipelines/`, `events/`, `quality/`, `storage/`, `contracts/`, `payrolls/`, `ingestion/`, `connectors/`). No V3 source files are modified. See [V3/V4 Boundary](docs/planning/V3_V4_BOUNDARY.md).
+- **V4 documentation** — Full spec at [V4 Architecture](docs/architecture/v4-data-platform.md), [Data Model](docs/architecture/v4-data-model.md), [Data Flows](docs/architecture/v4-data-flows.md), [API Contract](docs/v4-api-contract.md), [Dashboard Spec](docs/v4-analytics-dashboard.md), [Implementation Phases](docs/planning/v4-phases/).
 
 ## Conventions
 

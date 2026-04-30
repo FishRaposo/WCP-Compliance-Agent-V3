@@ -18,7 +18,7 @@ function getToken(): string | null {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (IS_MOCK) {
-    return mockResolve<T>(path, init);
+    return mockResolve<T>(path);
   }
 
   const isFormData = init?.body instanceof FormData;
