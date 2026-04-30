@@ -33,6 +33,21 @@ if (raw.NODE_ENV === "production" && raw.LLM_MODE === "mock") {
   );
 }
 
+// Security validations for production environments
+if (raw.NODE_ENV === "production") {
+  if (raw.JWT_SECRET === "change-me-before-launch") {
+    throw new Error(
+      "CRITICAL: Default JWT_SECRET is not allowed in production. Set a strong, unique secret to prevent token forgery."
+    );
+  }
+
+  if (raw.AUTH_DISABLED === "true") {
+    throw new Error(
+      "CRITICAL: AUTH_DISABLED=true is not allowed in production. Authentication must be enforced."
+    );
+  }
+}
+
 export const config = raw;
 export type Config = typeof config;
 
