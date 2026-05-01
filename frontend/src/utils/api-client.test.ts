@@ -4,6 +4,11 @@ describe("apiClient (mock mode)", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    vi.stubEnv('VITE_MOCK_API', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("returns mock health response", async () => {
