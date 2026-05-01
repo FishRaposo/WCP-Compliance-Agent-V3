@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { analyticsApiRoute, analyticsPageRoute } from "./components/analytics";
 import { contractsApiRoute, contractsPageRoute } from "./pages/contracts";
 import { ingestionApiRoute, ingestionPageRoute } from "./pages/ingestion";
-import { payrollsApiRoute, payrollsPageRoute } from "./pages/payrolls";
+import { payrollsApiRoute, payrollsPageRoute, payrollsBulkRoute } from "./pages/payrolls";
 
 
 describe("V4 frontend scaffold", () => {
@@ -14,6 +14,7 @@ describe("V4 frontend scaffold", () => {
     expect(contractsApiRoute).toBe("/api/contracts");
     expect(payrollsPageRoute).toBe("/payrolls");
     expect(payrollsApiRoute).toBe("/api/payrolls");
+    expect(payrollsBulkRoute).toBe("/api/payrolls/bulk");
     expect(ingestionPageRoute).toBe("/ingestion");
     expect(ingestionApiRoute).toBe("/api/ingestion");
   });

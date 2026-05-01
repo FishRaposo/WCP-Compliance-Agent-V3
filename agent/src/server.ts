@@ -13,6 +13,8 @@ import { decisions } from "./api/decisions.js";
 import { jobs } from "./api/jobs.js";
 import { analytics } from "./api/analytics.js";
 import { promptVersions } from "./api/prompt-versions.js";
+import { events } from "./api/events.js";
+import { v4Analytics } from "./api/v4/analytics.js";
 import { contracts } from "./api/v4/contracts.js";
 import { ingestion } from "./api/v4/ingestion.js";
 import { payrolls } from "./api/v4/payrolls.js";
@@ -39,6 +41,7 @@ app.use("/api/contracts", authMiddleware);
 app.use("/api/payrolls", authMiddleware);
 app.use("/api/ingestion", authMiddleware);
 app.use("/api/prompt-versions", authMiddleware);
+app.use("/api/events", authMiddleware);
 
 app.route("/api/analyze", analyze);
 app.route("/api/analyze-pdf", analyzePdf);
@@ -46,13 +49,17 @@ app.route("/api/analyze-csv", analyzeCsv);
 app.route("/api/decisions", decisions);
 app.route("/api/jobs", jobs);
 app.route("/api/analytics", analytics);
+app.route("/api/analytics", v4Analytics);
 app.route("/api/contracts", contracts);
 app.route("/api/payrolls", payrolls);
 app.route("/api/ingestion", ingestion);
 app.route("/api/prompt-versions", promptVersions);
+app.route("/api/events", events);
 
-serve({ fetch: app.fetch, port: config.PORT }, () => {
-  logger.info({ port: config.PORT }, "WCP Agent Gateway started");
-});
+if (process.env.NODE_ENV !== "test") {
+  serve({ fetch: app.fetch, port: config.PORT }, () => {
+    logger.info({ port: config.PORT }, "WCP Agent Gateway started");
+  });
+}
 
 export default app;

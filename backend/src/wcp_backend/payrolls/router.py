@@ -15,7 +15,7 @@ from wcp_backend.payrolls.schemas import (
 )
 from wcp_backend.services.db import get_session
 
-router = APIRouter(prefix="/payrolls", tags=["v4-payrolls"])
+router = APIRouter(prefix="/v4/payrolls", tags=["v4-payrolls"])
 
 
 @router.get("", response_model=PaginatedPayrolls)

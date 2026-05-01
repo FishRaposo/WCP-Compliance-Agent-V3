@@ -219,3 +219,78 @@ export const mockIngestionJobs: IngestionJobSummary[] = [
     created_at: new Date(Date.now() - 7200_000).toISOString(),
   },
 ];
+
+// V4 analytics mock data for canonical endpoint responses
+export const mockComplianceAnalytics = {
+  total_decisions: 156,
+  approval_rate: 85.9,
+  by_trade: [
+    { trade: "Electrician", total: 48, approved: 44, flagged: 3, rejected: 1, approval_rate: 91.7 },
+    { trade: "Laborer", total: 39, approved: 31, flagged: 5, rejected: 3, approval_rate: 79.5 },
+    { trade: "Carpenter", total: 28, approved: 25, flagged: 2, rejected: 1, approval_rate: 89.3 },
+    { trade: "Plumber", total: 22, approved: 18, flagged: 3, rejected: 1, approval_rate: 81.8 },
+    { trade: "HVAC Technician", total: 19, approved: 16, flagged: 2, rejected: 1, approval_rate: 84.2 },
+  ],
+  by_locality: [
+    { locality: "Boston, MA", total: 62, approval_rate: 91.9 },
+    { locality: "Cambridge, MA", total: 41, approval_rate: 87.8 },
+    { locality: "Worcester, MA", total: 28, approval_rate: 78.6 },
+    { locality: "Springfield, MA", total: 25, approval_rate: 72.0 },
+  ],
+};
+
+export const mockWagesAnalytics = {
+  total_decisions: 156,
+  violation_rate: 14.1,
+  avg_actual_vs_required_diff: 2.34,
+  fringe_compliance_rate: 91.2,
+  wage_trend: Array.from({ length: 14 }, (_, i) => ({
+    date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
+    violations: Math.floor(Math.random() * 8) + 1,
+    total_checked: Math.floor(Math.random() * 20) + 10,
+    violation_rate: Math.random() * 10 + 5,
+  })),
+  actual_vs_required: Array.from({ length: 20 }, (_, i) => ({
+    trade_code: ["Electrician", "Laborer", "Carpenter"][i % 3],
+    locality_code: "Boston, MA",
+    actual_rate: (45 + Math.random() * 15).toFixed(2),
+    required_rate: (48 + Math.random() * 5).toFixed(2),
+    diff: (Math.random() * 6 - 3).toFixed(2),
+  })),
+  fringe_compliance: Array.from({ length: 14 }, (_, i) => ({
+    date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
+    compliant_pct: 85 + Math.random() * 12,
+  })),
+};
+
+export const mockLLMAnalytics = {
+  summary: {
+    total_cost: 0.67,
+    cost_per_decision: 0.0043,
+    avg_latency_ms: 1842,
+    total_tokens: 482000,
+    decisions: 156,
+  },
+  cost: Array.from({ length: 14 }, (_, i) => ({
+    date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
+    cost_usd: Math.random() * 0.08 + 0.01,
+    decisions: Math.floor(Math.random() * 15) + 2,
+    total_cost: Math.random() * 0.1 + 0.02,
+  })),
+  tokens: Array.from({ length: 14 }, (_, i) => ({
+    date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
+    prompt_tokens: Math.floor(Math.random() * 20000) + 5000,
+    completion_tokens: Math.floor(Math.random() * 8000) + 2000,
+    total_tokens: Math.floor(Math.random() * 28000) + 7000,
+  })),
+  model_distribution: [
+    { model: "gpt-4o", count: 89, percentage: 57.1, avg_cost: 0.0052 },
+    { model: "gpt-4o-mini", count: 48, percentage: 30.8, avg_cost: 0.0008 },
+    { model: "claude-3-5-sonnet", count: 19, percentage: 12.1, avg_cost: 0.0068 },
+  ],
+  latency: [
+    { model: "gpt-4o", p50_ms: 1200, p95_ms: 2500, p99_ms: 3800 },
+    { model: "gpt-4o-mini", p50_ms: 400, p95_ms: 900, p99_ms: 1500 },
+    { model: "claude-3-5-sonnet", p50_ms: 1100, p95_ms: 2200, p99_ms: 3500 },
+  ],
+};

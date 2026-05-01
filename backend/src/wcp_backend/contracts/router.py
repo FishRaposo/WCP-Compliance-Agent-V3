@@ -18,7 +18,7 @@ from wcp_backend.contracts.schemas import (
 )
 from wcp_backend.services.db import get_session
 
-router = APIRouter(prefix="/contracts", tags=["v4-contracts"])
+router = APIRouter(prefix="/v4/contracts", tags=["v4-contracts"])
 
 
 @router.get("", response_model=PaginatedContracts)
