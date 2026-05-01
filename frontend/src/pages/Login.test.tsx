@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import Login from "./Login";
@@ -13,6 +13,11 @@ function renderLogin() {
 }
 
 describe("Login page", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    (window as any).__MOCK_API__ = true;
+  });
+
   it("renders email and password inputs and submit button", () => {
     renderLogin();
     expect(screen.getByPlaceholderText("you@example.com")).toBeInTheDocument();
@@ -39,10 +44,12 @@ describe("Login page", () => {
     await user.type(screen.getByPlaceholderText(/••••••••/), "password");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-    const calls = setItemSpy.mock.calls;
-    const tokenCall = calls.find((c) => c[0] === "wcp_token");
-    expect(tokenCall).toBeDefined();
-    expect(tokenCall![1]).toBe("mock-jwt-token");
+    await waitFor(() => {
+      const calls = setItemSpy.mock.calls;
+      const tokenCall = calls.find((c) => c[0] === "wcp_token");
+      expect(tokenCall).toBeDefined();
+      expect(tokenCall![1]).toBe("mock-jwt-token");
+    });
 
     setItemSpy.mockRestore();
   });
