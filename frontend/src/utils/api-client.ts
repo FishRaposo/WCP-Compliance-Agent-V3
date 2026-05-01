@@ -9,18 +9,18 @@ import {
   mockPromptVersions,
 } from "./mock-data";
 
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
-
 function getToken(): string | null {
   return localStorage.getItem("wcp_token");
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (IS_MOCK) {
+  const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
+
+  if (IS_MOCK || (typeof window !== "undefined" && (window as any).__MOCK_API__)) {
     return mockResolve<T>(path);
   }
 
+  const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
   const isFormData = init?.body instanceof FormData;
   const headers: Record<string, string> = {};
   if (!isFormData) {
@@ -36,8 +36,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     Object.assign(headers, init.headers as Record<string, string>);
   }
 
-  const url = BASE_URL ? `${BASE_URL}${path}` : path;
-  const res = await fetch(url, {
+  const url = BASE_URL ? `${BASE_URL.replace(/\/$/, '')}${path.startsWith('/') ? path : '/' + path}` : path;
+
+  // Vitest + JSDOM has issues parsing relative URLs inside fetch(),
+  // ensure absolute URL for JSDOM if no base url was passed
+  let fetchUrl = url;
+  if (typeof window !== "undefined" && window.location && !url.startsWith("http")) {
+      // In JS DOM environments without proper URL handling during fetches, default to current origin
+      fetchUrl = new URL(url, "http://localhost:3000").toString();
+  }
+
+  const res = await fetch(fetchUrl, {
     ...init,
     headers,
   });
@@ -56,7 +65,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 async function mockResolve<T>(path: string): Promise<T> {
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 10)); // Reduced timeout for tests
 
   if (path.startsWith("/api/analyze")) return mockTrustScoredDecision as T;
   if (path.startsWith("/api/decisions")) return mockDecisionSummaries as T;

@@ -4,6 +4,7 @@ describe("apiClient (mock mode)", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    (window as any).__MOCK_API__ = true;
   });
 
   it("returns mock health response", async () => {
