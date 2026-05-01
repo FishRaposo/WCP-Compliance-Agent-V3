@@ -6,6 +6,9 @@ import Analyze from "./pages/Analyze.tsx";
 import Decisions from "./pages/Decisions.tsx";
 import ReviewQueue from "./pages/ReviewQueue.tsx";
 import Analytics from "./pages/Analytics.tsx";
+import Contracts from "./pages/contracts/Contracts.tsx";
+import Ingestion from "./pages/ingestion/Ingestion.tsx";
+import Payrolls from "./pages/payrolls/Payrolls.tsx";
 import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
 
@@ -33,6 +36,9 @@ export default function App() {
                     <Route path="/analyze" element={<Analyze />} />
                     <Route path="/decisions" element={<Decisions />} />
                     <Route path="/review" element={<ReviewQueue />} />
+                    <Route path="/contracts" element={<Contracts />} />
+                    <Route path="/payrolls" element={<Payrolls />} />
+                    <Route path="/ingestion" element={<Ingestion />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/settings" element={<Settings />} />
                   </Routes>

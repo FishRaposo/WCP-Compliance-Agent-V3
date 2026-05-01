@@ -7,6 +7,9 @@ import {
   mockCostAnalytics,
   mockJobStatus,
   mockPromptVersions,
+  mockContracts,
+  mockIngestionJobs,
+  mockPayrolls,
 } from "./mock-data";
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
@@ -66,6 +69,9 @@ async function mockResolve<T>(path: string): Promise<T> {
   if (path.includes("/analytics/trust-band")) return mockTrustBandDistribution as T;
   if (path.includes("/analytics/cost")) return mockCostAnalytics as T;
   if (path.includes("/prompt-versions")) return mockPromptVersions as T;
+  if (path.startsWith("/api/contracts")) return mockContracts as T;
+  if (path.startsWith("/api/payrolls")) return mockPayrolls as T;
+  if (path.startsWith("/api/ingestion/jobs")) return mockIngestionJobs as T;
   if (path === "/health")
     return { status: "ok", version: "3.0.0", phase: 3 } as T;
   if (path.startsWith("/api/auth/login"))

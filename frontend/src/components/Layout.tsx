@@ -1,6 +1,16 @@
 import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Upload, History, AlertCircle, BarChart3, Settings, LogOut } from "lucide-react";
+import {
+  AlertCircle,
+  BarChart3,
+  BriefcaseBusiness,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  TableProperties,
+  Upload,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +19,9 @@ const navItems = [
   { href: "/analyze", label: "Analyze", icon: Upload },
   { href: "/decisions", label: "Decisions", icon: History },
   { href: "/review", label: "Review Queue", icon: AlertCircle },
+  { href: "/contracts", label: "Contracts", icon: BriefcaseBusiness },
+  { href: "/payrolls", label: "Payrolls", icon: TableProperties },
+  { href: "/ingestion", label: "Ingestion", icon: Upload },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

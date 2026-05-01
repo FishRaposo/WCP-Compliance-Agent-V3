@@ -7,6 +7,7 @@ import type {
   CostAnalytics,
   JobStatus,
 } from "../types/api";
+import type { IngestionJobSummary, PaginatedContracts, PaginatedPayrolls } from "../types/v4";
 
 export const mockDecisionSummaries: DecisionSummary[] = [
   {
@@ -122,3 +123,88 @@ export const mockJobStatus: JobStatus = {
 };
 
 export const mockPromptVersions: string[] = ["v2", "v1"];
+
+export const mockContracts: PaginatedContracts = {
+  items: [
+    {
+      id: "contract-001",
+      contract_number: "DBA-2026-001",
+      project_name: "Federal Courthouse Renovation",
+      contractor_name: "Keystone Builders",
+      locality: "Boston, MA",
+      status: "active",
+      decision_count: 18,
+      payroll_record_count: 240,
+      created_at: new Date(Date.now() - 86400_000 * 10).toISOString(),
+    },
+    {
+      id: "contract-002",
+      contract_number: "DBA-2026-002",
+      project_name: "Transit Maintenance Facility",
+      contractor_name: "Northline Electric",
+      locality: "Cambridge, MA",
+      status: "active",
+      decision_count: 9,
+      payroll_record_count: 112,
+      created_at: new Date(Date.now() - 86400_000 * 4).toISOString(),
+    },
+  ],
+  total: 2,
+  page: 1,
+  per_page: 25,
+  pages: 1,
+};
+
+export const mockPayrolls: PaginatedPayrolls = {
+  items: [
+    {
+      id: "payroll-001",
+      contract_id: "contract-001",
+      employee_name: "Jane Worker",
+      trade_code: "Electrician",
+      locality_code: "Boston, MA",
+      week_ending: "2026-01-09",
+      total_hours: "40.0",
+      hourly_rate: "51.69",
+      gross_pay: "2067.60",
+    },
+    {
+      id: "payroll-002",
+      contract_id: "contract-001",
+      employee_name: "Alex Mechanic",
+      trade_code: "Laborer",
+      locality_code: "Boston, MA",
+      week_ending: "2026-01-09",
+      total_hours: "42.0",
+      hourly_rate: "38.50",
+      gross_pay: "1694.00",
+    },
+  ],
+  total: 2,
+  page: 1,
+  per_page: 25,
+  pages: 1,
+};
+
+export const mockIngestionJobs: IngestionJobSummary[] = [
+  {
+    job_id: "ing-001",
+    type: "payroll_import",
+    status: "completed",
+    source_type: "csv",
+    total_records: 240,
+    processed_records: 240,
+    failed_records: 0,
+    created_at: new Date(Date.now() - 3600_000).toISOString(),
+  },
+  {
+    job_id: "ing-002",
+    type: "contract_import",
+    status: "partial",
+    source_type: "csv",
+    total_records: 12,
+    processed_records: 10,
+    failed_records: 2,
+    created_at: new Date(Date.now() - 7200_000).toISOString(),
+  },
+];
