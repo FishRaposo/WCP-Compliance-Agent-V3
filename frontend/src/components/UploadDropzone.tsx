@@ -34,11 +34,19 @@ export default function UploadDropzone({
   return (
     <div className="space-y-4">
       <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => !disabled && inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+        onKeyDown={(e) => {
+          if (!disabled && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
           disabled ? "opacity-50 cursor-not-allowed border-gray-200" :
           dragging ? "border-blue-400 bg-blue-50" : "border-gray-300 hover:border-gray-400"
         }`}
