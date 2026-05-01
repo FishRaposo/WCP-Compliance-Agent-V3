@@ -4,6 +4,29 @@ describe("apiClient (mock mode)", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+
+    // Explicitly mock fetch for JSDOM
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith('/health')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ status: 'ok' })
+        });
+      }
+      if (url.endsWith('/api/decisions')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([{ decision_id: 'mock-1' }])
+        });
+      }
+      if (url.endsWith('/api/auth/login')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ token: 'mock-token', user_id: 'u1', role: 'admin' })
+        });
+      }
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    });
   });
 
   it("returns mock health response", async () => {
