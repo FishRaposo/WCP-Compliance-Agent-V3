@@ -1,0 +1,3 @@
+## 2026-05-01 - [Keyboard Navigation for Div Interactions]
+**Learning:** Adding a click handler to a `div` element doesn't automatically make it accessible to keyboard users. To ensure a custom interactive `div` functions like a button for screen reader and keyboard users, it's critical to add `role="button"`, `tabIndex={0}`, an `onKeyDown` handler to capture 'Enter' and 'Space' keys, and `focus-visible` classes to provide an explicit visual focus indicator.
+**Action:** Always test click handlers on `div` elements by navigating to them with the `Tab` key and triggering them with the `Enter` or `Space` key. Apply necessary roles and handlers if not using a native `<button>`.
