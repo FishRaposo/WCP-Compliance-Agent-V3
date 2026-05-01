@@ -22,6 +22,13 @@ import { logger } from "./utils/logger.js";
 
 const app = new Hono();
 
+app.use("*", async (c, next) => {
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  await next();
+});
+
 app.use("*", cors({ origin: corsOrigins, credentials: true }));
 app.use("/api/*", rateLimiter());
 
