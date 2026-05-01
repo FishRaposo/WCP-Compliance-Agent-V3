@@ -3,11 +3,14 @@
 import pytest
 
 from wcp_backend.models.enums import CheckStatus, CheckType
-from wcp_backend.models.schemas import DBWDRateRecord, EmployeeRecord
+from datetime import date, timedelta
+
+from wcp_backend.models.schemas import DBWDRateRecord, EmployeeRecord, ExtractedWCP, ContractorInfo, ProjectInfo
 from wcp_backend.pipeline.checks.wage_check import check_wage
 from wcp_backend.pipeline.checks.overtime_check import check_overtime
 from wcp_backend.pipeline.checks.fringe_check import check_fringe
 from wcp_backend.pipeline.checks.total_check import check_totals
+from wcp_backend.pipeline.checks.signature_check import check_signature
 
 
 class TestWageCheck:
@@ -213,6 +216,65 @@ class TestFringeCheck:
 
         assert result.status == CheckStatus.FAIL
         assert result.variance == pytest.approx(-140.00, abs=0.01)  # 1000 - 1140 = -140
+
+
+class TestSignatureCheck:
+    """Test signature/certification compliance check."""
+
+    def _create_mock_extracted_wcp(self, cert_date: date | None = None, payroll_number: int | None = None) -> ExtractedWCP:
+        """Helper to create a mock ExtractedWCP."""
+        return ExtractedWCP(
+            job_id="test_job_123",
+            contractor=ContractorInfo(name="Test Contractor"),
+            project=ProjectInfo(name="Test Project"),
+            employees=[],
+            certification_date=cert_date,
+            payroll_number=payroll_number
+        )
+
+    def test_signature_passes_when_date_in_past(self):
+        """Test signature check passes when certification date is in the past."""
+        past_date = date.today() - timedelta(days=1)
+        extracted = self._create_mock_extracted_wcp(cert_date=past_date, payroll_number=123)
+
+        result = check_signature(extracted)
+
+        assert result.status == CheckStatus.PASS
+        assert result.check_type == CheckType.SIGNATURE
+        assert result.employee_name == "_all_"
+        assert "29 C.F.R. § 5.5(a)(3)(ii)(B)" in result.regulation_cite
+        assert str(past_date) in result.message
+        assert "Payroll #123" in result.message
+
+    def test_signature_passes_when_date_is_today(self):
+        """Test signature check passes when certification date is today."""
+        today = date.today()
+        extracted = self._create_mock_extracted_wcp(cert_date=today)
+
+        result = check_signature(extracted)
+
+        assert result.status == CheckStatus.PASS
+        assert str(today) in result.message
+        assert "Payroll #" not in result.message  # Should not be included if no payroll_number
+
+    def test_signature_fails_when_date_is_none(self):
+        """Test signature check fails when certification date is missing."""
+        extracted = self._create_mock_extracted_wcp(cert_date=None)
+
+        result = check_signature(extracted)
+
+        assert result.status == CheckStatus.FAIL
+        assert "Missing certification date" in result.message
+
+    def test_signature_fails_when_date_in_future(self):
+        """Test signature check fails when certification date is in the future."""
+        future_date = date.today() + timedelta(days=1)
+        extracted = self._create_mock_extracted_wcp(cert_date=future_date)
+
+        result = check_signature(extracted)
+
+        assert result.status == CheckStatus.FAIL
+        assert "in the future" in result.message
 
 
 class TestTotalsCheck:
