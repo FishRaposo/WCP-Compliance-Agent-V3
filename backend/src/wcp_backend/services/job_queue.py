@@ -34,102 +34,99 @@ celery_app.conf.update(
 MS_PER_SEC = 1000  # conversion factor for time.time() → milliseconds
 
 
+async def _process_single_payload(
+    idx: int,
+    payload: dict[str, Any],
+    batch_job_id: str,
+    start_time: float,
+) -> dict[str, Any]:
+    """Process a single payload from a batch."""
+    try:
+        text = payload.get("text", "")
+        if not text:
+            return {"index": idx, "status": "error", "error": "Empty text"}
+
+        # Extract
+        extracted = extract_from_text(text)
+
+        # Validate (deterministic only — Phase 2)
+        report = await run_rule_engine(extracted)
+
+        # Build deterministic-only decision
+        verdict = (
+            VerdictStatus.APPROVED
+            if report.overall_status.value == "pass"
+            else VerdictStatus.REJECTED
+        )
+        deterministic_score = 1.0 - (report.violation_count / max(len(report.checks), 1))
+        trust_score = deterministic_score  # Phase 2: deterministic only
+        trust_band = determine_trust_band(trust_score)
+
+        # Summarize reasoning
+        violation_msgs = [c.message for c in report.checks if c.status.value == "fail"]
+        reasoning = (
+            "No violations found."
+            if not violation_msgs
+            else "Violations: " + "; ".join(violation_msgs)
+        )
+
+        decision = TrustScoredDecision(
+            job_id=extracted.job_id,
+            verdict=verdict,
+            trust_score=trust_score,
+            trust_band=trust_band,
+            requires_human_review=(trust_band == TrustBand.REQUIRE_HUMAN_REVIEW),
+            violation_count=report.violation_count,
+            warning_count=report.warning_count,
+            llm_confidence=0.0,
+            reasoning_summary=reasoning,
+            citations=[],
+            cost_usd=0.0,
+            latency_ms=int((time.time() - start_time) * 1000),
+            phoenix_trace_id="",
+            created_at=datetime.utcnow(),
+        )
+
+        # Persist
+        decision_id = await persist_decision(decision)
+        await append_audit_event(
+            job_id=extracted.job_id,
+            event_type="batch_decision_persisted",
+            payload={
+                "batch_job_id": batch_job_id,
+                "index": idx,
+                "decision_id": decision_id,
+            },
+        )
+
+        return {
+            "index": idx,
+            "status": "completed",
+            "job_id": extracted.job_id,
+            "decision_id": decision_id,
+            "verdict": verdict.value,
+            "trust_score": trust_score,
+        }
+
+    except Exception as exc:
+        return {"index": idx, "status": "error", "error": str(exc)}
+
+
 @celery_app.task(bind=True, max_retries=3)  # type: ignore[untyped-decorator]
 def process_payroll_batch(
     self: Any, job_id: str, payloads: list[dict[str, Any]]
 ) -> dict[str, Any]:
     """Process a batch of WCP payloads asynchronously."""
     start_time = time.time()
-    results: list[dict[str, Any]] = []
 
-    async def _process() -> None:
-        for idx, payload in enumerate(payloads):
-            try:
-                text = payload.get("text", "")
-                if not text:
-                    results.append(
-                        {"index": idx, "status": "error", "error": "Empty text"}
-                    )
-                    continue
+    async def _process() -> list[dict[str, Any]]:
+        tasks = [
+            _process_single_payload(idx, payload, job_id, start_time)
+            for idx, payload in enumerate(payloads)
+        ]
+        return list(await asyncio.gather(*tasks))
 
-                # Extract
-                extracted = extract_from_text(text)
-
-                # Validate (deterministic only — Phase 2)
-                report = await run_rule_engine(extracted)
-
-                # Build deterministic-only decision
-                verdict = (
-                    VerdictStatus.APPROVED
-                    if report.overall_status.value == "pass"
-                    else VerdictStatus.REJECTED
-                )
-                deterministic_score = 1.0 - (
-                    report.violation_count / max(len(report.checks), 1)
-                )
-                trust_score = deterministic_score  # Phase 2: deterministic only
-                trust_band = determine_trust_band(trust_score)
-
-                # Summarize reasoning
-                violation_msgs = [
-                    c.message
-                    for c in report.checks
-                    if c.status.value == "fail"
-                ]
-                reasoning = (
-                    "No violations found."
-                    if not violation_msgs
-                    else "Violations: " + "; ".join(violation_msgs)
-                )
-
-                decision = TrustScoredDecision(
-                    job_id=extracted.job_id,
-                    verdict=verdict,
-                    trust_score=trust_score,
-                    trust_band=trust_band,
-                    requires_human_review=(
-                        trust_band == TrustBand.REQUIRE_HUMAN_REVIEW
-                    ),
-                    violation_count=report.violation_count,
-                    warning_count=report.warning_count,
-                    llm_confidence=0.0,
-                    reasoning_summary=reasoning,
-                    citations=[],
-                    cost_usd=0.0,
-                    latency_ms=int((time.time() - start_time) * MS_PER_SEC),
-                    phoenix_trace_id="",
-                    created_at=datetime.utcnow(),
-                )
-
-                # Persist
-                decision_id = await persist_decision(decision)
-                await append_audit_event(
-                    job_id=extracted.job_id,
-                    event_type="batch_decision_persisted",
-                    payload={
-                        "batch_job_id": job_id,
-                        "index": idx,
-                        "decision_id": decision_id,
-                    },
-                )
-
-                results.append(
-                    {
-                        "index": idx,
-                        "status": "completed",
-                        "job_id": extracted.job_id,
-                        "decision_id": decision_id,
-                        "verdict": verdict.value,
-                        "trust_score": trust_score,
-                    }
-                )
-
-            except Exception as exc:
-                results.append(
-                    {"index": idx, "status": "error", "error": str(exc)}
-                )
-
-    asyncio.run(_process())
+    results = asyncio.run(_process())
 
     return {
         "batch_job_id": job_id,
