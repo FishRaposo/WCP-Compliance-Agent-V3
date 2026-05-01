@@ -4,6 +4,7 @@ import type { Context } from "hono";
 
 import { httpClient } from "../utils/http-client.js";
 import { signToken } from "../middleware/auth.js";
+import { loginRateLimiter } from "../middleware/rate_limiter.js";
 import { logger } from "../utils/logger.js";
 
 interface AuthUser {
@@ -19,7 +20,7 @@ const LoginRequest = z.object({
   password: z.string().min(1),
 });
 
-auth.post("/login", async (c) => {
+auth.post("/login", loginRateLimiter(), async (c) => {
   const body = await c.req.json();
   const parsed = LoginRequest.safeParse(body);
   if (!parsed.success) {
