@@ -164,7 +164,7 @@ describe("useDecisionStream", () => {
     });
 
     it("should cap exponential backoff at 30 seconds", () => {
-      const { result } = renderHook(() => useDecisionStream());
+      renderHook(() => useDecisionStream());
       expect(MockEventSource.instances).toHaveLength(1);
 
       // Force many failures to exceed 30 seconds (2^5 * 1000 = 32000)
