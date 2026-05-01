@@ -7,21 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/utils/api-client";
-import type { PaginatedContracts, ContractSummary } from "@/types/v4";
+import type { ContractStatus, ContractSummary, CreateContractPayload, PaginatedContracts } from "@/types/v4";
 import { Plus, Upload, Trash2, ChevronLeft, ChevronRight, Search, X, FileText } from "lucide-react";
 
 interface ContractFilters {
   search: string;
-  status: string;
+  status: ContractStatus | "";
   page: number;
 }
 
-interface CreateContractPayload {
-  contract_number: string;
-  project_name: string;
-  contractor_name: string;
-  locality: string;
-}
+const CONTRACT_STATUSES: ContractStatus[] = ["active", "completed", "terminated", "suspended"];
 
 function ContractDetail({ contract, onClose }: { contract: ContractSummary; onClose: () => void }) {
   return (
@@ -55,7 +50,9 @@ function CreateContractDialog({ onClose, onCreated }: { onClose: () => void; onC
     project_name: "",
     contractor_name: "",
     locality: "",
+    start_date: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof CreateContractPayload, string>>>({});
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -69,6 +66,17 @@ function CreateContractDialog({ onClose, onCreated }: { onClose: () => void; onC
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Partial<Record<keyof CreateContractPayload, string>> = {};
+    if (!form.contract_number.trim()) errors.contract_number = "Contract number is required";
+    if (!form.project_name.trim()) errors.project_name = "Project name is required";
+    if (!form.contractor_name.trim()) errors.contractor_name = "Contractor name is required";
+    if (!form.locality.trim()) errors.locality = "Locality is required";
+    if (!form.start_date) errors.start_date = "Start date is required";
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors({});
     createMutation.mutate(form);
   };
 
@@ -81,40 +89,59 @@ function CreateContractDialog({ onClose, onCreated }: { onClose: () => void; onC
         </div>
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div>
-            <label className="text-sm font-medium">Contract Number</label>
+            <label className="text-sm font-medium" htmlFor="contract-number">Contract Number</label>
             <Input
+              id="contract-number"
               value={form.contract_number}
               onChange={(e) => setForm({ ...form, contract_number: e.target.value })}
               placeholder="DBA-2026-003"
               required
             />
+            {fieldErrors.contract_number && <p className="text-sm text-destructive mt-1">{fieldErrors.contract_number}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium">Project Name</label>
+            <label className="text-sm font-medium" htmlFor="project-name">Project Name</label>
             <Input
+              id="project-name"
               value={form.project_name}
               onChange={(e) => setForm({ ...form, project_name: e.target.value })}
               placeholder="Federal Building Renovation"
               required
             />
+            {fieldErrors.project_name && <p className="text-sm text-destructive mt-1">{fieldErrors.project_name}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium">Contractor Name</label>
+            <label className="text-sm font-medium" htmlFor="contractor-name">Contractor Name</label>
             <Input
+              id="contractor-name"
               value={form.contractor_name}
               onChange={(e) => setForm({ ...form, contractor_name: e.target.value })}
               placeholder="Acme Construction"
               required
             />
+            {fieldErrors.contractor_name && <p className="text-sm text-destructive mt-1">{fieldErrors.contractor_name}</p>}
           </div>
           <div>
-            <label className="text-sm font-medium">Locality</label>
+            <label className="text-sm font-medium" htmlFor="locality">Locality</label>
             <Input
+              id="locality"
               value={form.locality}
               onChange={(e) => setForm({ ...form, locality: e.target.value })}
               placeholder="Washington, DC"
               required
             />
+            {fieldErrors.locality && <p className="text-sm text-destructive mt-1">{fieldErrors.locality}</p>}
+          </div>
+          <div>
+            <label className="text-sm font-medium" htmlFor="start-date">Start Date</label>
+            <Input
+              id="start-date"
+              type="date"
+              value={form.start_date}
+              onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+              required
+            />
+            {fieldErrors.start_date && <p className="text-sm text-destructive mt-1">{fieldErrors.start_date}</p>}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
@@ -123,7 +150,9 @@ function CreateContractDialog({ onClose, onCreated }: { onClose: () => void; onC
             </Button>
           </div>
           {createMutation.isError && (
-            <p className="text-sm text-destructive">Failed to create contract.</p>
+            <p className="text-sm text-destructive">
+              Failed to create contract. Please check your input and try again.
+            </p>
           )}
         </form>
       </div>
@@ -212,7 +241,7 @@ export default function Contracts() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
-      apiClient.post(`/api/contracts/${id}`, { status: "archived" }),
+      apiClient.delete(`/api/contracts/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contracts"] });
     },
@@ -278,9 +307,9 @@ export default function Contracts() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
+            {CONTRACT_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         {(filters.search || filters.status) && (
@@ -309,7 +338,7 @@ export default function Contracts() {
             </div>
           ) : (
             <div className="grid gap-3">
-              {data?.items.map((contract) => (
+              {data?.items.map((contract: ContractSummary) => (
                 <Card
                   key={contract.id}
                   className="cursor-pointer hover:bg-muted/30 transition-colors"
@@ -326,7 +355,7 @@ export default function Contracts() {
                           className="text-muted-foreground hover:text-destructive"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm("Archive this contract?")) {
+                            if (confirm("Terminate this contract? This action cannot be undone.")) {
                               deleteMutation.mutate(contract.id);
                             }
                           }}

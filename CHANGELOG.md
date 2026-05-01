@@ -2,6 +2,60 @@
 
 All notable changes to this project are documented in this file. Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [4.0.0] - 2026-05-01
+
+V4 MVP — Enterprise Data Platform. All V3 functionality unchanged; V4 adds an additive data platform layer.
+
+### Added
+
+#### Backend (Python)
+- **Contract management** (`contracts/`): Full CRUD, SQLAlchemy 2.0 models, bulk CSV import, pagination and filtering
+- **Payroll records** (`payrolls/`): Persistent storage with contract linkage, partitioned table model, bulk import service
+- **Bulk ingestion** (`ingestion/`): CSV/PDF document processors, batch pipeline, per-record error reporting, job status tracking
+- **DuckDB analytics** (`analytics/`): In-process OLAP queries, PostgreSQL + Parquet reads, cross-contract aggregations (decision volume, compliance breakdown, wage analytics, LLM cost/performance)
+- **Prefect ETL scaffold** (`pipelines/`): DBWD refresh flow, Parquet export flow, bulk ingest orchestration, shared task utilities
+- **Redis Streams producer** (`events/`): `emit_decision_event()` on decision persist, DecisionEvent Pydantic model, consumer group support
+- **Great Expectations** (`quality/`): Validation suites for DBWD rates, contracts, and payroll records; quarantine reporting
+- **Connector framework** (`connectors/`): BaseConnector ABC, SFTP/API/Database connector stubs, registry for discovery
+- **Parquet storage** (`storage/`): Decision archiving to columnar Parquet, MD5 integrity, DuckDB external table registration
+- **Analytics router** (`analytics/router.py`): FastAPI endpoints (`/analytics/decision-volume`, `/analytics/compliance`, `/analytics/wages`, `/analytics/llm`, `/analytics/overview`)
+
+#### Agent (TypeScript)
+- **V4 route files** (`api/v4/`): 6 new files — `contracts.ts`, `payrolls.ts`, `ingestion.ts`, `analytics.ts`, `proxy.ts`, `index.ts`
+- **Event consumer** (`events/`): Redis Streams consumer (`XREADGROUP`), SSE push to frontend analytics pages
+- **Contract proxy routes**: `GET/POST /api/contracts`, `POST /api/contracts/bulk`, `PUT/DELETE /api/contracts/:id`
+- **Payroll proxy routes**: `GET /api/payrolls`, `POST /api/payrolls/bulk`
+- **Ingestion proxy routes**: `GET /api/ingestion/status/:job_id`, `GET /api/ingestion/jobs`, `POST /api/bulk-upload`
+- **Analytics proxy routes**: `GET /api/analytics/decision-volume`, `/api/analytics/compliance`, `/api/analytics/wages`, `/api/analytics/llm`, `/api/analytics/overview`
+- **Event streaming**: `GET /api/events/subscribe` SSE endpoint
+
+#### Frontend (React)
+- **Analytics pages** (`pages/analytics/`): 4 Recharts-based pages — overview, compliance, wages, LLM cost/performance
+- **Analytics components** (`components/analytics/`): 11 chart components — DecisionVolumeChart, ApprovalRateChart, FringeComplianceChart, TopViolationsChart, WageViolationTrendChart, ActualVsRequiredScatter, ApprovalRateByTradeChart, ApprovalRateByLocality, LatencyByModelChart, ModelDistributionChart, TokenUsageChart; plus KPICard, ChartCard, LiveFeed, AnalyticsLayout
+- **Contracts page** (`pages/contracts/`): Contract management UI with table, filters, status badges
+- **Payrolls page** (`pages/payrolls/`): Payroll record browser with contract filter, pagination
+- **Ingestion page** (`pages/ingestion/`): ETL job monitoring with progress indicators, error details, retry actions
+
+### Changed
+- README: V4 described as implemented MVP (not "planned"); feature matrix, usage flow, CSV examples, validation commands, infrastructure limitations added
+- AGENTS.md: V4 commands clarified as MVP (not "planned"); V3/V4 boundary clarified with additive route registration note
+
+### Tests
+- Backend V4 unit tests: `test_v4_scaffold.py` (DuckDB analytics, events, storage, connectors, contracts, payrolls, ingestion), `test_payrolls.py`, `test_quality.py`, `test_ingestion.py`
+- Agent V4 integration tests: `v4-integration.test.ts` and `v4-scaffold.test.ts` (48 agent tests total including V4)
+- Frontend V4 scaffold tests: `v4-scaffold.test.ts` and `v4-pages.test.tsx`
+
+### Limitations (Infrastructure-Dependent)
+
+| Dependency | Required For | Degrades To |
+|---|---|---|
+| PostgreSQL 16 | All V4 modules | Inoperable |
+| Redis 7 | Events, ETL state | Events silent; jobs not tracked |
+| DuckDB | Analytics queries | Empty datasets |
+| Prefect | ETL scheduling | Manual trigger only |
+| Great Expectations | Ingestion validation | Pass-through (no quarantine) |
+| Elasticsearch 8 | V3 RAG only | V4 CRUD unaffected |
+
 ## [3.1.1] - 2026-04-28
 
 ### Added

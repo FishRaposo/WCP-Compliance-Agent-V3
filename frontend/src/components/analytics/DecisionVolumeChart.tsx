@@ -46,7 +46,7 @@ function DecisionVolumeTooltip({ active, payload, label }: { active?: boolean; p
   );
 }
 
-export function DecisionVolumeChart({ period: _period, data = [], loading }: DecisionVolumeChartProps) {
+export function DecisionVolumeChart({ data = [], loading }: DecisionVolumeChartProps) {
   // Normalize V4 flat shape { date, count } to chart shape { date, decisions }
   const normalized = data.map((d) => ({
     date: d.date,

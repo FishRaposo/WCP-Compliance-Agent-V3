@@ -12,7 +12,7 @@ V3 is a polyglot system — three independent services, each with its own packag
 
 Data layer: PostgreSQL 16 (pgvector), Redis 7, Elasticsearch 8, Arize Phoenix.
 
-**V4** (planned, additive extension) adds: DuckDB OLAP, Prefect ETL, Redis Streams, Great Expectations, Parquet archival, enterprise connectors. See [V4 documentation](docs/architecture/v4-data-platform.md).
+**V4** is implemented as an additive MVP (not a rewrite of V3). V4 adds: DuckDB OLAP, Prefect ETL, Redis Streams, Great Expectations, Parquet archival, enterprise connectors framework. No V3 source files are modified. See [V4 Architecture](docs/architecture/v4-data-platform.md) and [V3/V4 Boundary](docs/planning/V3_V4_BOUNDARY.md).
 
 ## Commands
 
@@ -86,9 +86,12 @@ Or create `frontend/.env.local` with `VITE_MOCK_API=true`.
 ## CI Workflows
 
 **`.github/workflows/ci.yml`** — runs on push to main/develop and PRs to main. Three parallel jobs, one per service:
-- **backend**: Poetry install → `pytest tests/unit -v` (no infra required)
-- **agent**: `npm ci` → `npm run typecheck` → `npm test`
-- **frontend**: `npm ci` → `npm run typecheck` → `npm run build`
+
+- **backend**: `poetry install` → `alembic upgrade head` → `ruff check` → `pytest tests/unit -v` → `pytest tests/integration -v`
+- **agent**: `npm ci` → `typecheck` → `lint` → `build` → `test`
+- **frontend**: `npm ci` → `typecheck` → `lint` → `build` → `test`
+
+> **Note:** `mypy` is excluded from CI (slow in shared runners). Run `poetry run mypy src/` locally as a strict check before committing Python changes.
 
 Integration tests and eval tests run locally against WSL-native infrastructure.
 

@@ -42,7 +42,7 @@ function TopViolationsTooltip({ active, payload }: { active?: boolean; payload?:
   );
 }
 
-export function TopViolationsChart({ period: _period, data = [], loading }: TopViolationsChartProps) {
+export function TopViolationsChart({ data = [], loading }: TopViolationsChartProps) {
   const sorted = [...data].sort((a, b) => b.percentage - a.percentage);
   return (
     <ChartCard title="Top Violations" subtitle="Violation types by frequency" loading={loading}>

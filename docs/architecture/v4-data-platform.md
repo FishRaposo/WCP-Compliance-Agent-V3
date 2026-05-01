@@ -534,7 +534,7 @@ data/                              # V4: Data artifacts (git-ignored)
 - [V4 Analytics Dashboard](../v4-analytics-dashboard.md) — Wireframe-level component specs
 - [V3/V4 Boundary](../planning/V3_V4_BOUNDARY.md) — Clean handoff specification
 - [V4 Plan](../planning/V4_PLAN.md) — Original planning document
-- [V3 Architecture](architecture.md) — Core AI system architecture
+- [V3 Architecture](../architecture.md) — Core AI system architecture
 
 ---
 

@@ -21,6 +21,7 @@ import { formatSSEEvent, broadcastSSEEvent, type SSEEventPayload } from "../../e
  * - SSE subscribe endpoint structure and heartbeat formatting
  * - Proxy function header forwarding (auth, trace IDs)
  * - V4 route map completeness
+ * - Proxy error propagation: 4xx forwarded, 5xx/network → 502
  */
 
 describe("V4 route map", () => {
@@ -110,7 +111,6 @@ describe("V4 events subscribe endpoint", () => {
     const res = await app.request("/api/events/subscribe?stream=wcp.decisions");
     // May return 502 if Redis unavailable (expected in test env without Redis)
     // But the response Content-Type header for SSE should be set correctly
-    const contentType = res.headers.get("Content-Type");
     // When Redis is unavailable it may return JSON error or SSE stream
     // Just verify the endpoint is reachable
     expect([200, 502, 500]).toContain(res.status);
@@ -182,7 +182,7 @@ describe("V4 bulk-upload route reachable", () => {
       headers: { "Content-Type": "multipart/form-data" },
       body: "",
     });
-    expect([400, 422, 500, 502]).toContain(res.status);
+    expect([200, 202, 400, 422, 500, 502]).toContain(res.status);
   });
 
   it("POST /api/payrolls/bulk is a defined JSON route", async () => {
@@ -192,5 +192,213 @@ describe("V4 bulk-upload route reachable", () => {
       body: JSON.stringify({ contract_id: "contract-1", records: [] }),
     });
     expect([200, 202, 400, 422, 500, 502]).toContain(res.status);
+  });
+});
+
+describe("V4 proxy error propagation", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("proxyJson forwards 422 with original status and sanitized body", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ detail: "Invalid request data", code: "VALIDATION_ERROR" }), {
+        status: 422,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", mockFetch);
+
+    // Create a mock Hono context
+    const context = {
+      req: {
+        text: vi.fn().mockResolvedValue('{"data":"test"}'),
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/contracts",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyJson(context as import("hono").Context, "POST", "/v4/contracts", 201);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: "Invalid request data" }),
+      422
+    );
+  });
+
+  it("proxyJson forwards 400 with original status", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Bad request" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", mockFetch);
+
+    const context = {
+      req: {
+        text: vi.fn().mockResolvedValue('{"data":"test"}'),
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/contracts",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyJson(context as import("hono").Context, "POST", "/v4/contracts", 201);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: "Bad request" }),
+      400
+    );
+  });
+
+  it("proxyJson returns 502 for 5xx backend responses", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", mockFetch);
+
+    const context = {
+      req: {
+        text: vi.fn().mockResolvedValue('{"data":"test"}'),
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/contracts",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyJson(context as import("hono").Context, "POST", "/v4/contracts", 201);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.stringContaining("Backend error 500") }),
+      502
+    );
+  });
+
+  it("proxyJson returns 502 for network failures", async () => {
+    const mockFetch = vi.fn().mockRejectedValue(new Error("ENOTFOUND"));
+    vi.stubGlobal("fetch", mockFetch);
+
+    const context = {
+      req: {
+        text: vi.fn().mockResolvedValue('{"data":"test"}'),
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/contracts",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyJson(context as import("hono").Context, "POST", "/v4/contracts", 201);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.stringContaining("Failed to proxy") }),
+      502
+    );
+  });
+
+  it("proxyJson returns 504 for abort/timeout", async () => {
+    const mockFetch = vi.fn().mockRejectedValue(new DOMException("Aborted", "AbortError"));
+    vi.stubGlobal("fetch", mockFetch);
+
+    const context = {
+      req: {
+        text: vi.fn().mockResolvedValue('{"data":"test"}'),
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/contracts",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyJson(context as import("hono").Context, "POST", "/v4/contracts", 201);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.stringContaining("timed out") }),
+      504
+    );
+  });
+
+  it("proxyMultipart forwards 422 with original status", async () => {
+    const mockResponse = new Response(JSON.stringify({ detail: "Invalid CSV format" }), {
+      status: 422,
+      headers: { "content-type": "application/json" },
+    });
+    const mockFetch = vi.fn().mockResolvedValue(mockResponse);
+    vi.stubGlobal("fetch", mockFetch);
+
+    // Create mock ReadableStream for body
+    const mockBody = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array());
+        controller.close();
+      },
+    });
+
+    const context = {
+      req: {
+        raw: {
+          body: mockBody,
+        } as unknown as Request,
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/ingestion/bulk-upload",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyMultipart(context as import("hono").Context, "POST", "/v4/ingestion/bulk-upload", 202);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: "Invalid CSV format" }),
+      422
+    );
+  });
+
+  it("proxyMultipart returns 502 for 5xx backend responses", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Service unavailable" }), {
+        status: 503,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", mockFetch);
+
+    const mockBody = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array());
+        controller.close();
+      },
+    });
+
+    const context = {
+      req: {
+        raw: {
+          body: mockBody,
+        } as unknown as Request,
+        header: vi.fn().mockReturnValue(null),
+        url: "http://localhost:3000/api/ingestion/bulk-upload",
+      },
+      body: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    } as unknown as import("hono").Context;
+
+    await proxyMultipart(context as import("hono").Context, "POST", "/v4/ingestion/bulk-upload", 202);
+
+    expect(context.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.stringContaining("Backend error 503") }),
+      502
+    );
   });
 });

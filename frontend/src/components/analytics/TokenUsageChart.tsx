@@ -42,7 +42,7 @@ function TokenUsageTooltip({ active, payload, label }: { active?: boolean; paylo
   );
 }
 
-export function TokenUsageChart({ period: _period, data = [], loading }: TokenUsageChartProps) {
+export function TokenUsageChart({ data = [], loading }: TokenUsageChartProps) {
   return (
     <ChartCard title="Token Usage" subtitle="Prompt and completion tokens over period" loading={loading}>
       <ResponsiveContainer width="100%" height={240}>

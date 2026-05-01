@@ -519,7 +519,7 @@ data/                          # NEW: Data artifacts (git-ignored)
 
 - [V3_PLAN.md](V3_PLAN.md) — Core AI architecture
 - [V2_TO_V3_TRANSITION.md](V2_TO_V3_TRANSITION.md) — Evolution from POC to production
-- [architecture.md](docs/architecture.md) — System design documentation
+- [architecture.md](../architecture.md) — System design documentation
 
 ---
 

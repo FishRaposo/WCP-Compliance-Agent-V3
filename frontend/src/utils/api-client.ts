@@ -113,4 +113,6 @@ export const apiClient = {
       method: "POST",
       body: form,
     }),
+  delete: <T>(path: string) =>
+    request<T>(path, { method: "DELETE" }),
 };

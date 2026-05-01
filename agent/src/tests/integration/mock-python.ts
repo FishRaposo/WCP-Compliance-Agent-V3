@@ -93,6 +93,32 @@ app.post("/decisions", async (c) => {
   });
 });
 
+// V4 proxy routes — required by routes.test.ts and v4-integration.test.ts
+
+app.get("/v4/contracts", () => new Response(null, { status: 200 }));
+app.post("/v4/contracts", () => new Response(null, { status: 201 }));
+app.get("/v4/contracts/:id", () => new Response(null, { status: 200 }));
+app.put("/v4/contracts/:id", () => new Response(null, { status: 200 }));
+app.delete("/v4/contracts/:id", () => new Response(null, { status: 200 }));
+app.post("/v4/contracts/bulk", () => new Response(null, { status: 202 }));
+
+app.get("/v4/payrolls", () => new Response(null, { status: 200 }));
+app.post("/v4/payrolls", () => new Response(null, { status: 201 }));
+app.get("/v4/payrolls/:id", () => new Response(null, { status: 200 }));
+app.put("/v4/payrolls/:id", () => new Response(null, { status: 200 }));
+app.delete("/v4/payrolls/:id", () => new Response(null, { status: 200 }));
+app.post("/v4/payrolls/bulk", () => new Response(null, { status: 202 }));
+
+app.get("/v4/ingestion/jobs", () => new Response(null, { status: 200 }));
+
+app.get("/v4/analytics/overview", () => new Response(null, { status: 200 }));
+app.get("/v4/analytics/decision-volume", () => new Response(null, { status: 200 }));
+app.get("/v4/analytics/compliance", () => new Response(null, { status: 200 }));
+app.get("/v4/analytics/wages", () => new Response(null, { status: 200 }));
+app.get("/v4/analytics/llm", () => new Response(null, { status: 200 }));
+
+app.post("/v4/ingestion/bulk-upload", () => new Response(null, { status: 202 }));
+
 export function startMockBackend(port = 9999) {
   return serve({ fetch: app.fetch, port }, () => {
     console.log(`Mock Python backend running on port ${port}`);

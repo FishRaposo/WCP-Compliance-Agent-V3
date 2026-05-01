@@ -39,7 +39,7 @@ function TrustScoreTooltip({ active, payload, label }: { active?: boolean; paylo
   );
 }
 
-export function TrustScoreTrend({ period: _period, data = [], loading }: TrustScoreTrendProps) {
+export function TrustScoreTrend({ data = [], loading }: TrustScoreTrendProps) {
   return (
     <ChartCard title="Trust Score Trend" subtitle="Average trust score over period" loading={loading}>
       <ResponsiveContainer width="100%" height={240}>

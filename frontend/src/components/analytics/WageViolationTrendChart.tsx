@@ -43,7 +43,7 @@ function WageViolationTooltip({ active, payload, label }: { active?: boolean; pa
   );
 }
 
-export function WageViolationTrendChart({ period: _period, data = [], loading }: WageViolationTrendChartProps) {
+export function WageViolationTrendChart({ data = [], loading }: WageViolationTrendChartProps) {
   return (
     <ChartCard title="Wage Violation Trend" subtitle="Violation count and rate over period" loading={loading}>
       <ResponsiveContainer width="100%" height={300}>

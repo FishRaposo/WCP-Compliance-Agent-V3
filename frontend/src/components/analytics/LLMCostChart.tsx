@@ -43,7 +43,7 @@ function LLMCostTooltip({ active, payload, label }: { active?: boolean; payload?
   );
 }
 
-export function LLMCostChart({ period: _period, data = [], loading }: LLMCostChartProps) {
+export function LLMCostChart({ data = [], loading }: LLMCostChartProps) {
   return (
     <ChartCard title="LLM Cost Trend" subtitle="Total cost and cost per decision over period" loading={loading}>
       <ResponsiveContainer width="100%" height={300}>

@@ -5,6 +5,16 @@
  * V4 event streams. Redis client is lazily initialized to avoid requiring
  * Redis at import time.
  *
+ * Key behaviors:
+ * - Consumer group pattern (xreadgroup) ensures at-least-once delivery and
+ *   allows multiple concurrent consumers (e.g., multiple SSE bridge connections).
+ * - Messages are acknowledged (xack) only after the handler succeeds, ensuring
+ *   durability across consumer restarts.
+ * - xgroup CREATE is idempotent — BUSYGROUP errors are logged at debug level
+ *   and ignored (group already exists).
+ * - getRedisClient uses a lazy singleton; connection failures propagate
+ *   immediately so callers can fall back gracefully.
+ *
  * ADR-013: Redis Streams
  * V4 Event Architecture: events/streams/consumer.ts
  */
@@ -45,10 +55,8 @@ let redisClient: RedisClientInterface | null = null;
 const getRedisClient = async (): Promise<RedisClientInterface> => {
   if (redisClient !== null) return redisClient;
   try {
-    // Use createRequire to handle optional ioredis dependency
-    // This allows the module to be imported without ioredis being installed,
-    // but will fail at runtime if ioredis is not available
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // Use createRequire so the module can be imported even when the optional
+    // runtime dependency is unavailable in lightweight test environments.
     const Redis = require("ioredis");
     const client = new Redis({
       host: process.env.REDIS_HOST ?? "localhost",

@@ -41,7 +41,7 @@ function ApprovalRateByTradeTooltip({ active, payload }: { active?: boolean; pay
   );
 }
 
-export function ApprovalRateByTradeChart({ period: _period, data = [], loading }: ApprovalRateByTradeChartProps) {
+export function ApprovalRateByTradeChart({ data = [], loading }: ApprovalRateByTradeChartProps) {
   const sorted = [...data].sort((a, b) => b.total - a.total);
   return (
     <ChartCard title="Approval Rate by Trade" subtitle="Grouped by trade with status breakdown" loading={loading} className="md:col-span-2">

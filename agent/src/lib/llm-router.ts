@@ -42,12 +42,12 @@ export class LLMRouter {
   }
 
   createModel(config: LLMConfig): LanguageModelV1 {
-      if (config.provider === "openai") return openai(config.model) as any;
-      if (config.provider === "anthropic") return anthropic(config.model) as any;
-      return this.getOllama()(config.model) as any;
+      if (config.provider === "openai") return openai(config.model) as LanguageModelV1;
+      if (config.provider === "anthropic") return anthropic(config.model) as unknown as LanguageModelV1;
+      return this.getOllama()(config.model) as LanguageModelV1;
   }
 
-  async generate(config: LLMConfig, prompt: string) {
+  async generate(config: LLMConfig) {
       return {
           response: '{"verdict": "approved"}',
           model: config.model,
@@ -59,8 +59,8 @@ export class LLMRouter {
   async generateWithFallback(prompt: string, context: RoutingContext) {
     const config = this.selectProvider(context);
     try {
-        return await this.generate(config, prompt);
-    } catch (e) {
+        return await this.generate(config);
+    } catch {
         const fallbackConfigs = [
             { provider: "openai", model: "gpt-4o-mini", pricing: { input: 0.005, output: 0.015 } },
             { provider: "anthropic", model: "claude-3-5-haiku-20241022", pricing: { input: 0.003, output: 0.015 } }
@@ -68,8 +68,8 @@ export class LLMRouter {
 
         for (const fallback of fallbackConfigs) {
             try {
-                return await this.generate(fallback, prompt);
-            } catch (e2) {
+                return await this.generate(fallback);
+            } catch {
                 // Ignore fallback error and try next
             }
         }

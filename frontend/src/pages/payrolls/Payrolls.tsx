@@ -30,8 +30,8 @@ function PayrollDetail({ record }: { record: PayrollRecordSummary }) {
           <div><span className="text-muted-foreground">Locality</span><p className="font-medium">{record.locality_code}</p></div>
           <div><span className="text-muted-foreground">Week Ending</span><p className="font-medium">{record.week_ending}</p></div>
           <div><span className="text-muted-foreground">Hours</span><p className="font-medium">{record.total_hours}</p></div>
-          <div><span className="text-muted-foreground">Hourly Rate</span><p className="font-medium">${record.hourly_rate}</p></div>
-          <div><span className="text-muted-foreground">Gross Pay</span><p className="font-medium">${record.gross_pay}</p></div>
+          <div><span className="text-muted-foreground">Hourly Rate</span><p className="font-medium">${record.hourly_rate.toFixed(2)}</p></div>
+          <div><span className="text-muted-foreground">Gross Pay</span><p className="font-medium">${record.gross_pay.toFixed(2)}</p></div>
         </div>
         <div className="mt-4 flex justify-end">
           <Button variant="outline" onClick={() => window.history.back()}>Close</Button>
@@ -45,19 +45,26 @@ function CSVUploadDialog({ onClose, onUploaded }: { onClose: () => void; onUploa
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contractId, setContractId] = useState<string>("");
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
+    if (!contractId.trim()) {
+      setError("Contract ID is required for payroll imports");
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
       const form = new FormData();
       form.append("file", file);
-      await apiClient.postForm<{ job_id: string }>("/api/payrolls/bulk", form);
+      form.append("type", "payroll_import");
+      form.append("contract_id", contractId.trim());
+      await apiClient.postForm<{ job_id: string }>("/api/ingestion/bulk-upload", form);
       onUploaded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : "Upload failed. Please check the contract ID and try again.");
     } finally {
       setUploading(false);
     }
@@ -71,6 +78,17 @@ function CSVUploadDialog({ onClose, onUploaded }: { onClose: () => void; onUploa
           <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
         </div>
         <form onSubmit={handleUpload} className="grid gap-4">
+          <div>
+            <label className="text-sm font-medium" htmlFor="contract-id">Contract ID</label>
+            <Input
+              id="contract-id"
+              value={contractId}
+              onChange={(e) => setContractId(e.target.value)}
+              placeholder="contract-001"
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">The contract this payroll data belongs to</p>
+          </div>
           <div className="border-2 border-dashed rounded-lg p-6 text-center hover:bg-muted/50 transition-colors">
             <input
               type="file"

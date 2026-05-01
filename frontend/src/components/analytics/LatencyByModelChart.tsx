@@ -44,7 +44,7 @@ function getLatencyColor(p99: number): string {
   return "#ef4444";
 }
 
-export function LatencyByModelChart({ period: _period, data = [], loading }: LatencyByModelChartProps) {
+export function LatencyByModelChart({ data = [], loading }: LatencyByModelChartProps) {
   return (
     <ChartCard title="Latency by Model" subtitle="P50, P95, P99 latency in milliseconds" loading={loading} className="md:col-span-2">
       <ResponsiveContainer width="100%" height={240}>

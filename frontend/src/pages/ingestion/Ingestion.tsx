@@ -9,14 +9,15 @@ import { apiClient } from "@/utils/api-client";
 import type { IngestionJobSummary } from "@/types/v4";
 import { Upload, FileText, RefreshCw, AlertCircle, CheckCircle2, Clock, XCircle, X, Plus } from "lucide-react";
 
-type IngestionType = "contracts" | "payrolls" | "general";
+type IngestionJobType = "contract_import" | "payroll_import" | "general";
+type IngestionJobStatus = "pending" | "running" | "completed" | "failed" | "partial";
 
 interface IngestionFilters {
-  type: string;
-  status: string;
+  type: IngestionJobType | "";
+  status: IngestionJobStatus | "";
 }
 
-const STATUS_CONFIG: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
+const STATUS_CONFIG: Record<IngestionJobStatus, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
   pending: { label: "Pending", icon: Clock, color: "text-muted-foreground" },
   running: { label: "Running", icon: RefreshCw, color: "text-blue-500" },
   completed: { label: "Completed", icon: CheckCircle2, color: "text-green-500" },
@@ -24,9 +25,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ComponentType<{
   partial: { label: "Partial", icon: AlertCircle, color: "text-yellow-500" },
 };
 
-const INGESTION_TYPES: Record<IngestionType, { label: string; description: string }> = {
-  contracts: { label: "Contracts CSV", description: "Bulk import contracts from CSV file" },
-  payrolls: { label: "Payrolls CSV", description: "Bulk import certified payroll records from CSV" },
+const INGESTION_TYPES: Record<IngestionJobType, { label: string; description: string }> = {
+  contract_import: { label: "Contracts CSV", description: "Bulk import contracts from CSV file" },
+  payroll_import: { label: "Payrolls CSV", description: "Bulk import certified payroll records from CSV" },
   general: { label: "General Ingestion", description: "Generic bulk upload for any data type" },
 };
 
@@ -85,7 +86,7 @@ function JobDetailDialog({ job, onClose }: { job: IngestionJobSummary; onClose: 
 }
 
 function BulkUploadDialog({ onClose, onUploaded }: { onClose: () => void; onUploaded: () => void }) {
-  const [ingestionType, setIngestionType] = useState<IngestionType>("contracts");
+  const [ingestionType, setIngestionType] = useState<IngestionJobType>("contract_import");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,11 +99,11 @@ function BulkUploadDialog({ onClose, onUploaded }: { onClose: () => void; onUplo
     try {
       const form = new FormData();
       form.append("file", file);
-      const endpoint = ingestionType === "general" ? "/api/ingestion/bulk-upload" : `/api/${ingestionType}/bulk`;
-      await apiClient.postForm<{ job_id: string }>(endpoint, form);
+      form.append("type", ingestionType);
+      await apiClient.postForm<{ job_id: string }>("/api/ingestion/bulk-upload", form);
       onUploaded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : "Upload failed. Please check your file and try again.");
     } finally {
       setUploading(false);
     }
@@ -119,7 +120,7 @@ function BulkUploadDialog({ onClose, onUploaded }: { onClose: () => void; onUplo
           <div>
             <label className="text-sm font-medium mb-2 block">Upload Type</label>
             <div className="grid gap-2">
-              {(Object.keys(INGESTION_TYPES) as IngestionType[]).map((type) => (
+              {(Object.keys(INGESTION_TYPES) as IngestionJobType[]).map((type) => (
                 <button
                   key={type}
                   type="button"

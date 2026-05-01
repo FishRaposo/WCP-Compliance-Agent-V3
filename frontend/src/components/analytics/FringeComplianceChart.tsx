@@ -36,7 +36,7 @@ function FringeComplianceTooltip({ active, payload, label }: { active?: boolean;
   );
 }
 
-export function FringeComplianceChart({ period: _period, data = [], loading }: FringeComplianceChartProps) {
+export function FringeComplianceChart({ data = [], loading }: FringeComplianceChartProps) {
   return (
     <ChartCard title="Fringe Compliance Rate" subtitle="Fringe benefit compliance over period" loading={loading}>
       <ResponsiveContainer width="100%" height={240}>

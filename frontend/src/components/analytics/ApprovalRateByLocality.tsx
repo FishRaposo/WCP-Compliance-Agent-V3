@@ -41,7 +41,7 @@ function getApprovalColor(rate: number): string {
   return "#ef4444";
 }
 
-export function ApprovalRateByLocality({ period: _period, data = [], loading }: ApprovalRateByLocalityProps) {
+export function ApprovalRateByLocality({ data = [], loading }: ApprovalRateByLocalityProps) {
   const sorted = [...data].sort((a, b) => b.approval_rate - a.approval_rate);
   return (
     <ChartCard title="Approval Rate by Locality" subtitle="Horizontal bars colored by rate" loading={loading}>

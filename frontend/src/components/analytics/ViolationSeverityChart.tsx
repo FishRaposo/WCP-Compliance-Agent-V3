@@ -43,7 +43,7 @@ function ViolationSeverityTooltip({ active, payload, label }: { active?: boolean
   );
 }
 
-export function ViolationSeverityChart({ period: _period, data = [], loading }: ViolationSeverityChartProps) {
+export function ViolationSeverityChart({ data = [], loading }: ViolationSeverityChartProps) {
   return (
     <ChartCard title="Violation Severity Trend" subtitle="Stacked by violation type over time" loading={loading} className="md:col-span-2">
       <ResponsiveContainer width="100%" height={240}>

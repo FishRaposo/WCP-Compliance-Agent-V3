@@ -6,6 +6,13 @@
  *
  * Import-safe: does not require Redis at import time.
  *
+ * Architecture:
+ * - Redis Streams consumer group pattern (xreadgroup) for durable consumption
+ * - SSE event format follows the text/event-stream MIME type
+ * - Heartbeat comments (`: comment\r\n\r\n`) sent every 15s to prevent proxy timeouts
+ * - Graceful fallback to synthetic heartbeat stream when Redis is unavailable
+ * - Active connections tracked in-memory; connection IDs unique per client
+ *
  * V4 Event Architecture: events/sse/bridge.ts
  */
 
@@ -80,8 +87,6 @@ export const createSSEBridge = (
   connectionId: string,
   streamConfig: StreamConfig
 ): ReadableStream<Uint8Array> => {
-  let isActive = true;
-
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       // Register this connection
@@ -97,7 +102,8 @@ export const createSSEBridge = (
       try {
         controller.enqueue(heartbeat);
       } catch {
-        isActive = false;
+        const conn = activeConnections.get(connectionId);
+        if (conn) conn.isActive = false;
       }
     },
     async pull(controller) {

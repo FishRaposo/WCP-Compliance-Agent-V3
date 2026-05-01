@@ -54,12 +54,18 @@ jobs:
       - name: Run database migrations
         working-directory: backend
         run: poetry run alembic upgrade head
+      - name: Lint
+        working-directory: backend
+        run: poetry run ruff check .
       - name: Run unit tests
         working-directory: backend
         run: poetry run pytest tests/unit -v
       - name: Run integration tests
         working-directory: backend
         run: poetry run pytest tests/integration -v --ignore=tests/integration/test_e2e_pipeline.py
+
+    # Note: mypy is a local strict check only (slow in CI).
+    # Run `poetry run mypy src/` locally before committing Python changes.
 
   agent:
     name: TypeScript Agent
@@ -77,6 +83,12 @@ jobs:
       - name: Type check
         working-directory: agent
         run: npm run typecheck
+      - name: Lint
+        working-directory: agent
+        run: npm run lint
+      - name: Build
+        working-directory: agent
+        run: npm run build
       - name: Run tests
         working-directory: agent
         run: npm test
@@ -97,6 +109,9 @@ jobs:
       - name: Type check
         working-directory: frontend
         run: npm run typecheck
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
       - name: Build
         working-directory: frontend
         run: npm run build
