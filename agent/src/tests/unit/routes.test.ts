@@ -38,4 +38,19 @@ describe("HTTP routes", () => {
     });
     expect(res.status).toBe(200);
   });
+
+  it("GET /api/contracts reaches V4 proxy route", async () => {
+    const res = await app.request("/api/contracts");
+    expect([200, 502]).toContain(res.status);
+  });
+
+  it("GET /api/payrolls reaches V4 proxy route", async () => {
+    const res = await app.request("/api/payrolls");
+    expect([200, 502]).toContain(res.status);
+  });
+
+  it("GET /api/ingestion/jobs reaches V4 proxy route", async () => {
+    const res = await app.request("/api/ingestion/jobs");
+    expect([200, 502]).toContain(res.status);
+  });
 });
