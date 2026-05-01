@@ -1,0 +1,4 @@
+## 2025-05-14 - [Fail-Open Production Configuration Guardrails]
+**Vulnerability:** The Node.js agent backend defined default security configurations (`JWT_SECRET="change-me-before-launch"`, `AUTH_DISABLED="false"`) that were not explicitly validated upon startup when the service environment transitions to `production`. A developer or automated CD pipeline that fails to inject correct production secrets could inadvertently deploy an application vulnerable to complete token forgery and authorization bypass.
+**Learning:** Hardcoded defaults for critical authentication logic—even as development fallbacks—introduce significant risk if validation checks are missing during production deployments.
+**Prevention:** Always enforce strict guardrails for required secrets. If an application must gracefully boot with dev-only defaults in local environments, explicitly throw initialization errors if those same default secrets are observed while `NODE_ENV === "production"`.
