@@ -149,58 +149,73 @@ def run_eval(eval_config: dict[str, Any]) -> dict[str, Any]:
     with open(golden_path) as f:
         golden_set = _json.load(f)
 
+    async def _process_example(example: dict[str, Any]) -> dict[str, Any]:
+        try:
+            text = example.get("text", "")
+            expected_verdict = example.get("expected_verdict")
+            expected_trust_band = example.get("expected_trust_band")
+
+            extracted = extract_from_text(text)
+            report = await run_rule_engine(extracted)
+
+            verdict = (
+                "approved"
+                if report.overall_status.value == "pass"
+                else "rejected"
+            )
+            deterministic_score = 1.0 - (
+                report.violation_count / max(len(report.checks), 1)
+            )
+            trust_band = determine_trust_band(deterministic_score).value
+
+            verdict_correct = verdict == expected_verdict
+            band_correct = trust_band == expected_trust_band
+            is_correct = verdict_correct and band_correct
+
+            return {
+                "id": example.get("id"),
+                "verdict_correct": verdict_correct,
+                "band_correct": band_correct,
+                "overall_correct": is_correct,
+                "predicted_verdict": verdict,
+                "predicted_band": trust_band,
+                "is_correct": is_correct,
+                "error": None,
+            }
+        except Exception as exc:
+            return {
+                "id": example.get("id"),
+                "is_correct": False,
+                "error": str(exc),
+            }
+
     async def _evaluate() -> dict[str, Any]:
+        tasks = [_process_example(example) for example in golden_set]
+        results = await asyncio.gather(*tasks)
+
         correct = 0
-        total = 0
+        total = len(results)
         errors = 0
         details: list[dict[str, Any]] = []
 
-        for example in golden_set:
-            try:
-                text = example.get("text", "")
-                expected_verdict = example.get("expected_verdict")
-                expected_trust_band = example.get("expected_trust_band")
-
-                extracted = extract_from_text(text)
-                report = await run_rule_engine(extracted)
-
-                verdict = (
-                    "approved"
-                    if report.overall_status.value == "pass"
-                    else "rejected"
-                )
-                deterministic_score = 1.0 - (
-                    report.violation_count / max(len(report.checks), 1)
-                )
-                trust_band = determine_trust_band(deterministic_score).value
-
-                verdict_correct = verdict == expected_verdict
-                band_correct = trust_band == expected_trust_band
-                is_correct = verdict_correct and band_correct
-
-                if is_correct:
-                    correct += 1
-                total += 1
-
-                details.append(
-                    {
-                        "id": example.get("id"),
-                        "verdict_correct": verdict_correct,
-                        "band_correct": band_correct,
-                        "overall_correct": is_correct,
-                        "predicted_verdict": verdict,
-                        "predicted_band": trust_band,
-                    }
-                )
-            except Exception as exc:
+        for res in results:
+            if res.get("error"):
                 errors += 1
-                total += 1
-                details.append(
-                    {
-                        "id": example.get("id"),
-                        "error": str(exc),
-                    }
-                )
+                details.append({
+                    "id": res.get("id"),
+                    "error": res.get("error"),
+                })
+            else:
+                if res.get("is_correct"):
+                    correct += 1
+                details.append({
+                    "id": res.get("id"),
+                    "verdict_correct": res.get("verdict_correct"),
+                    "band_correct": res.get("band_correct"),
+                    "overall_correct": res.get("overall_correct"),
+                    "predicted_verdict": res.get("predicted_verdict"),
+                    "predicted_band": res.get("predicted_band"),
+                })
 
         return {
             "correct": correct,
