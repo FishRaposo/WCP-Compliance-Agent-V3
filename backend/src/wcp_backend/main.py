@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    await init_db()
+    if not settings.skip_db_startup:
+        await init_db()
+    else:
+        logger.info("Skipping DB initialization due to SKIP_DB_STARTUP=True")
     try:
         init_phoenix()
     except Exception:

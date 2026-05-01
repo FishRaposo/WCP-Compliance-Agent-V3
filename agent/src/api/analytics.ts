@@ -5,6 +5,25 @@ import { BackendError } from "../utils/errors.js";
 
 export const analytics = new Hono();
 
+analytics.get("/overview", async (c) => {
+  const days = c.req.query("days") ?? "30";
+  try {
+    const data = await httpClient.get<unknown>(`/analytics/overview?days=${days}`);
+    return c.json(data, 200);
+  } catch (err) {
+    // Dev fallback: return a mocked overview so the frontend can render
+    // when the backend DB is unavailable during local development.
+    if (err instanceof BackendError) {
+      // If backend responded with a clear error, surface it but also provide a mock
+      return c.json(
+        { error: err.message, overview: { total_decisions: 0, total_contracts: 0, avg_trust_score: 0.0, overall_approval_rate: 0.0, human_review_queue_depth: 0, decisions_this_month: 0, note: "Mocked overview (backend error)" } },
+        502
+      );
+    }
+    return c.json({ total_decisions: 0, total_contracts: 0, avg_trust_score: 0.0, overall_approval_rate: 0.0, human_review_queue_depth: 0, decisions_this_month: 0, note: "Mocked overview (backend unreachable)" }, 200);
+  }
+});
+
 analytics.get("/volume", async (c) => {
   const days = c.req.query("days") ?? "30";
   try {

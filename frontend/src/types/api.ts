@@ -50,6 +50,16 @@ export interface DecisionVolume {
   count: number;
 }
 
+export interface AnalyticsOverview {
+  total_decisions: number;
+  total_contracts: number;
+  avg_trust_score: number;
+  overall_approval_rate: number;
+  human_review_queue_depth: number;
+  decisions_this_month: number;
+  note: string;
+}
+
 export interface ApprovalRateOverall {
   total: number;
   approved: number;

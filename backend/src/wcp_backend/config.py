@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     trust_score_medium_band: float = 0.60
 
     phase: int = 1
+    skip_db_startup: bool = False
 
     @field_validator("database_url", "redis_url")
     @classmethod

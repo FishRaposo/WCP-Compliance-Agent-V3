@@ -229,7 +229,7 @@ Technologies considered but rejected with clear engineering rationale:
 - [INTERVIEW_PREP.md](INTERVIEW_PREP.md) — Pre-prepared answers for common questions
 - [V2_TO_V3_TRANSITION.md](../../V2_TO_V3_TRANSITION.md) — Architectural evolution from V2 to V3
 - [V3_PLAN.md](../../V3_PLAN.md) — Current AI system architecture
-- [V4_PLAN.md](../../V4_PLAN.md) — Data platform layer specification
+- [V4_PLAN.md](../planning/V4_PLAN.md) — Data platform layer specification
 
 ---
 

@@ -8,7 +8,7 @@ from sqlalchemy import desc, func, select
 
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
-from wcp_backend.services.tables import decisions_table
+from wcp_backend.services.tables import contracts_table, decisions_table
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -36,6 +36,76 @@ class CostAnalytics(BaseModel):
     total_decisions: int
     decisions_this_month: int
     note: str
+
+
+class AnalyticsOverview(BaseModel):
+    total_decisions: int
+    total_contracts: int
+    avg_trust_score: float
+    overall_approval_rate: float
+    human_review_queue_depth: int
+    decisions_this_month: int
+    note: str
+
+
+@router.get("/overview", response_model=AnalyticsOverview)
+async def analytics_overview(days: int = Query(default=30, ge=1, le=365)) -> AnalyticsOverview:
+    """Get dashboard summary metrics for the analytics landing page."""
+    if settings.phase < 2:
+        raise HTTPException(
+            status_code=503, detail="Analytics API requires Phase 2 (PostgreSQL)"
+        )
+
+    # Development shortcut: when DB startup is intentionally skipped, return
+    # an empty/mocked overview so the analytics page can render during local
+    # dev without a running Postgres instance.
+    if getattr(settings, "skip_db_startup", False):
+        return AnalyticsOverview(
+            total_decisions=0,
+            total_contracts=0,
+            avg_trust_score=0.0,
+            overall_approval_rate=0.0,
+            human_review_queue_depth=0,
+            decisions_this_month=0,
+            note="Mocked overview (SKIP_DB_STARTUP=True)",
+        )
+
+    try:
+        async with async_session() as session:
+            total_decisions_result = await session.execute(select(func.count()).select_from(decisions_table))
+            total_contracts_result = await session.execute(select(func.count()).select_from(contracts_table))
+            avg_trust_result = await session.execute(select(func.avg(decisions_table.c.trust_score)))
+            approved_result = await session.execute(
+                select(func.count()).select_from(decisions_table).where(decisions_table.c.verdict == "approved")
+            )
+            human_review_result = await session.execute(
+                select(func.count()).select_from(decisions_table).where(decisions_table.c.requires_human_review.is_(True))
+            )
+            month_result = await session.execute(
+                select(func.count())
+                .select_from(decisions_table)
+                .where(decisions_table.c.created_at >= datetime.utcnow() - timedelta(days=days))
+            )
+
+            total_decisions = total_decisions_result.scalar() or 0
+            total_contracts = total_contracts_result.scalar() or 0
+            avg_trust = float(avg_trust_result.scalar() or 0.0)
+            approved = approved_result.scalar() or 0
+            human_review_queue_depth = human_review_result.scalar() or 0
+            decisions_this_month = month_result.scalar() or 0
+
+            return AnalyticsOverview(
+                total_decisions=total_decisions,
+                total_contracts=total_contracts,
+                avg_trust_score=round(avg_trust, 4),
+                overall_approval_rate=round(approved / total_decisions, 4) if total_decisions > 0 else 0.0,
+                human_review_queue_depth=human_review_queue_depth,
+                decisions_this_month=decisions_this_month,
+                note="Derived from existing V3 decisions data",
+            )
+    except Exception:
+        logger.exception("analytics_overview failed")
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 @router.get("/volume", response_model=list[DecisionVolume])

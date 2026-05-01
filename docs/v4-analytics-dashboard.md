@@ -8,6 +8,8 @@
 
 V4 adds four analytics pages to the existing React frontend, built with Recharts. Each page contains multiple chart components fed by DuckDB analytical queries through the V4 API. Pages are accessible via a sidebar navigation item.
 
+Current repository baseline still uses `frontend/src/pages/Analytics.tsx` and the existing `useAnalytics.ts` hooks. The file paths and component names below are the V4 target scaffold, not the current implementation.
+
 **Design principles:**
 - Consistent layout: page header with period selector + grid of chart cards
 - All charts responsive: desktop 2-column grid, mobile single column
@@ -116,6 +118,8 @@ interface KPICardProps {
 ## Page 1: Analytics Overview (`/analytics`)
 
 **File:** `frontend/src/pages/analytics/index.tsx`
+
+Current baseline: `frontend/src/pages/Analytics.tsx`.
 
 **Data source:** `GET /api/analytics/overview` + `GET /api/analytics/decision-volume` + SSE real-time events
 

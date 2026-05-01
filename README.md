@@ -249,7 +249,7 @@ This architecture would hold up in a design review for medical devices, trading 
 ## Roadmap
 
 **Phase 1 — Backend Core ✅**
-Python deterministic pipeline. 87 unit tests. 9 API endpoints. 5 check functions. 20-trade DBWD corpus.
+Python deterministic pipeline. 89 unit tests. 9 API endpoints. 5 check functions. 20-trade DBWD corpus.
 
 **Phase 2 — Data Layer + Infrastructure ✅**
 PostgreSQL (pgvector), Redis cache, Elasticsearch BM25, hybrid RAG, Alembic migrations, seed scripts, Celery workers, Phoenix observability.

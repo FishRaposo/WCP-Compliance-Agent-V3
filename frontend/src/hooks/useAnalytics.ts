@@ -1,11 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../utils/api-client.ts";
 import type {
+  AnalyticsOverview,
   DecisionVolume,
   ApprovalRateResponse,
   TrustBandDistribution,
   CostAnalytics,
 } from "../types/api.ts";
+
+export function useAnalyticsOverview(days = 30) {
+  return useQuery({
+    queryKey: ["analytics", "overview", days],
+    queryFn: () =>
+      apiClient.get<AnalyticsOverview>(`/api/analytics/overview?days=${days}`),
+  });
+}
 
 export function useDecisionVolume(days = 30) {
   return useQuery({

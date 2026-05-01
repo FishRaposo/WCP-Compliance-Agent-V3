@@ -1,4 +1,5 @@
 import type {
+  AnalyticsOverview,
   TrustScoredDecision,
   DecisionSummary,
   DecisionVolume,
@@ -92,6 +93,16 @@ export const mockDecisionVolume: DecisionVolume[] = Array.from({ length: 14 }, (
   date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
   count: Math.floor(Math.random() * 15) + 2,
 }));
+
+export const mockAnalyticsOverview: AnalyticsOverview = {
+  total_decisions: 156,
+  total_contracts: 12,
+  avg_trust_score: 0.87,
+  overall_approval_rate: 0.859,
+  human_review_queue_depth: 16,
+  decisions_this_month: 42,
+  note: "Mock mode — summary metrics derived from sample V3 decisions",
+};
 
 export const mockApprovalRate: ApprovalRateResponse = {
   overall: { total: 156, approved: 134, rate: 0.859 },

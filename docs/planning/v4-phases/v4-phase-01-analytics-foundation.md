@@ -349,6 +349,7 @@ See [V4 Analytics Dashboard Spec](../v4-analytics-dashboard.md) for full compone
 
 **Files to create:**
 - `frontend/src/pages/analytics/index.tsx` — Overview (KPIs + DecisionVolumeChart + ApprovalRateChart + TopViolationsChart + TrustScoreTrend)
+    - Current baseline: `frontend/src/pages/Analytics.tsx`
 - `frontend/src/pages/analytics/compliance.tsx` — ApprovalRateByTrade + ApprovalRateByLocality + ViolationSeverityChart
 - `frontend/src/pages/analytics/wages.tsx` — WageViolationTrend + ActualVsRequiredScatter + FringeComplianceChart
 - `frontend/src/pages/analytics/llm.tsx` — LLMCostChart + TokenUsageChart + ModelDistributionChart + LatencyByModelChart

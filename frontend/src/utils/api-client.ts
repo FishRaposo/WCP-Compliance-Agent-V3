@@ -1,4 +1,5 @@
 import {
+  mockAnalyticsOverview,
   mockDecisionSummaries,
   mockTrustScoredDecision,
   mockDecisionVolume,
@@ -64,6 +65,7 @@ async function mockResolve<T>(path: string): Promise<T> {
   if (path.startsWith("/api/analyze")) return mockTrustScoredDecision as T;
   if (path.startsWith("/api/decisions")) return mockDecisionSummaries as T;
   if (path.startsWith("/api/jobs/")) return mockJobStatus as T;
+  if (path.includes("/analytics/overview")) return mockAnalyticsOverview as T;
   if (path.includes("/analytics/volume")) return mockDecisionVolume as T;
   if (path.includes("/analytics/approval")) return mockApprovalRate as T;
   if (path.includes("/analytics/trust-band")) return mockTrustBandDistribution as T;
