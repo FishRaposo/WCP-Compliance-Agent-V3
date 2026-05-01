@@ -10,13 +10,14 @@ import {
 } from "./mock-data";
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
 function getToken(): string | null {
   return localStorage.getItem("wcp_token");
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
+
   if (IS_MOCK) {
     return mockResolve<T>(path);
   }
