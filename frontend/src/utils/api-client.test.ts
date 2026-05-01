@@ -24,12 +24,12 @@ describe("apiClient", () => {
     // Mock window.location
     originalWindowLocation = window.location;
     delete (window as any).location;
-    window.location = { ...originalWindowLocation, href: "http://localhost/" } as Location;
+    (window as any).location = { ...originalWindowLocation, href: "http://localhost/" };
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    window.location = originalWindowLocation;
+    (window as any).location = originalWindowLocation;
   });
 
   describe("HTTP requests", () => {

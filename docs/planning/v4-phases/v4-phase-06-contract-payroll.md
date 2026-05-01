@@ -12,7 +12,7 @@ poetry run pytest tests/unit -v             # All tests pass
 poetry run alembic upgrade head             # Migration 006 applied
 
 # Test contract CRUD
-curl -X POST http://localhost:8000/v1/contracts -H 'Content-Type: application/json' -d '{
+curl -X POST http://localhost:8000/v4/contracts -H 'Content-Type: application/json' -d '{
   "contract_number": "GS-TEST-001",
   "project_name": "Test Project",
   "contractor_name": "Test Contractor",
@@ -22,25 +22,25 @@ curl -X POST http://localhost:8000/v1/contracts -H 'Content-Type: application/js
 }'
 # → 201 Created with contract ID
 
-curl http://localhost:8000/v1/contracts
+curl http://localhost:8000/v4/contracts
 # → List with 1 contract
 
-curl http://localhost:8000/v1/contracts/{id}
+curl http://localhost:8000/v4/contracts/{id}
 # → Single contract with decision_count, payroll_record_count
 
 # Test bulk import
-curl -X POST http://localhost:8000/v1/contracts/bulk \
+curl -X POST http://localhost:8000/v4/contracts/bulk \
   -F "file=@test_contracts.csv"
 # → {job_id: "...", created: N, failed: 0}
 
 # Test payroll import
-curl -X POST http://localhost:8000/v1/payrolls/bulk \
+curl -X POST http://localhost:8000/v4/payrolls/bulk \
   -H 'Content-Type: application/json' \
   -d '{"contract_id": "...", "records": [...], "source": "csv"}'
 # → {job_id: "...", created: N, failed: 0}
 
 # Test ingestion status
-curl http://localhost:8000/v1/ingestion/status/{job_id}
+curl http://localhost:8000/v4/ingestion/status/{job_id}
 # → {status: "completed", processed_records: N, failed_records: 0}
 
 # Test partition was created
@@ -405,7 +405,7 @@ cd frontend
 npm ci && npm run typecheck && npm run build
 
 # Manual test: create contract
-curl -X POST http://localhost:8000/v1/contracts \
+curl -X POST http://localhost:8000/v4/contracts \
   -H 'Content-Type: application/json' \
   -d '{"contract_number":"GS-001","project_name":"Test","contractor_name":"Test Co","locality":"Boston, MA","start_date":"2025-01-01"}'
 ```

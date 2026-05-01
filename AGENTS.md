@@ -100,8 +100,8 @@ Integration tests and eval tests run locally against WSL-native infrastructure.
 - **asyncio_mode = auto** — all async test functions run automatically, no `@pytest.mark.asyncio` needed.
 - **Eval tests need real infra**: postgres, redis, ES seeded with DBWD data, and a real `OPENAI_API_KEY`. Don't run them locally without the full stack.
 - **conftest.py** provides `client` (FastAPI TestClient), `sample_extracted_wcp`, and `sample_dbwd_rate` fixtures.
-- **Agent tests**: vitest, 46 tests (unit + integration + router), no special infra requirements.
-- **Frontend**: vitest + testing-library, 12 tests across 4 files (Login, TrustScoreBadge, apiClient, App routing). Build verification: `npm run typecheck && npm run build`.
+- **Agent tests**: vitest, 48 tests (unit + integration + router + V4 scaffold), no special infra requirements.
+- **Frontend**: vitest + testing-library, 13 tests across 5 files (Login, TrustScoreBadge, apiClient, App routing, V4 scaffold). Build verification: `npm run typecheck && npm run build`.
 
 ## Environment
 
