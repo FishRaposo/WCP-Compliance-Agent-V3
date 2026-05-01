@@ -10,6 +10,9 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     globals: true,
   },
+  define: {
+    "import.meta.env.VITE_MOCK_API": "true",
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

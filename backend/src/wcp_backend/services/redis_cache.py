@@ -15,12 +15,12 @@ DBWD_CACHE_TTL = 3600 * 24  # 24 hours
 
 @lru_cache(maxsize=1)
 def get_redis() -> aioredis.Redis:
-    return aioredis.from_url(  # type: ignore[no-untyped-call]
+    return cast(aioredis.Redis, aioredis.from_url(  # type: ignore[no-untyped-call]
         settings.redis_url,
         decode_responses=True,
         socket_connect_timeout=2,
         socket_timeout=2,
-    )
+    ))
 
 
 async def cache_get(key: str) -> Any | None:

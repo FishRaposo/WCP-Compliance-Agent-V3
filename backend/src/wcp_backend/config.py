@@ -1,5 +1,6 @@
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import ValidationInfo
 
 
 class Settings(BaseSettings):
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
 
     @field_validator("database_url", "redis_url")
     @classmethod
-    def _validate_not_placeholder_in_production(cls, v: str, info) -> str:
+    def _validate_not_placeholder_in_production(cls, v: str, info: ValidationInfo) -> str:
         if info.data.get("environment") == "production" and "localhost" in v:
             raise ValueError(
                 f"{info.field_name} must not point to localhost in production. "
