@@ -30,8 +30,7 @@ class TestVerifyPassword:
 class TestAuthValidateEndpoint:
     """Test auth /validate endpoint."""
 
-    @pytest.mark.asyncio
-    async def test_missing_user_returns_invalid(self, client, monkeypatch):
+    def test_missing_user_returns_invalid(self, client, monkeypatch):
         """Test that non-existent email returns valid=false."""
         monkeypatch.setattr(
             "wcp_backend.api.auth.async_session",
@@ -58,8 +57,7 @@ class TestAuthValidateEndpoint:
         assert data["valid"] is False
         assert data["user_id"] is None
 
-    @pytest.mark.asyncio
-    async def test_valid_credentials_return_user_info(self, client, monkeypatch):
+    def test_valid_credentials_return_user_info(self, client, monkeypatch):
         """Test that correct credentials return valid=true with user info."""
         import bcrypt
 
@@ -95,3 +93,23 @@ class TestAuthValidateEndpoint:
         assert data["valid"] is True
         assert data["user_id"] == "user-123"
         assert data["role"] == "admin"
+
+    def test_db_error_returns_500(self, client, monkeypatch):
+        """Test that a database exception returns a 500 error."""
+        monkeypatch.setattr(
+            "wcp_backend.api.auth.async_session",
+            MagicMock(
+                return_value=AsyncMock(
+                    __aenter__=AsyncMock(side_effect=Exception("Database connection failed")),
+                    __aexit__=AsyncMock(return_value=None),
+                )
+            ),
+        )
+
+        response = client.post(
+            "/auth/validate",
+            json={"email": "test@example.com", "password": "password"},
+        )
+        assert response.status_code == 500
+        data = response.json()
+        assert data["detail"] == "Authentication error"
