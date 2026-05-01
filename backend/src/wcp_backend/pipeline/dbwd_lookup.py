@@ -13,7 +13,7 @@ import string
 from datetime import date
 from pathlib import Path
 
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 
 from wcp_backend.models.aliases import IN_MEMORY_ALIASES
 from wcp_backend.models.schemas import DBWDRateRecord
@@ -143,36 +143,39 @@ async def _lookup_in_postgres(
     lookup_date = _parse_lookup_date(effective_date)
 
     # Try exact canonical trade name first, then fallback to raw trade
-    candidates = [trade, IN_MEMORY_ALIASES.get(trade.lower().strip(), trade)]
+    raw_trade = trade.lower().strip()
+    candidates = tuple(set([raw_trade, IN_MEMORY_ALIASES.get(raw_trade, raw_trade).lower()]))
 
     async with engine.connect() as conn:
-        for candidate_trade in candidates:
-            result = await conn.execute(
-                text("""
-                    SELECT trade, locality, rate, fringe, effective_date, wage_determination_number
-                    FROM dbwd_rates
-                    WHERE trade ILIKE :trade
-                      AND locality ILIKE :locality
-                      AND effective_date <= :effective_date
-                    ORDER BY effective_date DESC
-                    LIMIT 1
-                """),
-                {
-                    "trade": candidate_trade,
-                    "locality": locality,
-                    "effective_date": lookup_date.isoformat(),
-                },
+        result = await conn.execute(
+            text("""
+                SELECT trade, locality, rate, fringe, effective_date, wage_determination_number
+                FROM dbwd_rates
+                WHERE LOWER(trade) IN :candidates
+                  AND locality ILIKE :locality
+                  AND effective_date <= :effective_date
+                ORDER BY
+                  CASE WHEN LOWER(trade) = :raw_trade THEN 0 ELSE 1 END,
+                  effective_date DESC
+                LIMIT 1
+            """).bindparams(bindparam("candidates", expanding=True)),
+            {
+                "candidates": candidates,
+                "raw_trade": raw_trade,
+                "locality": locality,
+                "effective_date": lookup_date.isoformat(),
+            },
+        )
+        row = result.fetchone()
+        if row:
+            return DBWDRateRecord(
+                trade=row.trade,
+                locality=row.locality,
+                rate=row.rate,
+                fringe=row.fringe,
+                effective_date=row.effective_date,
+                wage_determination_number=row.wage_determination_number or "",
             )
-            row = result.fetchone()
-            if row:
-                return DBWDRateRecord(
-                    trade=row.trade,
-                    locality=row.locality,
-                    rate=row.rate,
-                    fringe=row.fringe,
-                    effective_date=row.effective_date,
-                    wage_determination_number=row.wage_determination_number or "",
-                )
     return None
 
 
