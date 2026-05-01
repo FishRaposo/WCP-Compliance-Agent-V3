@@ -6,11 +6,11 @@
 
 ## Overview
 
-V4 adds new tables to the same PostgreSQL 16 database that V3 uses. V3 tables remain unchanged (V4 only reads them). V4 tables are owned exclusively by V4 modules. A single Alembic migration adds all V4 tables and the `contract_id` foreign key to V3's `decisions` table.
+V4 adds new tables to the same PostgreSQL 16 database that V3 uses. V3 application behavior remains unchanged and V4 tables are owned exclusively by V4 modules. A V4 Alembic migration may add a nullable `contract_id` compatibility column to V3's `decisions` table, but V3 remains the only writer of decision records and the deterministic validation pipeline is not modified.
 
 ### Design Principles
 
-1. **V3 tables are read-only for V4.** V4 never writes to `decisions`, `audit_events`, `dbwd_rates`, `jobs`, or `users`.
+1. **V3 tables are read-only for V4.** V4 never writes to `decisions`, `audit_events`, `dbwd_rates`, `jobs`, or `users`; optional nullable compatibility columns are migration-only extensions.
 2. **V4 tables are owned by V4.** V3 never accesses `contracts`, `payroll_records`, `ingestion_jobs`, or `connector_configs`.
 3. **One database, clear ownership.** No separate database instances. Ownership is enforced at the application layer, not through database permissions.
 4. **Partitioning for scale.** `payroll_records` is partitioned by `contract_id` (list partitioning) to keep queries fast with millions of rows.
@@ -86,7 +86,7 @@ def upgrade():
 
 ## V3 Tables (Unchanged, V4 Reads Only)
 
-### `decisions` — V3 Core (modified: contract_id FK added)
+### `decisions` — V3 Core (optional V4 compatibility column)
 
 ```sql
 -- Existing V3 columns (unchanged)

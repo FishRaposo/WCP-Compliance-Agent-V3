@@ -426,41 +426,48 @@ data/                          # NEW: Data artifacts (git-ignored)
 
 ## Implementation Phases
 
-### Phase 0: Documentation (Now)
-- ✅ This document (V4_PLAN.md)
-- Update V3_PLAN.md with V3.1 multi-LLM section
-- Update README.md with V4 roadmap
+### Phase 0: Readiness + Additive Scaffold
+1. Verify all V3 tests, typechecks, lint checks, and builds still pass
+2. Reconcile V3/V4 boundary, route prefix, and ownership documentation
+3. Add import-safe V4 scaffold modules without changing V3 runtime behavior
+4. Confirm CI remains green before implementing feature logic
 
-### Phase 1: Multi-LLM Routing (V3.1)
-1. Add Anthropic + Ollama provider configs
-2. Implement llm-router.ts with routing logic
-3. Add fallback chain error handling
-4. Test routing with different request types
-
-### Phase 2: Analytics Foundation
+### Phase 1: Analytics Foundation
 1. Add DuckDB dependency + postgres_scan extension
 2. Create analytics/ module with queries.py
 3. Add /analytics/* API endpoints
 4. Create Recharts dashboard components
 5. Add /analytics/* routes in React
 
-### Phase 3: Data Pipelines
+### Phase 2: Data Pipelines
 1. Add Prefect dependency
 2. Create dbwd_refresh.py flow
 3. Add Great Expectations, define expectations
 4. Test scheduled runs locally
 
-### Phase 4: Streaming
+### Phase 3: Streaming
 1. Add Redis Streams producer (decision events)
 2. Add consumer in Agent Gateway
 3. Implement SSE push to React
 4. Add real-time updates to dashboard
 
-### Phase 5: Parquet Archive
+### Phase 4: Parquet Archive
 1. Add decision_export.py pipeline
 2. Schedule weekly Parquet export
 3. Update DuckDB queries to read from Parquet
 4. Implement time-series aggregations
+
+### Phase 5: Enterprise Connectors
+1. Add connector base abstractions
+2. Implement SFTP/API/database connector stubs
+3. Add connector sync orchestration
+4. Validate connector configs without exposing secrets
+
+### Phase 6: Contract/Payroll CRUD
+1. Add migration 006 for V4-owned tables and optional `decisions.contract_id`
+2. Create contracts/payrolls/ingestion modules and `/v4/*` backend routers
+3. Add agent `/api/*` proxy routes
+4. Add frontend `/contracts`, `/payrolls`, and `/ingestion` pages
 
 ---
 

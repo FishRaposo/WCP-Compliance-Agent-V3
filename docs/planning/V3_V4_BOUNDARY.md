@@ -20,7 +20,7 @@ V3 is a **complete, production-ready AI decision system** for Davis-Bacon Act pa
 | **Data Layer** | PostgreSQL, Redis, Elasticsearch | ✅ Complete |
 | **Observability** | Phoenix tracing, Langfuse prompt/cost tracking | ✅ Complete |
 | **Authentication** | JWT with bcrypt + jose | ✅ Complete |
-| **Testing** | 245+ tests, golden set eval, regression detection | ✅ Complete |
+| **Testing** | 250+ tests, golden set eval, regression detection | ✅ Complete |
 | **CI/CD** | GitHub Actions, Vercel + Render deployment | ✅ Complete |
 
 ### Service Architecture (Unchanged in V4)
@@ -85,14 +85,18 @@ interface PayrollRecord {
 }
 ```
 
-### V4-Only API Endpoints
+### V4 API Boundary
 
-| Endpoint | Service | Description |
+Frontend clients continue to call the Agent Gateway under `/api/*`. The Agent proxies V4
+requests to backend V4 routers, which are mounted under `/v4/*`. Existing V3 endpoints keep
+their current paths.
+
+| Public Endpoint | Owner | Backend Target | Description |
 |---|---|---|
-| `GET /api/contracts` | V4 Backend | Contract management CRUD |
-| `POST /api/bulk-upload` | V4 Agent | Batch CSV/PDF contract ingestion |
-| `GET /api/analytics/portfolio` | V4 Backend | Cross-contract DuckDB queries |
-| `GET /api/ingestion/status` | V4 Agent | Prefect ETL job monitoring |
+| `GET /api/contracts` | V4 Agent proxy | `GET /v4/contracts` | Contract management CRUD |
+| `POST /api/bulk-upload` | V4 Agent proxy | `POST /v4/ingestion/bulk-upload` | Batch CSV/PDF contract ingestion |
+| `GET /api/analytics/portfolio` | V4 Agent proxy | `GET /v4/analytics/portfolio` | Cross-contract DuckDB queries |
+| `GET /api/ingestion/status` | V4 Agent proxy | `GET /v4/ingestion/status` | Prefect ETL job monitoring |
 
 ---
 
@@ -121,7 +125,8 @@ interface DecisionEvent {
 ### V3/V4 Shared Database Schema
 
 V3 owns these tables (V4 only reads):
-- `decisions` - V4 adds `contract_id` foreign key column
+- `decisions` - V3 remains the writer; V4 migration may add a nullable `contract_id`
+  compatibility column, but V4 must not alter decision creation, validation, or trust scoring.
 - `audit_events` - Immutable append-only
 - `dbwd_rates` - V4 adds materialized views for analytics
 
@@ -160,10 +165,11 @@ V4 owns these tables (V3 never touches):
 - V3 API contracts remain stable
 
 ### 2. V4 is Additive Only
-- New modules in `v4/` directory
-- New tables in database
-- New API routes in separate routers
-- No changes to V3 source files
+- New backend modules live under `wcp_backend/{analytics,contracts,payrolls,ingestion,events,quality,storage,connectors}`
+- New agent V4 proxy modules live under `agent/src/api/v4/` and `agent/src/events/`
+- New frontend V4 pages/components live under dedicated V4 page/component directories
+- New tables are V4-owned; any nullable V3 compatibility column must be introduced by an explicit migration and documented as non-invasive
+- No changes to V3 deterministic pipeline behavior
 
 ### 3. Shared Database, Separate Schemas
 - V3 tables: `public.*` schema
@@ -179,7 +185,7 @@ V4 owns these tables (V3 never touches):
 ## Success Criteria
 
 V3-to-V4 transition is successful when:
-- [ ] All V3 tests continue to pass (87 + 46 + 12 = 245 tests)
+- [ ] All V3 tests continue to pass (89 backend unit + 48 agent + 13 frontend + 100 eval = 250+ checks)
 - [ ] V3 API response times unchanged (< 5s P99)
 - [ ] V4 can ingest 1000+ WCPs/hour via bulk upload
 - [ ] Cross-contract queries complete in < 2s (DuckDB)
