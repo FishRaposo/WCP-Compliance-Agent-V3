@@ -4,67 +4,56 @@
 export class ExternalAPIRateLimiter {
   private queue: Array<() => void> = [];
   private activeRequests = 0;
-  private lastRequestTime = 0;
   private tokens: number;
-  private readonly maxTokens: number;
-  private readonly refillIntervalMs: number;
+  private timer: NodeJS.Timeout | null = null;
 
   constructor(
     private readonly maxConcurrent: number = 5,
     private readonly minIntervalMs: number = 200
   ) {
     this.tokens = maxConcurrent;
-    this.maxTokens = maxConcurrent;
-    this.refillIntervalMs = minIntervalMs;
+    this.startRefill();
   }
 
-  private async waitForSlot(): Promise<void> {
-    if (this.activeRequests < this.maxConcurrent && this.tokens > 0) {
-      this.tokens--;
-      return;
-    }
-
-    return new Promise<void>((resolve) => {
-      this.queue.push(resolve);
-    });
-  }
-
-  private releaseSlot(): void {
-    const now = Date.now();
-    const elapsed = now - this.lastRequestTime;
-
-    if (elapsed < this.minIntervalMs) {
-      setTimeout(() => this.processQueue(), this.minIntervalMs - elapsed);
-    } else {
-      this.processQueue();
+  private startRefill() {
+    this.timer = setInterval(() => {
+      if (this.tokens < this.maxConcurrent) {
+        this.tokens++;
+        this.processQueue();
+      }
+    }, this.minIntervalMs);
+    // Unref the timer so it doesn't prevent Node.js from exiting if no requests are pending
+    if (this.timer.unref) {
+      this.timer.unref();
     }
   }
 
   private processQueue(): void {
-    if (this.queue.length === 0) {
-      if (this.tokens < this.maxTokens) {
-        this.tokens++;
+    while (
+      this.queue.length > 0 &&
+      this.tokens > 0 &&
+      this.activeRequests < this.maxConcurrent
+    ) {
+      this.tokens--;
+      this.activeRequests++;
+      const next = this.queue.shift();
+      if (next) {
+        next();
       }
-      return;
-    }
-
-    const next = this.queue.shift();
-    if (next) {
-      this.lastRequestTime = Date.now();
-      next();
     }
   }
 
   async throttle<T>(fn: () => Promise<T>): Promise<T> {
-    await this.waitForSlot();
-    this.activeRequests++;
-    this.lastRequestTime = Date.now();
+    await new Promise<void>((resolve) => {
+      this.queue.push(resolve);
+      this.processQueue();
+    });
 
     try {
       return await fn();
     } finally {
       this.activeRequests--;
-      this.releaseSlot();
+      this.processQueue();
     }
   }
 }
