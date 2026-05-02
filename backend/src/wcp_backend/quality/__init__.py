@@ -55,6 +55,20 @@ __all__ = [
     "is_valid_locality_code",
     "is_friday",
     "GERuntime",
+    "CheckpointRunner",
+    "ValidationArtifact",
+    "run_validation_checkpoint",
+    "validate_and_checkpoint_dbwd",
+    "validate_and_checkpoint_contracts",
+    "validate_and_checkpoint_payroll",
 ]
 
 from wcp_backend.quality.ge_runtime import GERuntime  # noqa: E402
+from wcp_backend.quality.checkpoint import (  # noqa: E402
+    CheckpointRunner,
+    ValidationArtifact,
+    run_validation_checkpoint,
+    validate_and_checkpoint_dbwd,
+    validate_and_checkpoint_contracts,
+    validate_and_checkpoint_payroll,
+)

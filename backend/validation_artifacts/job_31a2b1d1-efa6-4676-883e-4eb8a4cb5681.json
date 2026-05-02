@@ -1,0 +1,29 @@
+{
+  "artifact_id": "job_31a2b1d1-efa6-4676-883e-4eb8a4cb5681",
+  "suite_name": "payroll_records",
+  "success": false,
+  "timestamp": "2026-05-02T16:41:15.619021+00:00",
+  "result": {
+    "success": false,
+    "failed_count": 1,
+    "errors": [
+      {
+        "row": 3,
+        "errors": [
+          "missing required field: employee_name",
+          "employee_name cannot be empty",
+          "total_hours cannot be negative: -10.0",
+          "hourly_rate cannot be negative: -5.0",
+          "invalid week_ending date format: invalid-date"
+        ],
+        "employee": "unknown"
+      }
+    ],
+    "statistics": {
+      "evaluated_expectations": 1,
+      "successful": 0,
+      "unsuccessful": 1
+    }
+  },
+  "artifact_path": null
+}

@@ -181,6 +181,84 @@ def duckdb_wage_analytics(
         return None
 
 
+def duckdb_overview(
+    store: DuckDBStore | None,
+    days: int,
+) -> dict[str, Any] | None:
+    """Overview metrics using DuckDB."""
+    if store is None:
+        return None
+    if not isinstance(days, int) or days < 0:
+        raise ValueError(f"Invalid days: {days}")
+    try:
+        sql = """
+            SELECT
+                COUNT(*) AS total_decisions,
+                COALESCE(AVG(trust_score), 0) AS avg_trust_score,
+                SUM(CASE WHEN verdict = 'approved' THEN 1 ELSE 0 END) AS approved_count,
+                SUM(CASE WHEN requires_human_review = TRUE THEN 1 ELSE 0 END) AS human_review_count,
+                SUM(CASE WHEN created_at >= CURRENT_TIMESTAMP - INTERVAL $days days THEN 1 ELSE 0 END) AS decisions_this_period,
+                COALESCE(SUM(cost_usd), 0) AS total_cost_usd
+            FROM decisions
+        """
+        result = store.execute_query(sql, {"days": days})
+        if not result:
+            return None
+        row = result[0]
+
+        # Get contract count
+        contract_sql = "SELECT COUNT(*) AS cnt FROM contracts"
+        contract_result = store.execute_query(contract_sql)
+        total_contracts = contract_result[0].get("cnt", 0) if contract_result else 0
+
+        total_decisions = row.get("total_decisions", 0)
+        approved_count = row.get("approved_count", 0)
+        total_cost = row.get("total_cost_usd", 0) or 0
+
+        return {
+            "total_decisions": total_decisions,
+            "total_contracts": total_contracts,
+            "avg_trust_score": round(row.get("avg_trust_score", 0) or 0, 4),
+            "overall_approval_rate": round((approved_count / total_decisions * 100) if total_decisions > 0 else 0.0, 2),
+            "human_review_queue_depth": row.get("human_review_count", 0),
+            "decisions_this_month": row.get("decisions_this_period", 0),
+            "total_cost_usd": round(total_cost, 4),
+            "avg_cost_per_decision": round(total_cost / total_decisions, 6) if total_decisions > 0 else 0.0,
+        }
+    except Exception:
+        logger.debug("duckdb_overview failed", exc_info=True)
+        return None
+
+
+def _register_parquet_archive(store: DuckDBStore) -> None:
+    """Register Parquet archive views if archive exists."""
+    try:
+        import os
+        archive_path = os.environ.get("PARQUET_ARCHIVE_PATH", "./archive")
+        if os.path.exists(archive_path):
+            # Register archive decisions view
+            archive_glob = f"{archive_path}/decisions_*.parquet"
+            store.register_parquet_archive("decisions_archive", archive_glob)
+            
+            # Create unified view
+            store._conn.execute("""
+                CREATE OR REPLACE VIEW all_decisions AS
+                SELECT * FROM decisions
+                UNION ALL
+                SELECT * FROM decisions_archive
+            """)
+    except Exception:
+        logger.debug("Parquet archive registration failed (may not exist yet)", exc_info=True)
+
+
+def get_analytics_store_with_archive() -> DuckDBStore | None:
+    """Get analytics store with Parquet archive registered."""
+    store = get_analytics_store()
+    if store is not None:
+        _register_parquet_archive(store)
+    return store
+
+
 def duckdb_llm_analytics(
     store: DuckDBStore | None,
     days: int,

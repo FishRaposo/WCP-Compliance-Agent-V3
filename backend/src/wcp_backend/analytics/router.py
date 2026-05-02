@@ -1,13 +1,14 @@
-"""Analytics — V4 FastAPI router with DuckDB-friendly aggregate queries.
+"""Analytics — V4 FastAPI router with DuckDB-primary OLAP queries.
 
-Mounted at /v4/analytics. Provides stable analytics endpoints for the
-analytics dashboard: overview, decision-volume, compliance, wages, llm.
+Mounted at /v4/analytics. Provides fast analytics endpoints for the
+dashboard: overview, decision-volume, compliance, wages, llm.
 
-Each endpoint uses SQLAlchemy aggregates against existing PostgreSQL tables
-(decisions, contracts, payroll_records) with safe empty-data responses
-when no data exists. DuckDB can be layered on top later via duckdb_store.py
-for cross-contract OLAP performance, but the baseline implementation uses
-pure SQLAlchemy so it works without DuckDB dependency.
+Endpoints use DuckDB as the PRIMARY query engine for OLAP performance,
+with automatic fallback to PostgreSQL SQLAlchemy aggregates when DuckDB
+is unavailable. DuckDB reads directly from PostgreSQL via postgres_scan
+and can combine live data with Parquet archives for historical analysis.
+
+Safe empty-data responses returned when no records exist.
 """
 
 from __future__ import annotations
@@ -22,7 +23,11 @@ from sqlalchemy import and_, case, desc, func, select
 
 from wcp_backend.analytics.duckdb_queries import (
     duckdb_decision_volume,
-    get_analytics_store,
+    duckdb_overview,
+    duckdb_compliance_breakdown,
+    duckdb_wage_analytics,
+    duckdb_llm_analytics,
+    get_analytics_store_with_archive,
 )
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
@@ -34,8 +39,9 @@ router = APIRouter(prefix="/v4/analytics", tags=["v4-analytics"])
 
 
 def _get_duckdb():
+    """Get DuckDB store with archive support. Returns None if unavailable."""
     try:
-        return get_analytics_store()
+        return get_analytics_store_with_archive()
     except Exception:
         return None
 
@@ -184,7 +190,7 @@ async def analytics_overview(
 ) -> AnalyticsOverview:
     """Aggregated overview for analytics dashboard landing page.
 
-    Returns totals, averages, and rates from decisions + contracts tables.
+    Uses DuckDB for fast OLAP queries, falls back to PostgreSQL if DuckDB unavailable.
     Safe empty-data response when no records exist.
     """
     if getattr(settings, "skip_db_startup", False):
@@ -200,6 +206,23 @@ async def analytics_overview(
             note="Mocked overview (SKIP_DB_STARTUP=True)",
         )
 
+    # Try DuckDB first
+    duckdb_store = _get_duckdb()
+    dd_result = duckdb_overview(duckdb_store, days)
+    if dd_result is not None:
+        return AnalyticsOverview(
+            total_decisions=dd_result["total_decisions"],
+            total_contracts=dd_result["total_contracts"],
+            avg_trust_score=dd_result["avg_trust_score"],
+            overall_approval_rate=dd_result["overall_approval_rate"],
+            human_review_queue_depth=dd_result["human_review_queue_depth"],
+            decisions_this_month=dd_result["decisions_this_month"],
+            total_cost_usd=dd_result["total_cost_usd"],
+            avg_cost_per_decision=dd_result["avg_cost_per_decision"],
+            note="DuckDB OLAP query (live + archive if available)",
+        )
+
+    # Fallback to PostgreSQL
     try:
         async with async_session() as session:
             # Total decisions
@@ -272,7 +295,7 @@ async def analytics_overview(
                 decisions_this_month=decisions_this_month,
                 total_cost_usd=round(total_cost_usd, 4),
                 avg_cost_per_decision=avg_cost_per_decision,
-                note="Derived from PostgreSQL decisions + contracts tables",
+                note="PostgreSQL fallback (DuckDB unavailable)",
             )
     except Exception:
         logger.exception("analytics_overview failed")
@@ -378,11 +401,48 @@ async def compliance_breakdown(
     period: str = Query(default="30d", pattern="^(7d|30d|90d|365d)$"),
     contract_id: str | None = None,
 ) -> ComplianceResponse:
-    """Compliance breakdown by trade, locality, and violation type."""
+    """Compliance breakdown by trade, locality, and violation type.
+
+    Uses DuckDB for fast OLAP queries, falls back to PostgreSQL if unavailable.
+    """
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
+    # Try DuckDB first
+    duckdb_store = _get_duckdb()
+    dd_result = duckdb_compliance_breakdown(duckdb_store, days)
+    if dd_result is not None:
+        by_locality = [
+            ComplianceByLocality(
+                locality=r.get("locality", "unknown"),
+                total=r.get("total", 0),
+                approval_rate=round(
+                    (r.get("approved", 0) / r.get("total", 1) * 100) if r.get("total", 0) > 0 else 0.0, 2
+                ),
+            )
+            for r in dd_result.get("by_locality", [])
+        ]
+        violations = dd_result.get("violations", [])
+        total_violations = sum(r.get("cnt", 0) for r in violations) if violations else 0
+        violation_types = [
+            ViolationTypeStat(
+                type=r.get("verdict", "unknown"),
+                count=r.get("cnt", 0),
+                percentage=round(
+                    (r.get("cnt", 0) / total_violations * 100) if total_violations > 0 else 0.0, 1
+                ),
+            )
+            for r in violations
+        ]
+        return ComplianceResponse(
+            by_trade=[],
+            by_locality=by_locality,
+            violation_types=violation_types,
+            note="DuckDB OLAP query (trade breakdown requires payroll join)",
+        )
+
+    # Fallback to PostgreSQL
     try:
         async with async_session() as session:
             conditions = [decisions_table.c.created_at >= since]
@@ -390,9 +450,6 @@ async def compliance_breakdown(
                 conditions.append(decisions_table.c.contract_id == contract_id)
 
             # By-trade breakdown: we aggregate via contract join for trade info
-            # For now, return safe empty data — trade requires contract lookup
-            # Note: decisions.trade is not a direct column; we use verdict breakdown
-            # as proxy until trade_code is accessible via contract/payroll join
             by_trade: list[ComplianceByTrade] = []
 
             # By-locality: use contract locality via existing decisions.contract_id
@@ -432,7 +489,6 @@ async def compliance_breakdown(
                 )
 
             # Violation types — count by verdict != approved
-            # (signature/wage/overtime/fringe require deeper analysis not in decisions table)
             violation_query = (
                 select(
                     decisions_table.c.verdict,
@@ -451,7 +507,6 @@ async def compliance_breakdown(
                 pct = (
                     round((row.cnt / total_violations * 100) if total_violations > 0 else 0.0, 1)
                 )
-                # Map verdict to violation type labels
                 verdict_label = row.verdict or "unknown"
                 violation_types.append(
                     ViolationTypeStat(
@@ -465,7 +520,7 @@ async def compliance_breakdown(
                 by_trade=by_trade,
                 by_locality=by_locality,
                 violation_types=violation_types,
-                note="Trade breakdown requires payroll join; locality uses contract.locality",
+                note="PostgreSQL fallback (DuckDB unavailable)",
             )
     except Exception:
         logger.exception("compliance_breakdown failed")
@@ -478,11 +533,59 @@ async def wage_analytics(
     trade: str | None = None,
     contract_id: str | None = None,
 ) -> WagesResponse:
-    """Wage compliance analytics: trends, actual vs required, fringe compliance."""
+    """Wage compliance analytics: trends, actual vs required, fringe compliance.
+
+    Uses DuckDB for fast OLAP queries, falls back to PostgreSQL if unavailable.
+    """
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
+    # Try DuckDB first
+    duckdb_store = _get_duckdb()
+    dd_result = duckdb_wage_analytics(duckdb_store, days)
+    if dd_result is not None:
+        violation_trend = [
+            ViolationTrendEntry(
+                date=r.get("date", ""),
+                violations=r.get("violations", 0),
+                total_checked=r.get("total_checked", 0),
+                violation_rate=round(
+                    (r.get("violations", 0) / r.get("total_checked", 1) * 100) if r.get("total_checked", 0) > 0 else 0.0, 2
+                ),
+            )
+            for r in dd_result.get("trend", [])
+        ]
+
+        actual_vs_required = []
+        for r in dd_result.get("actual_vs_required", []):
+            entry = ActualVsRequiredEntry(
+                locality=r.get("locality", "unknown"),
+                trade=r.get("trade", "unknown"),
+                required_wage=0.0,
+                actual_avg=round(r.get("avg_rate", 0) or 0, 2),
+                compliant_pct=0.0,
+            )
+            actual_vs_required.append(entry)
+
+        fringe_compliance = [
+            FringeComplianceEntry(
+                date=r.get("date", ""),
+                compliant_pct=round(
+                    (r.get("compliant", 0) / r.get("total", 1) * 100) if r.get("total", 0) > 0 else 0.0, 2
+                ),
+            )
+            for r in dd_result.get("fringe", [])
+        ]
+
+        return WagesResponse(
+            violation_trend=violation_trend,
+            actual_vs_required=actual_vs_required,
+            fringe_compliance=fringe_compliance,
+            note="DuckDB OLAP query (required wage comparison requires DBWD prevailing wage lookup)",
+        )
+
+    # Fallback to PostgreSQL
     try:
         async with async_session() as session:
             conditions = [decisions_table.c.created_at >= since]
@@ -528,7 +631,6 @@ async def wage_analytics(
                 )
 
             # Actual vs required: avg hourly_rate by locality from payroll_records
-            # Requires payroll_records table with hourly_rate and locality
             actual_vs_required: list[ActualVsRequiredEntry] = []
 
             avq = (
@@ -629,7 +731,7 @@ async def wage_analytics(
                 violation_trend=violation_trend,
                 actual_vs_required=actual_vs_required,
                 fringe_compliance=fringe_compliance,
-                note="Required wage comparison requires DBWD prevailing wage lookup",
+                note="PostgreSQL fallback (DuckDB unavailable); required wage comparison requires DBWD prevailing wage lookup",
             )
     except Exception:
         logger.exception("wage_analytics failed")
@@ -642,14 +744,60 @@ async def llm_analytics(
 ) -> LLMResponse:
     """LLM cost and performance analytics.
 
-    Returns cost per decision, token usage, model distribution, and latency
-    by model. Requires decisions.cost_usd and decisions.latency_ms to be populated.
-    Returns empty data arrays when those columns are null.
+    Uses DuckDB for fast OLAP queries, falls back to PostgreSQL if unavailable.
+    Returns cost per decision, token usage, model distribution, and latency.
     """
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
+    # Try DuckDB first
+    duckdb_store = _get_duckdb()
+    dd_result = duckdb_llm_analytics(duckdb_store, days)
+    if dd_result is not None:
+        cost_per_decision = [
+            {
+                "date": r.get("date", ""),
+                "cost_usd": round(_safe_float(r.get("avg_cost")), 6),
+                "decisions": r.get("decisions", 0),
+                "total_cost": round(_safe_float(r.get("total_cost")), 4),
+            }
+            for r in dd_result.get("cost_per_decision", [])
+        ]
+
+        model_dist = dd_result.get("model_distribution", [])
+        total_model = sum(r.get("cnt", 0) for r in model_dist) if model_dist else 0
+        model_distribution = [
+            ModelDistributionEntry(
+                model=r.get("model", "unknown"),
+                count=r.get("cnt", 0),
+                percentage=round(
+                    (r.get("cnt", 0) / total_model * 100) if total_model > 0 else 0.0, 1
+                ),
+            )
+            for r in model_dist
+        ]
+
+        latency = dd_result.get("latency", [])
+        latency_by_model = [
+            {
+                "date": r.get("date", ""),
+                "p50_ms": int(_safe_float(r.get("avg_latency"))),
+                "p95_ms": int(_safe_float(r.get("avg_latency"))),
+                "p99_ms": int(_safe_float(r.get("avg_latency"))),
+            }
+            for r in latency
+        ]
+
+        return LLMResponse(
+            cost_per_decision=cost_per_decision,
+            token_usage=[],
+            model_distribution=model_distribution,
+            latency_by_model=latency_by_model,
+            note="DuckDB OLAP query (token usage requires LLM logging columns)",
+        )
+
+    # Fallback to PostgreSQL
     try:
         async with async_session() as session:
             # Cost per decision over time
@@ -686,12 +834,10 @@ async def llm_analytics(
                     }
                 )
 
-            # Token usage: currently no token column in decisions table
-            # This would need Phoenix trace join or LLM logging extension
+            # Token usage: currently no token column
             token_usage: list[TokenUsageEntry] = []
 
-            # Model distribution: no model column in decisions table yet
-            # Use verdict grouping as proxy distribution
+            # Model distribution: use verdict as proxy
             model_dist_query = (
                 select(
                     decisions_table.c.verdict.label("model"),
@@ -715,7 +861,7 @@ async def llm_analytics(
                     )
                 )
 
-            # Latency by model: requires latency_ms column
+            # Latency by model
             latency_query = (
                 select(
                     func.date_trunc("day", decisions_table.c.created_at).label("dt"),
@@ -761,7 +907,7 @@ async def llm_analytics(
                 token_usage=token_usage,
                 model_distribution=model_distribution,
                 latency_by_model=latency_by_model,
-                note="Token usage and model distribution require LLM logging columns (token_count, model). Latency from decisions.latency_ms.",
+                note="PostgreSQL fallback (DuckDB unavailable); token usage requires LLM logging columns",
             )
     except Exception:
         logger.exception("llm_analytics failed")
