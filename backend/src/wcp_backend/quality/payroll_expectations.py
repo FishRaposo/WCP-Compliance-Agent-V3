@@ -1,4 +1,4 @@
-"""Quality — Payroll record validation suite (V4 scaffold).
+"""Quality — Payroll record validation suite (V4).
 
 Purpose: Great Expectations validation suite for payroll records.
 

@@ -22,12 +22,10 @@ interface FringeComplianceData {
 }
 
 interface WagesSummary {
-  total_decisions: number;
-  violation_rate: number;
-  avg_actual_vs_required_diff: number;
-  fringe_compliance_rate: number;
-  wage_trend: WageViolationTrendData[];
-  actual_vs_required: ActualVsRequired[];
+  violation_trend: WageViolationTrendData[];
+  actual_vs_required: Array<
+    ActualVsRequired | (Omit<ActualVsRequired, "required" | "total"> & { required_wage: number; total?: number })
+  >;
   fringe_compliance: FringeComplianceData[];
 }
 
@@ -38,6 +36,26 @@ export default function AnalyticsWages() {
     queryKey: ["analytics", "v4", "wages", period],
     queryFn: () => apiClient.get(`/api/analytics/wages`, { period }),
   });
+  const totalChecked = summary?.violation_trend.reduce((total, point) => total + point.total_checked, 0) ?? 0;
+  const totalViolations = summary?.violation_trend.reduce((total, point) => total + point.violations, 0) ?? 0;
+  const violationRate = totalChecked > 0 ? (totalViolations / totalChecked) * 100 : 0;
+  const actualVsRequired = summary?.actual_vs_required.map((point) => ({
+    ...point,
+    required: "required" in point ? point.required : point.required_wage,
+    total: "total" in point && point.total !== undefined ? point.total : 1,
+  }));
+  const avgWageDelta =
+    actualVsRequired?.length
+      ? actualVsRequired.reduce(
+          (total, point) => total + (point.actual_avg - point.required),
+          0
+        ) / actualVsRequired.length
+      : 0;
+  const fringeCompliance =
+    summary?.fringe_compliance.length
+      ? summary.fringe_compliance.reduce((total, point) => total + point.compliant_pct, 0) /
+        summary.fringe_compliance.length
+      : 0;
 
   return (
     <AnalyticsLayout
@@ -51,39 +69,31 @@ export default function AnalyticsWages() {
       {/* KPI Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          label="Total Decisions"
-          value={summary?.total_decisions ?? 0}
-          trend="up"
-          delta={8.3}
+          label="Payroll Checks"
+          value={totalChecked}
         />
         <KPICard
           label="Violation Rate"
-          value={summary?.violation_rate ?? 0}
+          value={violationRate}
           format="percent"
-          trend="down"
-          delta={-2.1}
         />
         <KPICard
           label="Avg Wages Delta"
-          value={summary?.avg_actual_vs_required_diff ?? 0}
+          value={avgWageDelta}
           format="currency"
-          trend="up"
-          delta={1.5}
         />
         <KPICard
           label="Fringe Compliance"
-          value={summary?.fringe_compliance_rate ?? 0}
+          value={fringeCompliance}
           format="percent"
-          trend="up"
-          delta={0.8}
         />
       </div>
 
       {/* Wage Violation Trend - full width */}
-      <WageViolationTrendChart period={period} data={summary?.wage_trend} loading={isLoading} />
+      <WageViolationTrendChart period={period} data={summary?.violation_trend} loading={isLoading} />
 
       {/* Actual vs Required Scatter - full width */}
-      <ActualVsRequiredScatter data={summary?.actual_vs_required} loading={isLoading} />
+      <ActualVsRequiredScatter data={actualVsRequired} loading={isLoading} />
 
       {/* Fringe Compliance */}
       <FringeComplianceChart period={period} data={summary?.fringe_compliance} loading={isLoading} />

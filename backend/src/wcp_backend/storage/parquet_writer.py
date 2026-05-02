@@ -5,7 +5,7 @@ analytical storage. DuckDB reads both live PostgreSQL and Parquet archives
 transparently.
 
 Provides:
-- ParquetWriter: Write records to Parquet files using PyArrow (with graceful fallback)
+- ParquetWriter: Write records to true Parquet files using PyArrow
 - Manifest entry tracking: track written files with MD5 integrity
 - write_decisions_to_parquet(): High-level function for decision export
 
@@ -177,9 +177,9 @@ class ParquetManifest:
 class ParquetWriter:
     """Write records to Parquet files using PyArrow.
 
-    Soft dependency on PyArrow: if PyArrow is not installed, the writer
-    falls back to writing CSV with a .parquet extension (for migration
-    compatibility) and logs a warning.
+    PyArrow is a required V4 runtime dependency. Missing PyArrow is reported
+    loudly because a CSV file with a Parquet extension would make the archive
+    contract untrue and break DuckDB reads.
 
     Usage:
         writer = ParquetWriter(output_dir="archive/decisions")
@@ -214,19 +214,17 @@ class ParquetWriter:
             Dict with write metadata: path, records_written, md5.
 
         Raises:
-            RuntimeError if PyArrow is not available and format is not CSV fallback.
+            RuntimeError: If PyArrow is not installed.
         """
         has_pyarrow, pa = self._get_pyarrow()
         file_path = self.output_dir / filename
 
-        if has_pyarrow:
-            return self._write_parquet(records, filename, file_path, pa)
-        else:
-            logger.warning(
-                "PyArrow not installed — writing CSV fallback to %s (not true Parquet)",
-                file_path,
+        if not has_pyarrow:
+            raise RuntimeError(
+                "PyArrow is required for V4 Parquet archival. Run `poetry install` "
+                "after adding the V4 dependencies."
             )
-            return self._write_csv_fallback(records, filename, file_path)
+        return self._write_parquet(records, filename, file_path, pa)
 
     def _write_parquet(
         self,
@@ -236,21 +234,21 @@ class ParquetWriter:
         pa: Any,
     ) -> dict[str, Any]:
         """Write records as Parquet using PyArrow."""
-        import pyarrow as pa_module  # noqa: F401 - used via pa param
+        import pyarrow.parquet as pq
 
         if not records:
+            empty_table = pa.table({})
+            pq.write_table(empty_table, file_path)
+            md5 = self.verify_integrity(filename)
             return {
                 "path": str(file_path),
                 "records_written": 0,
-                "md5": None,
-                "note": "No records to write",
+                "md5": md5,
+                "note": "Written as empty Parquet with PyArrow",
             }
 
-        # Convert to PyArrow table
         table = pa.table(records)
-        writer = pa.ipc.new_file(file_path, table.schema)
-        writer.write(table)
-        writer.close()
+        pq.write_table(table, file_path, compression="snappy")
 
         md5 = self.verify_integrity(filename)
         return {
@@ -258,40 +256,6 @@ class ParquetWriter:
             "records_written": len(records),
             "md5": md5,
             "note": "Written with PyArrow",
-        }
-
-    def _write_csv_fallback(
-        self,
-        records: list[dict[str, Any]],
-        filename: str,
-        file_path: Path,
-    ) -> dict[str, Any]:
-        """Write records as CSV fallback when PyArrow unavailable."""
-        if not records:
-            return {
-                "path": str(file_path.with_suffix(".csv")),
-                "records_written": 0,
-                "md5": None,
-                "note": "No records to write",
-            }
-
-        # Write as CSV (append .csv to distinguish from real Parquet)
-        csv_path = file_path.with_suffix(".csv")
-        keys = list(records[0].keys())
-
-        with open(csv_path, "w", newline="", encoding="utf-8") as f:
-            import csv
-
-            writer = csv.DictWriter(f, fieldnames=keys)
-            writer.writeheader()
-            writer.writerows(records)
-
-        md5 = self._compute_md5(csv_path)
-        return {
-            "path": str(csv_path),
-            "records_written": len(records),
-            "md5": md5,
-            "note": "CSV fallback (PyArrow not installed)",
         }
 
     def verify_integrity(self, filename: str) -> str | None:
@@ -305,10 +269,6 @@ class ParquetWriter:
         """
         file_path = self.output_dir / filename
         if not file_path.exists():
-            # Try with .csv fallback
-            csv_path = file_path.with_suffix(".csv")
-            if csv_path.exists():
-                return self._compute_md5(csv_path)
             return None
 
         return self._compute_md5(file_path)

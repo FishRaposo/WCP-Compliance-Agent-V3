@@ -41,6 +41,11 @@ auth.post("/login", async (c) => {
 
     logger.info({ user_id: result.user_id }, "User logged in");
 
+    c.header(
+      "Set-Cookie",
+      `wcp_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
+    );
+
     return c.json({
       token,
       user_id: result.user_id,

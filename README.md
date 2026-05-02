@@ -17,7 +17,7 @@ Automates WH-347 federal construction payroll review using a deterministic Pytho
 | **Pipeline** | Extract → Validate → LLM Verdict → Trust Score → Persist |
 | **LLM Routing** | OpenAI + Anthropic + Ollama with automatic fallback |
 | **Frontend** | 7 pages, 12 components, mock mode for standalone dev |
-| **V4 MVP** | Contracts CRUD, payroll records, bulk CSV ingestion, DuckDB analytics, Prefect ETL scaffold, Redis Streams, GE validation |
+| **V4 Data Platform** | Contracts CRUD, payroll records, bulk CSV ingestion, DuckDB analytics, Prefect ETL, Redis Streams, GE-style validation, Parquet archive |
 | **CI/CD** | GitHub Actions, scheduled eval, Vercel + Render deploy |
 
 ---
@@ -142,11 +142,31 @@ curl -X POST http://localhost:3000/api/contracts/bulk \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -F "file=@contracts_batch.csv"
 
-# 3. Bulk import payroll records for a contract
+# 3. Bulk import payroll records for a contract as JSON
 curl -X POST http://localhost:3000/api/payrolls/bulk \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -F "file=@payroll_april.csv" \
-  -F "contract_id=abc-123"
+  -H "Content-Type: application/json" \
+  -d '{
+    "contract_id": "abc-123",
+    "source": "csv",
+    "source_reference": "payroll_april.csv",
+    "records": [{
+      "employee_name": "John Smith",
+      "trade_code": "ELEC",
+      "locality_code": "Boston, MA",
+      "week_ending": "2025-04-25",
+      "total_hours": 40,
+      "hourly_rate": 51.69,
+      "gross_pay": 2067.60
+    }]
+  }'
+
+# Or upload a CSV through the ingestion pipeline
+curl -X POST http://localhost:3000/api/ingestion/bulk-upload \
+  -H "Authorization: Bearer $JWT_TOKEN" \
+  -F "type=payroll_import" \
+  -F "contract_id=abc-123" \
+  -F "file=@payroll_april.csv"
 
 # 4. Monitor ingestion job status
 curl http://localhost:3000/api/ingestion/status/ingest-789 \
@@ -288,10 +308,10 @@ WCP-Compliance-Agent-V3/
 | **Payroll Records** | [`payrolls/`](backend/src/wcp_backend/payrolls/) | `/api/payrolls` | [`pages/payrolls/`](frontend/src/pages/payrolls/) | MVP |
 | **Bulk CSV Upload** | [`ingestion/`](backend/src/wcp_backend/ingestion/) | `/api/contracts/bulk`, `/api/payrolls/bulk` | [`pages/ingestion/`](frontend/src/pages/ingestion/) | MVP |
 | **DuckDB Analytics** | [`analytics/`](backend/src/wcp_backend/analytics/) | `/api/analytics/*` | [`pages/analytics/`](frontend/src/pages/analytics/) | MVP |
-| **Prefect ETL** | [`pipelines/`](backend/src/wcp_backend/pipelines/) | `/api/ingestion/status` | ETL job cards | MVP scaffold |
+| **Prefect ETL** | [`pipelines/`](backend/src/wcp_backend/pipelines/) | `/api/ingestion/status` | ETL job cards | MVP |
 | **Redis Streams** | [`events/`](backend/src/wcp_backend/events/) | `/api/events/subscribe` | LiveFeed component | MVP |
 | **GE Validation** | [`quality/`](backend/src/wcp_backend/quality/) | (integrated into ingestion) | Error reporting | MVP |
-| **Connector Framework** | [`connectors/`](backend/src/wcp_backend/connectors/) | (V4.1 scope) | — | Scaffold |
+| **Connector Framework** | [`connectors/`](backend/src/wcp_backend/connectors/) | (V4.1 scope) | — | Framework |
 | **Parquet Archive** | [`storage/`](backend/src/wcp_backend/storage/) | — | — | MVP |
 
 ### V4 Scale Targets
@@ -320,7 +340,7 @@ V4 requires these services to be running:
 | **Great Expectations** | Ingestion validation | Installed via `poetry install`; runs in-pipeline |
 | **Elasticsearch 8** | V3 RAG only | Not required for V4 contract/payroll CRUD |
 
-If DuckDB, Prefect, or GE are not available, the corresponding V4 modules degrade gracefully — contract/payroll CRUD and bulk ingestion still work; analytics return empty datasets; ETL jobs are not scheduled.
+DuckDB, Prefect, PyArrow, and Great Expectations are declared backend dependencies. Contract/payroll CRUD can still be developed independently, but the full V4 portfolio demo expects `poetry install` to provide the complete data-platform runtime.
 
 ---
 

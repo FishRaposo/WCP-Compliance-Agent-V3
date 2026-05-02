@@ -17,10 +17,16 @@
  */
 
 import { logger } from "../../utils/logger.js";
-import { type StreamConfig, type StreamMessageHandler, readStreamMessages } from "../streams/index.js";
+import { type StreamConfig, type StreamMessageHandler, ensureConsumerGroup, readStreamMessages } from "../streams/index.js";
 
 /** SSE event types for V4 */
-export type V4SSEEventType = "contract.created" | "contract.updated" | "payroll.created" | "job.completed" | "error";
+export type V4SSEEventType =
+  | "decision.created"
+  | "contract.created"
+  | "contract.updated"
+  | "payroll.created"
+  | "job.completed"
+  | "error";
 
 /** SSE event payload */
 export interface SSEEventPayload {
@@ -88,7 +94,12 @@ export const createSSEBridge = (
   streamConfig: StreamConfig
 ): ReadableStream<Uint8Array> => {
   const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
+    async start(controller) {
+      try {
+        await ensureConsumerGroup(streamConfig);
+      } catch (err) {
+        logger.warn({ connectionId, err }, "Redis consumer group unavailable at SSE start");
+      }
       // Register this connection
       activeConnections.set(connectionId, {
         controller,
@@ -109,9 +120,10 @@ export const createSSEBridge = (
     async pull(controller) {
       // Read from Redis Stream and forward to SSE
       const handler: StreamMessageHandler = async (messageId, fields) => {
+        const data = parseStreamFields(fields);
         const payload: SSEEventPayload = {
-          type: (fields.type as V4SSEEventType) ?? "error",
-          data: fields,
+          type: inferEventType(streamConfig.streamName, fields),
+          data,
           timestamp: new Date().toISOString(),
           streamId: messageId,
         };
@@ -148,6 +160,37 @@ export const createSSEBridge = (
 
   return stream;
 };
+
+const parseStreamFields = (fields: Record<string, string>): Record<string, unknown> => {
+  if (typeof fields.event === "string") {
+    try {
+      const parsed = JSON.parse(fields.event) as unknown;
+      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      return fields;
+    }
+  }
+  return fields;
+};
+
+const inferEventType = (streamName: string, fields: Record<string, string>): V4SSEEventType => {
+  if (isV4EventType(fields.type)) return fields.type;
+  if (streamName.includes("decision")) return "decision.created";
+  if (streamName.includes("contract")) return "contract.created";
+  if (streamName.includes("payroll")) return "payroll.created";
+  if (streamName.includes("ingestion")) return "job.completed";
+  return "error";
+};
+
+const isV4EventType = (value: string | undefined): value is V4SSEEventType =>
+  value === "decision.created" ||
+  value === "contract.created" ||
+  value === "contract.updated" ||
+  value === "payroll.created" ||
+  value === "job.completed" ||
+  value === "error";
 
 /**
  * Closes a specific SSE connection by ID.

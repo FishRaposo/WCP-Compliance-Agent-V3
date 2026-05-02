@@ -1,4 +1,4 @@
-"""Quality — Common expectation utilities (V4 scaffold).
+"""Quality — Common expectation utilities (V4).
 
 Purpose: Reusable Great Expectations expectation definitions shared across
 all validation suites.

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc --noEmit && esbuild src/server.ts --bundle --platform=node --outfile=dist/server.js",
+    "build": "tsc --noEmit && esbuild src/server.ts --bundle --platform=node --format=esm --outfile=dist/server.js",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -23,6 +23,7 @@
     "ai": "^4.0.0",
     "dotenv": "^16.4.7",
     "hono": "^4.6.0",
+    "ioredis": "^5.4.2",
     "jose": "^5.9.0",
     "langfuse": "^3.30.0",
     "ollama-ai-provider": "^1.2.0",

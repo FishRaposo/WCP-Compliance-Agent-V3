@@ -1,11 +1,22 @@
 # V4 Readiness Implementation Report
 
-**Date:** 2026-04-30
-**Status:** Ready for V4 Phase 1 development
+**Date:** 2026-05-01
+**Status:** V4 portfolio implementation in progress
 
 ## Summary
 
-The V4 readiness plan has been implemented. V3 remains stable, V4 documentation has been reconciled, and an additive import-safe V4 scaffold has been added across backend, agent, and frontend without registering new runtime routes or changing current V3 behavior.
+The V4 readiness plan has moved from import-safe scaffolding to an implemented portfolio data-platform layer. V3 remains stable, while V4 now registers runtime routes for analytics, contracts, payrolls, ingestion, event streaming, ETL flows, and Parquet archival.
+
+## 2026-05-01 Portfolio Finalization Updates
+
+- Added full V4 backend runtime dependencies in `backend/pyproject.toml`: DuckDB, PyArrow, pandas, Prefect, and Great Expectations.
+- Replaced placeholder DBWD validation export with real row-level validation results.
+- Replaced fake Parquet CSV fallback with true PyArrow Parquet output and manifest MD5 tracking.
+- Implemented executable Prefect-compatible flows for DBWD refresh, bulk ingestion, and monthly decision export.
+- Fixed V4 analytics SQLAlchemy aggregate construction and route ordering through the agent gateway.
+- Aligned Redis Streams naming between backend producer, agent SSE bridge, and frontend live feed.
+- Updated frontend analytics pages to derive KPIs from API data instead of hardcoded demo deltas.
+- Updated README and `llms.txt` so public claims match the implemented V4 runtime.
 
 ## Implemented Changes
 
@@ -103,4 +114,4 @@ The implemented boundary is:
 
 ## Recommendation
 
-Proceed to V4 Phase 1: Analytics Foundation over existing V3 decision data. Keep contract-aware analytics gated behind the later contract/payroll foundation migration.
+Use the V4 portfolio demo path in `README.md`: install all three services, apply migrations, start PostgreSQL/Redis/Elasticsearch/Phoenix as needed, run the backend/agent/frontend validation commands, then demo contracts, payroll ingestion, analytics dashboards, Parquet export, and SSE live events.

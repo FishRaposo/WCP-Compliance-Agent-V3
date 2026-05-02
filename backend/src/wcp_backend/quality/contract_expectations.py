@@ -1,4 +1,4 @@
-"""Quality — Contract validation suite (V4 scaffold).
+"""Quality — Contract validation suite (V4).
 
 Purpose: Great Expectations validation suite for contract records.
 

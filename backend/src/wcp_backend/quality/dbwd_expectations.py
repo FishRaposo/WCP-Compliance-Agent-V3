@@ -1,4 +1,4 @@
-"""Quality — DBWD rate validation suite (V4 scaffold).
+"""Quality — DBWD rate validation suite (V4).
 
 Purpose: Great Expectations validation suite for DBWD prevailing wage rates.
 
@@ -12,10 +12,20 @@ Expectations:
 
 from __future__ import annotations
 
-__all__ = ["dbwd_expectation_suite", "validate_dbwd_rates"]
+from typing import Any
+
+from wcp_backend.quality import (
+    ValidationResult,
+    between_expectation,
+    not_null_expectation,
+    unique_expectation,
+    validate_dbwd_rates as validate_dbwd_rates_core,
+)
+
+__all__ = ["dbwd_expectation_suite", "validate_dbwd_rates", "ValidationResult"]
 
 
-def dbwd_expectation_suite() -> dict:
+def dbwd_expectation_suite() -> dict[str, Any]:
     """Return the DBWD GE expectation suite definition.
 
     Returns:
@@ -23,23 +33,23 @@ def dbwd_expectation_suite() -> dict:
     """
     return {
         "expectations": [
-            {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "rate_key"}},
-            {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "trade_code"}},
-            {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "locality_code"}},
-            {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "wage"}},
-            {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "wage", "min_value": 0}},
-            {"expectation_type": "expect_column_values_to_be_unique", "kwargs": {"column": "rate_key"}},
+            not_null_expectation("rate_key"),
+            not_null_expectation("trade_code"),
+            not_null_expectation("locality_code"),
+            not_null_expectation("wage"),
+            between_expectation("wage", 0, 500),
+            unique_expectation("rate_key"),
         ]
     }
 
 
-def validate_dbwd_rates(rates: list[dict]) -> dict:
+def validate_dbwd_rates(rates: list[dict[str, Any]]) -> ValidationResult:
     """Validate a batch of DBWD rates against the expectation suite.
 
     Args:
         rates: List of DBWD rate dicts.
 
     Returns:
-        Validation result dict.
+        ValidationResult with pass/fail and row-level errors.
     """
-    return {"success": True, "failed_count": 0, "errors": []}
+    return validate_dbwd_rates_core(rates)

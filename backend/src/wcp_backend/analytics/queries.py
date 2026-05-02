@@ -16,7 +16,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import and_, case, desc, func, select
 
 from wcp_backend.services.tables import contracts_table, decisions_table
 
@@ -147,7 +147,7 @@ async def query_decision_volume(session: Any, days: int = 30) -> list[dict[str, 
             func.count().label("cnt"),
             func.avg(decisions_table.c.trust_score).label("avg_trust"),
             func.sum(
-                func.case(
+                case(
                     (decisions_table.c.verdict == "approved", 1),
                     else_=0,
                 )
@@ -206,7 +206,7 @@ async def query_approval_by_trust_band(session: Any) -> dict[str, Any]:
             decisions_table.c.trust_band,
             func.count().label("cnt"),
             func.sum(
-                func.case(
+                case(
                     (decisions_table.c.verdict == "approved", 1),
                     else_=0,
                 )
@@ -287,7 +287,7 @@ async def query_wage_trends(session: Any, days: int = 90) -> list[dict[str, Any]
             func.date_trunc("day", decisions_table.c.created_at).label("dt"),
             func.count().label("total_checked"),
             func.sum(
-                func.case(
+                case(
                     (decisions_table.c.violation_count > 0, 1),
                     else_=0,
                 )

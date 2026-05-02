@@ -19,7 +19,7 @@ import io
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_backend.ingestion import schemas as ingestion_schemas
@@ -90,8 +90,8 @@ async def list_ingestion_jobs_endpoint(
 )
 async def bulk_upload(
     file: UploadFile = File(...),
-    type: str = Query(..., pattern="^(contract_import|payroll_import)$"),
-    contract_id: str | None = Query(None),
+    type: str = Form("contract_import", pattern="^(contract_import|payroll_import)$"),
+    contract_id: str | None = Form(None),
     session: AsyncSession = Depends(get_session),
 ) -> ingestion_schemas.BulkUploadResponse:
     """Enterprise bulk upload endpoint.

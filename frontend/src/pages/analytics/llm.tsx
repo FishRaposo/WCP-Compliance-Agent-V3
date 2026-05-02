@@ -31,13 +31,11 @@ interface TokenUsageData {
   total_tokens: number;
 }
 
-// V4 LLM summary endpoint returns all data in one call
 interface LLMAnalytics {
-  summary: LLMSummary;
-  cost: LLMCostData[];
-  tokens: TokenUsageData[];
+  cost_per_decision: LLMCostData[];
+  token_usage: TokenUsageData[];
   model_distribution: ModelDistribution[];
-  latency: LatencyByModel[];
+  latency_by_model: LatencyByModel[];
 }
 
 export default function AnalyticsLLM() {
@@ -48,7 +46,21 @@ export default function AnalyticsLLM() {
     queryFn: () => apiClient.get(`/api/analytics/llm`, { period }),
   });
 
-  const summary = analytics?.summary;
+  const summary: LLMSummary = {
+    total_cost: analytics?.cost_per_decision.reduce((total, point) => total + point.total_cost, 0) ?? 0,
+    cost_per_decision:
+      analytics?.cost_per_decision.length
+        ? analytics.cost_per_decision.reduce((total, point) => total + point.cost_usd, 0) /
+          analytics.cost_per_decision.length
+        : 0,
+    avg_latency_ms:
+      analytics?.latency_by_model.length
+        ? analytics.latency_by_model.reduce((total, point) => total + point.p50_ms, 0) /
+          analytics.latency_by_model.length
+        : 0,
+    total_tokens: analytics?.token_usage.reduce((total, point) => total + point.total_tokens, 0) ?? 0,
+    decisions: analytics?.cost_per_decision.reduce((total, point) => total + point.decisions, 0) ?? 0,
+  };
 
   return (
     <AnalyticsLayout
@@ -63,43 +75,35 @@ export default function AnalyticsLLM() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           label="Total LLM Cost"
-          value={summary?.total_cost ?? 0}
+          value={summary.total_cost}
           format="currency"
-          trend="up"
-          delta={15.2}
         />
         <KPICard
           label="Cost per Decision"
-          value={summary?.cost_per_decision ?? 0}
+          value={summary.cost_per_decision}
           format="currency"
-          trend="down"
-          delta={-12.4}
         />
         <KPICard
           label="Avg Latency"
-          value={summary?.avg_latency_ms ?? 0}
-          trend="down"
-          delta={-8.1}
+          value={summary.avg_latency_ms}
         />
         <KPICard
           label="Total Tokens"
-          value={summary?.total_tokens ?? 0}
-          trend="up"
-          delta={8.3}
+          value={summary.total_tokens}
         />
       </div>
 
       {/* Cost Chart - full width */}
-      <LLMCostChart period={period} data={analytics?.cost} loading={isLoading} />
+      <LLMCostChart period={period} data={analytics?.cost_per_decision} loading={isLoading} />
 
       {/* Token and Model Distribution */}
       <div className="grid gap-4 md:grid-cols-2">
-        <TokenUsageChart period={period} data={analytics?.tokens} loading={isLoading} />
+        <TokenUsageChart period={period} data={analytics?.token_usage} loading={isLoading} />
         <ModelDistributionChart data={analytics?.model_distribution} loading={isLoading} />
       </div>
 
       {/* Latency by Model - full width */}
-      <LatencyByModelChart period={period} data={analytics?.latency} loading={isLoading} />
+      <LatencyByModelChart period={period} data={analytics?.latency_by_model} loading={isLoading} />
     </AnalyticsLayout>
   );
 }

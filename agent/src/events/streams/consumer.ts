@@ -1,5 +1,5 @@
 /**
- * V4 Redis Streams Consumer Scaffold
+ * V4 Redis Streams Consumer
  *
  * Import-safe module that provides a Redis Streams consumer for processing
  * V4 event streams. Redis client is lazily initialized to avoid requiring
@@ -59,8 +59,10 @@ const getRedisClient = async (): Promise<RedisClientInterface> => {
     // runtime dependency is unavailable in lightweight test environments.
     const Redis = require("ioredis");
     const client = new Redis({
+      lazyConnect: true,
       host: process.env.REDIS_HOST ?? "localhost",
       port: parseInt(process.env.REDIS_PORT ?? "6379", 10),
+      password: process.env.REDIS_PASSWORD || undefined,
     }) as RedisClientInterface;
     client.on("error", (err: Error) => {
       logger.error({ err }, "Redis client error");

@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import desc, func, select, Integer
+from sqlalchemy import Integer, case, desc, func, select
 
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
@@ -175,7 +175,7 @@ async def approval_by_trade() -> dict[str, Any]:
                     decisions_table.c.trust_band,
                     func.count().label("cnt"),
                     func.sum(
-                        func.case(
+                        case(
                             (decisions_table.c.verdict == "approved", 1),
                             else_=0,
                         ).cast(Integer)

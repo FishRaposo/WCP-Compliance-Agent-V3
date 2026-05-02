@@ -1,4 +1,4 @@
-"""Storage — DuckDB initialization (V4 scaffold).
+"""Storage — DuckDB initialization (V4).
 
 Purpose: Initialize DuckDB with views over PostgreSQL and Parquet archives.
 Enables transparent analytical queries across live and historical data.
@@ -16,6 +16,9 @@ Key files (V4 spec):
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any
+
 __all__ = ["init_duckdb_views", "DuckDBInit"]
 
 
@@ -24,7 +27,7 @@ class DuckDBInit:
 
     def __init__(self, database_path: str = ":memory:") -> None:
         self.database_path = database_path
-        self._conn: object | None = None
+        self._conn: Any | None = None
 
     def connect(self) -> None:
         """Initialize DuckDB connection."""
@@ -32,7 +35,7 @@ class DuckDBInit:
 
         self._conn = duckdb.connect(self.database_path, read_only=False)
 
-    def register_postgres_view(self, table_name: str) -> None:
+    def register_postgres_view(self, table_name: str, connection_uri: str | None = None) -> None:
         """Register a PostgreSQL table as a DuckDB read-only view.
 
         Args:
@@ -43,10 +46,20 @@ class DuckDBInit:
         """
         if self._conn is None:
             raise RuntimeError("DuckDB not connected")
-        self._conn.execute("LOAD postgres_scanner")
+        self._conn.execute("INSTALL postgres")
+        self._conn.execute("LOAD postgres")
+        safe_table = _quote_literal(table_name)
+        safe_view = _quote_identifier(table_name)
+        if connection_uri:
+            safe_uri = _quote_literal(connection_uri)
+            self._conn.execute(
+                f"CREATE OR REPLACE VIEW {safe_view} AS "
+                f"SELECT * FROM postgres_scan({safe_uri}, 'public', {safe_table})"
+            )
+            return
         self._conn.execute(
-            f"CREATE VIEW IF NOT EXISTS {table_name} AS "
-            f"SELECT * FROM postgres_scan('public', '{table_name}')"
+            f"CREATE OR REPLACE VIEW {safe_view} AS "
+            f"SELECT * FROM postgres_scan('public', {safe_table})"
         )
 
     def register_parquet_view(self, view_name: str, parquet_path: str) -> None:
@@ -58,9 +71,11 @@ class DuckDBInit:
         """
         if self._conn is None:
             raise RuntimeError("DuckDB not connected")
+        safe_view = _quote_identifier(view_name)
+        safe_path = _quote_literal(str(Path(parquet_path)))
         self._conn.execute(
-            f"CREATE VIEW IF NOT EXISTS {view_name} AS "
-            f"SELECT * FROM read_parquet('{parquet_path}')"
+            f"CREATE OR REPLACE VIEW {safe_view} AS "
+            f"SELECT * FROM read_parquet({safe_path})"
         )
 
     def register_parquet_table(self, table_name: str, parquet_path: str) -> None:
@@ -72,9 +87,11 @@ class DuckDBInit:
         """
         if self._conn is None:
             raise RuntimeError("DuckDB not connected")
+        safe_table = _quote_identifier(table_name)
+        safe_path = _quote_literal(str(Path(parquet_path)))
         self._conn.execute(
-            f"CREATE TABLE IF NOT EXISTS {table_name} AS "
-            f"SELECT * FROM read_parquet('{parquet_path}')"
+            f"CREATE OR REPLACE TABLE {safe_table} AS "
+            f"SELECT * FROM read_parquet({safe_path})"
         )
 
     def close(self) -> None:
@@ -84,7 +101,11 @@ class DuckDBInit:
             self._conn = None
 
 
-def init_duckdb_views(duckdb_path: str = ":memory:") -> DuckDBInit:
+def init_duckdb_views(
+    duckdb_path: str = ":memory:",
+    postgres_uri: str | None = None,
+    parquet_archive_glob: str | None = None,
+) -> DuckDBInit:
     """Initialize DuckDB with all required views (PostgreSQL + Parquet).
 
     Args:
@@ -98,8 +119,23 @@ def init_duckdb_views(duckdb_path: str = ":memory:") -> DuckDBInit:
     # Register core views
     for table in ["decisions", "contracts", "payroll_records"]:
         try:
-            init.register_postgres_view(table)
+            init.register_postgres_view(table, postgres_uri)
         except Exception:
             pass  # Skip if table doesn't exist or postgres_scanner unavailable
+    if parquet_archive_glob:
+        try:
+            init.register_parquet_view("archived_decisions", parquet_archive_glob)
+        except Exception:
+            pass
     init.close()
     return init
+
+
+def _quote_identifier(value: str) -> str:
+    if not value.replace("_", "").isalnum() or value[0].isdigit():
+        raise ValueError(f"Unsafe DuckDB identifier: {value!r}")
+    return f'"{value}"'
+
+
+def _quote_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"

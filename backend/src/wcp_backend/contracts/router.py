@@ -42,7 +42,10 @@ async def list_contracts(
 
 @router.post("", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def create_contract(data: ContractCreate, session: AsyncSession = Depends(get_session)) -> ContractResponse:
-    return await service.create_contract(session, data)
+    try:
+        return await service.create_contract(session, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.get("/{contract_id}", response_model=ContractResponse)

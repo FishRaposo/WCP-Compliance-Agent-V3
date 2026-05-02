@@ -9,10 +9,9 @@ import { apiClient } from "@/utils/api-client";
 
 // V4 compliance summary response
 interface ComplianceSummary {
-  total_decisions: number;
-  approval_rate: number;
   by_trade: TradeCompliance[];
   by_locality: LocalityCompliance[];
+  violation_types: { type: string; count: number; percentage: number }[];
 }
 
 export default function AnalyticsCompliance() {
@@ -22,6 +21,17 @@ export default function AnalyticsCompliance() {
     queryKey: ["analytics", "v4", "compliance", period],
     queryFn: () => apiClient.get(`/api/analytics/compliance`, { period }),
   });
+  const totalDecisions =
+    summary?.by_locality.reduce((total, locality) => total + locality.total, 0) ??
+    summary?.by_trade.reduce((total, trade) => total + trade.total, 0) ??
+    0;
+  const approvalRate =
+    summary?.by_locality.length && totalDecisions > 0
+      ? summary.by_locality.reduce(
+          (weighted, locality) => weighted + locality.approval_rate * locality.total,
+          0
+        ) / totalDecisions
+      : 0;
 
   return (
     <AnalyticsLayout
@@ -36,28 +46,20 @@ export default function AnalyticsCompliance() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           label="Total Decisions"
-          value={summary?.total_decisions ?? 0}
-          trend="up"
-          delta={8.3}
+          value={totalDecisions}
         />
         <KPICard
           label="Approval Rate"
-          value={summary?.approval_rate ?? 0}
+          value={approvalRate}
           format="percent"
-          trend="up"
-          delta={3.1}
         />
         <KPICard
           label="Trades Covered"
           value={summary?.by_trade.length ?? 0}
-          trend="up"
-          delta={1.0}
         />
         <KPICard
           label="Localities"
           value={summary?.by_locality.length ?? 0}
-          trend="up"
-          delta={2.0}
         />
       </div>
 

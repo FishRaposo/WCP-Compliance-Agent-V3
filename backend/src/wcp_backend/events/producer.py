@@ -32,8 +32,8 @@ __all__ = [
     "ModuleMetadata",
 ]
 
-STREAM_NAME = "decisions:stream"
-PAYROLL_STREAM_NAME = "payroll:stream"
+STREAM_NAME = "wcp.decisions"
+PAYROLL_STREAM_NAME = "wcp.payrolls"
 
 
 class ModuleMetadata:

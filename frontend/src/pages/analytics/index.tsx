@@ -76,27 +76,19 @@ export default function AnalyticsIndex() {
         <KPICard
           label="Total Decisions"
           value={overview?.total_decisions ?? 0}
-          trend="up"
-          delta={8.3}
         />
         <KPICard
           label="Approval Rate"
           value={overview?.overall_approval_rate ?? 0}
           format="percent"
-          trend="up"
-          delta={3.1}
         />
         <KPICard
           label="Avg Trust Score"
           value={overview?.avg_trust_score ?? 0}
-          trend="up"
-          delta={0.02}
         />
         <KPICard
           label="Human Review Queue"
           value={overview?.human_review_queue_depth ?? 0}
-          trend="down"
-          delta={-2.0}
         />
       </div>
 

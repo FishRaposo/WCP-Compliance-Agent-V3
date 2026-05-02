@@ -18,7 +18,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import and_, case, desc, func, select
 
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
@@ -295,7 +295,7 @@ async def decision_volume(
                     func.count().label("decision_count"),
                     func.avg(decisions_table.c.trust_score).label("avg_trust"),
                     func.sum(
-                        func.case(
+                        case(
                             (decisions_table.c.verdict == "approved", 1),
                             else_=0,
                         )
@@ -364,7 +364,7 @@ async def compliance_breakdown(
                     contracts_table.c.locality,
                     func.count().label("total"),
                     func.sum(
-                        func.case(
+                        case(
                             (decisions_table.c.verdict == "approved", 1),
                             else_=0,
                         )
@@ -461,7 +461,7 @@ async def wage_analytics(
                     func.date_trunc("day", decisions_table.c.created_at).label("dt"),
                     func.count().label("total_checked"),
                     func.sum(
-                        func.case(
+                        case(
                             (decisions_table.c.violation_count > 0, 1),
                             else_=0,
                         )
@@ -538,7 +538,7 @@ async def wage_analytics(
                     func.date_trunc("day", payroll_records_table.c.created_at).label("dt"),
                     func.count().label("total"),
                     func.sum(
-                        func.case(
+                        case(
                             (
                                 and_(
                                     payroll_records_table.c.fringe_rate.is_not(None),

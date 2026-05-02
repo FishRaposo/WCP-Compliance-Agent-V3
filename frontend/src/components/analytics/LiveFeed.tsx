@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface DecisionEvent {
   decision_id: string;
-  status: "Approved" | "Revise" | "Rejected";
+  status: "Approved" | "Revise" | "Rejected" | "Pending Human Review";
   trust_score: number;
   trade: string;
   locality: string;
-  model_used: string;
+  model_used?: string;
   timestamp: string;
 }
 
@@ -32,6 +32,7 @@ function StatusBadge({ status }: { status: DecisionEvent["status"] }) {
     Approved: "bg-green-100 text-green-800",
     Revise: "bg-yellow-100 text-yellow-800",
     Rejected: "bg-red-100 text-red-800",
+    "Pending Human Review": "bg-blue-100 text-blue-800",
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}>
@@ -64,7 +65,7 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
   useEffect(() => {
     const connect = () => {
       setConnectionState("connecting");
-      const es = new EventSource("/api/events/subscribe");
+      const es = new EventSource("/api/events/subscribe?stream=wcp.decisions");
       esRef.current = es;
 
       es.onopen = () => {
@@ -76,16 +77,19 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
         }, 30000);
       };
 
-      es.onmessage = (e) => {
+      const handleEvent = (e: MessageEvent) => {
         try {
-          const event: DecisionEvent = JSON.parse(e.data);
-          // Ignore heartbeat/ping events (empty or ping messages)
-          if (!event.decision_id) return;
+          const event = normalizeDecisionEvent(JSON.parse(e.data));
+          if (!event) return;
           setEvents((prev) => [event, ...prev].slice(0, maxItems));
         } catch {
           // Ignore parse errors for non-JSON messages (e.g., heartbeat comments)
         }
       };
+
+      es.onmessage = handleEvent;
+      es.addEventListener("decision.created", handleEvent);
+      es.addEventListener("job.completed", handleEvent);
 
       es.onerror = () => {
         setConnectionState("reconnecting");
@@ -141,4 +145,40 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
       </CardContent>
     </Card>
   );
+}
+
+function normalizeDecisionEvent(raw: unknown): DecisionEvent | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as Record<string, unknown>;
+  const nested = typeof data.event === "string" ? safeParse(data.event) : data;
+  if (!nested || typeof nested !== "object") return null;
+  const event = nested as Record<string, unknown>;
+  const decisionId = event.decision_id ?? event.id;
+  if (typeof decisionId !== "string") return null;
+  const verdict = String(event.status ?? event.verdict ?? "Pending Human Review");
+  return {
+    decision_id: decisionId,
+    status: normalizeStatus(verdict),
+    trust_score: Number(event.trust_score ?? 0),
+    trade: String(event.trade ?? event.trade_code ?? "unknown"),
+    locality: String(event.locality ?? "unknown"),
+    model_used: typeof event.model_used === "string" ? event.model_used : undefined,
+    timestamp: String(event.timestamp ?? event.created_at ?? new Date().toISOString()),
+  };
+}
+
+function normalizeStatus(value: string): DecisionEvent["status"] {
+  const normalized = value.toLowerCase();
+  if (normalized.includes("approve")) return "Approved";
+  if (normalized.includes("reject")) return "Rejected";
+  if (normalized.includes("revise")) return "Revise";
+  return "Pending Human Review";
+}
+
+function safeParse(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
