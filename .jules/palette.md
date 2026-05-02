@@ -1,0 +1,3 @@
+## 2026-05-02 - Custom Interactive Element Accessibility
+**Learning:** Custom interactive elements (like the clickable dropzone `div` in UploadDropzone) used for file uploads or other actions must be fully keyboard accessible. Adding just an `onClick` handler is not enough; it leaves keyboard-only users unable to trigger the action.
+**Action:** When creating custom interactive elements, always include `role="button"`, `tabIndex={disabled ? -1 : 0}`, an `onKeyDown` handler for 'Enter' and 'Space' keys, and explicit visual focus styling (e.g., `focus-visible` Tailwind classes) to ensure accessibility.
