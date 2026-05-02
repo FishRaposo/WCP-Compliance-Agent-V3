@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { KPICard } from "@/components/analytics/KPICard";
 import { AnalyticsLayout } from "@/components/analytics/AnalyticsLayout";
@@ -36,26 +36,41 @@ export default function AnalyticsWages() {
     queryKey: ["analytics", "v4", "wages", period],
     queryFn: () => apiClient.get(`/api/analytics/wages`, { period }),
   });
-  const totalChecked = summary?.violation_trend.reduce((total, point) => total + point.total_checked, 0) ?? 0;
-  const totalViolations = summary?.violation_trend.reduce((total, point) => total + point.violations, 0) ?? 0;
-  const violationRate = totalChecked > 0 ? (totalViolations / totalChecked) * 100 : 0;
-  const actualVsRequired = summary?.actual_vs_required.map((point) => ({
-    ...point,
-    required: "required" in point ? point.required : point.required_wage,
-    total: "total" in point && point.total !== undefined ? point.total : 1,
-  }));
-  const avgWageDelta =
-    actualVsRequired?.length
+  const totalChecked = useMemo(() => {
+    return summary?.violation_trend.reduce((total, point) => total + point.total_checked, 0) ?? 0;
+  }, [summary]);
+
+  const totalViolations = useMemo(() => {
+    return summary?.violation_trend.reduce((total, point) => total + point.violations, 0) ?? 0;
+  }, [summary]);
+
+  const violationRate = useMemo(() => {
+    return totalChecked > 0 ? (totalViolations / totalChecked) * 100 : 0;
+  }, [totalChecked, totalViolations]);
+
+  const actualVsRequired = useMemo(() => {
+    return summary?.actual_vs_required.map((point) => ({
+      ...point,
+      required: "required" in point ? point.required : point.required_wage,
+      total: "total" in point && point.total !== undefined ? point.total : 1,
+    }));
+  }, [summary]);
+
+  const avgWageDelta = useMemo(() => {
+    return actualVsRequired?.length
       ? actualVsRequired.reduce(
           (total, point) => total + (point.actual_avg - point.required),
           0
         ) / actualVsRequired.length
       : 0;
-  const fringeCompliance =
-    summary?.fringe_compliance.length
+  }, [actualVsRequired]);
+
+  const fringeCompliance = useMemo(() => {
+    return summary?.fringe_compliance.length
       ? summary.fringe_compliance.reduce((total, point) => total + point.compliant_pct, 0) /
         summary.fringe_compliance.length
       : 0;
+  }, [summary]);
 
   return (
     <AnalyticsLayout

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useDecisionStream } from "../hooks/useDecisionStream.ts";
 import { useDecisions } from "../hooks/useDecisions.ts";
 import { useApprovalByTrade } from "../hooks/useAnalytics.ts";
@@ -13,10 +14,11 @@ export default function Dashboard() {
   const totalDecisions = approvalData?.overall.total ?? 0;
   const approvalRate = approvalData?.overall.rate ?? 0;
 
-  const avgTrust =
-    recentDecisions && recentDecisions.length > 0
+  const avgTrust = useMemo(() => {
+    return recentDecisions && recentDecisions.length > 0
       ? recentDecisions.reduce((sum, d) => sum + d.trust_score, 0) / recentDecisions.length
       : 0;
+  }, [recentDecisions]);
 
   return (
     <div className="space-y-6">

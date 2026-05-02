@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { KPICard } from "@/components/analytics/KPICard";
 import { AnalyticsLayout } from "@/components/analytics/AnalyticsLayout";
@@ -21,17 +21,20 @@ export default function AnalyticsCompliance() {
     queryKey: ["analytics", "v4", "compliance", period],
     queryFn: () => apiClient.get(`/api/analytics/compliance`, { period }),
   });
-  const totalDecisions =
-    summary?.by_locality.reduce((total, locality) => total + locality.total, 0) ??
-    summary?.by_trade.reduce((total, trade) => total + trade.total, 0) ??
-    0;
-  const approvalRate =
-    summary?.by_locality.length && totalDecisions > 0
+  const totalDecisions = useMemo(() => {
+    return summary?.by_locality.reduce((total, locality) => total + locality.total, 0) ??
+      summary?.by_trade.reduce((total, trade) => total + trade.total, 0) ??
+      0;
+  }, [summary]);
+
+  const approvalRate = useMemo(() => {
+    return summary?.by_locality.length && totalDecisions > 0
       ? summary.by_locality.reduce(
           (weighted, locality) => weighted + locality.approval_rate * locality.total,
           0
         ) / totalDecisions
       : 0;
+  }, [summary, totalDecisions]);
 
   return (
     <AnalyticsLayout

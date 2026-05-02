@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { KPICard } from "@/components/analytics/KPICard";
 import { AnalyticsLayout } from "@/components/analytics/AnalyticsLayout";
@@ -46,7 +46,7 @@ export default function AnalyticsLLM() {
     queryFn: () => apiClient.get(`/api/analytics/llm`, { period }),
   });
 
-  const summary: LLMSummary = {
+  const summary: LLMSummary = useMemo(() => ({
     total_cost: analytics?.cost_per_decision.reduce((total, point) => total + point.total_cost, 0) ?? 0,
     cost_per_decision:
       analytics?.cost_per_decision.length
@@ -60,7 +60,7 @@ export default function AnalyticsLLM() {
         : 0,
     total_tokens: analytics?.token_usage.reduce((total, point) => total + point.total_tokens, 0) ?? 0,
     decisions: analytics?.cost_per_decision.reduce((total, point) => total + point.decisions, 0) ?? 0,
-  };
+  }), [analytics]);
 
   return (
     <AnalyticsLayout
