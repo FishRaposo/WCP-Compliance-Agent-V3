@@ -5,7 +5,12 @@ const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 60;
 
 export const rateLimiter = (): MiddlewareHandler => async (c, next) => {
-  const key = c.req.header("x-forwarded-for") ?? "anonymous";
+  const forwardedFor = c.req.header("x-forwarded-for");
+  // For x-forwarded-for, the rightmost IP is the one directly connected to the proxy
+  // Proxies append to the list. So the most reliable non-spoofed IP is typically the rightmost
+  // if we assume our application is behind exactly one reverse proxy.
+  const parts = forwardedFor ? forwardedFor.split(",") : [];
+  const key = parts.length > 0 ? parts[parts.length - 1].trim() : "anonymous";
   const now = Date.now();
   const entry = requests.get(key);
 
