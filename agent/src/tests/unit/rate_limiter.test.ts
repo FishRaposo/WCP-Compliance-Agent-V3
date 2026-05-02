@@ -34,6 +34,32 @@ describe("Rate limiter middleware", () => {
     expect(body.error).toBe("Rate limit exceeded");
   });
 
+  it("extracts the rightmost IP when multiple are provided via x-forwarded-for", async () => {
+    const app = makeApp();
+
+    // First, hit the limit for "4.4.4.4" using a single IP
+    const headersSingle = { "x-forwarded-for": "4.4.4.4" };
+    for (let i = 0; i < 60; i++) {
+      await app.request("/test", { headers: headersSingle });
+    }
+
+    // Request 61 should be blocked
+    let res = await app.request("/test", { headers: headersSingle });
+    expect(res.status).toBe(429);
+
+    // Now send a request with a spoofed x-forwarded-for: "5.5.5.5, 4.4.4.4"
+    // Since the rightmost IP is 4.4.4.4, it should still be blocked.
+    const headersSpoofed = { "x-forwarded-for": "5.5.5.5, 4.4.4.4" };
+    res = await app.request("/test", { headers: headersSpoofed });
+    expect(res.status).toBe(429);
+
+    // Also send a request with "4.4.4.4, 5.5.5.5"
+    // The rightmost IP is 5.5.5.5, which has 0 requests, so it should be allowed.
+    const headersAllowed = { "x-forwarded-for": "4.4.4.4, 5.5.5.5" };
+    res = await app.request("/test", { headers: headersAllowed });
+    expect(res.status).toBe(200);
+  });
+
   it("resets count after window expires", async () => {
     vi.useFakeTimers();
     const app = makeApp();
