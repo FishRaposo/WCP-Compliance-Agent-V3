@@ -25,7 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -100,7 +100,7 @@ class ParquetManifest:
         self.archive_dir.mkdir(parents=True, exist_ok=True)
         payload = {
             "version": "1.0",
-            "updated_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
             "entries": self.entries,
         }
         with open(path, "w", encoding="utf-8") as f:
@@ -136,7 +136,7 @@ class ParquetManifest:
             "month": month,
             "date_from": date_from,
             "date_to": date_to,
-            "added_at": datetime.utcnow().isoformat(),
+            "added_at": datetime.now(timezone.utc).isoformat(),
         }
 
     def get_entry(self, filename: str) -> dict[str, Any] | None:

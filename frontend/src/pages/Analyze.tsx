@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import UploadDropzone from "../components/UploadDropzone.tsx";
 import PipelineVisualizer from "../components/PipelineVisualizer.tsx";
 import DecisionCard from "../components/DecisionCard.tsx";
@@ -46,6 +46,14 @@ export default function Analyze() {
     clearTimer();
     timerRef.current = setInterval(tick, 600);
   }, [clearTimer, tick]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const runAnalysis = async (fn: () => Promise<TrustScoredDecision>) => {
     setError(null);

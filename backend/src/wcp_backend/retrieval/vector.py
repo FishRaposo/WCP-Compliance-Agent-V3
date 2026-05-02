@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from functools import lru_cache
 from typing import Any
 
@@ -27,7 +28,7 @@ async def vector_retrieve(
     3. Filter by trade/locality metadata
     """
     model = get_embedding_model()
-    embedding = model.encode(query)
+    embedding = await asyncio.to_thread(model.encode, query)
     embedding_str = f"[{','.join(str(x) for x in embedding.tolist())}]"
 
     # Build query with optional filters

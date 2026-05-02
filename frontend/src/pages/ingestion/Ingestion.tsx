@@ -6,11 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/utils/api-client";
-import type { IngestionJobSummary } from "@/types/v4";
+import type { IngestionJobSummary, IngestionJobType, IngestionJobStatus } from "@/types/v4";
 import { Upload, FileText, RefreshCw, AlertCircle, CheckCircle2, Clock, XCircle, X, Plus } from "lucide-react";
-
-type IngestionJobType = "contract_import" | "payroll_import" | "general";
-type IngestionJobStatus = "pending" | "running" | "completed" | "failed" | "partial";
 
 interface IngestionFilters {
   type: IngestionJobType | "";
@@ -178,7 +175,10 @@ export default function Ingestion() {
         type: filters.type || undefined,
         status: filters.status || undefined,
       }),
-    refetchInterval: 10000, // Poll every 10 seconds for running jobs
+    refetchInterval: (query) => {
+      const data = query.state.data as IngestionJobSummary[] | undefined;
+      return data?.some((j) => j.status === "running" || j.status === "pending") ? 10000 : false;
+    },
   });
 
   const handleFilterChange = useCallback((key: keyof IngestionFilters, value: string) => {
@@ -255,7 +255,11 @@ export default function Ingestion() {
       </div>
 
       {/* Loading / Error */}
-      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 mb-4">
+          Failed to load ingestion jobs. Please try again later.
+        </div>
+      )}
       {isLoading && <Skeleton className="h-28 w-full" />}
 
       {/* Jobs Grid */}

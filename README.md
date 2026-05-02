@@ -97,6 +97,8 @@ bash scripts/check-install.sh
 
 See [docs/install.md](docs/install.md) for the fresh-machine checklist, [docs/dependencies.md](docs/dependencies.md) for the full dependency inventory, and [docs/local-dev.md](docs/local-dev.md) for service-by-service commands.
 
+For the implementation gaps that remain beyond the portfolio MVP, see [V4 Remaining Build Items](docs/planning/V4_REMAINING_BUILD.md).
+
 ### Services
 
 | Service | URL |

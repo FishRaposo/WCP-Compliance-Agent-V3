@@ -8,19 +8,30 @@ import { BackendError } from "../utils/errors.js";
 export const decisions = new Hono();
 
 decisions.get("/stream", async (c) => {
+  const forwardedHeaders: Record<string, string> = {
+    Accept: "text/event-stream",
+  };
+  const auth = c.req.header("Authorization");
+  if (auth) forwardedHeaders["Authorization"] = auth;
+  const requestId = c.req.header("x-request-id");
+  if (requestId) forwardedHeaders["x-request-id"] = requestId;
+  const traceId = c.req.header("x-trace-id");
+  if (traceId) forwardedHeaders["x-trace-id"] = traceId;
+
   const backendRes = await fetch(`${config.BACKEND_URL}/decisions/stream`, {
-    headers: { Accept: "text/event-stream" },
+    headers: forwardedHeaders,
   });
 
   if (!backendRes.ok) {
     return c.json({ error: `Backend SSE failed: ${backendRes.status}` }, 502);
   }
 
+  c.header("Content-Type", "text/event-stream");
+  c.header("Cache-Control", "no-cache");
+  c.header("Connection", "keep-alive");
+  c.header("X-Accel-Buffering", "no");
+
   return stream(c, async (s) => {
-    c.header("Content-Type", "text/event-stream");
-    c.header("Cache-Control", "no-cache");
-    c.header("Connection", "keep-alive");
-    c.header("X-Accel-Buffering", "no");
 
     if (!backendRes.body) return;
     const reader = backendRes.body.getReader();

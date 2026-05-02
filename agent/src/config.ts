@@ -22,6 +22,9 @@ const envSchema = z.object({
   LLM_MODE: z.enum(["mock", "real"]).default("mock"),
   JWT_SECRET: z.string().default("change-me-before-launch"),
   AUTH_DISABLED: z.enum(["true", "false"]).default("false"),
+  REDIS_HOST: z.string().default("localhost"),
+  REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 const raw = envSchema.parse(process.env);

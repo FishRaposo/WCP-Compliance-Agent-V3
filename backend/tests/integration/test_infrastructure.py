@@ -19,7 +19,6 @@ REQUIRES_INFRA = pytest.mark.skipif(
 
 
 @REQUIRES_INFRA
-@pytest.mark.asyncio
 async def test_postgres_connection():
     """Verify PostgreSQL connectivity with SELECT 1."""
     from sqlalchemy import text
@@ -42,7 +41,6 @@ async def test_postgres_connection():
 
 
 @REQUIRES_INFRA
-@pytest.mark.asyncio
 async def test_redis_connection():
     """Verify Redis connectivity with PING."""
     from wcp_backend.config import settings
@@ -56,7 +54,6 @@ async def test_redis_connection():
 
 
 @REQUIRES_INFRA
-@pytest.mark.asyncio
 async def test_elasticsearch_connection():
     """Verify Elasticsearch cluster health."""
     from wcp_backend.config import settings
@@ -70,7 +67,6 @@ async def test_elasticsearch_connection():
 
 
 @REQUIRES_INFRA
-@pytest.mark.asyncio
 async def test_pgvector_extension():
     """Verify pgvector extension is available."""
     from sqlalchemy import text
@@ -95,7 +91,6 @@ async def test_pgvector_extension():
 
 
 @REQUIRES_INFRA
-@pytest.mark.asyncio
 async def test_health_endpoint_services():
     """Verify /health endpoint reports all services."""
     from wcp_backend.config import settings

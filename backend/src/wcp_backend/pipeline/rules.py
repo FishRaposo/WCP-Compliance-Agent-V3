@@ -16,6 +16,7 @@ from wcp_backend.models.schemas import (
 )
 from wcp_backend.observability.metrics import trust_score_histogram
 from wcp_backend.observability.tracing import trace_span
+from wcp_backend.pipeline.checks import _slugify
 from wcp_backend.pipeline.checks.fringe_check import check_fringe
 from wcp_backend.pipeline.checks.overtime_check import check_overtime
 from wcp_backend.pipeline.checks.signature_check import check_signature
@@ -246,6 +247,4 @@ def _compute_agreement(deterministic: DeterministicReport, llm_verdict: LLMVerdi
         return 0.5
 
 
-def _slugify(name: str) -> str:
-    """Convert name to slug for check_id."""
-    return name.lower().replace(" ", "_").replace("-", "_")
+

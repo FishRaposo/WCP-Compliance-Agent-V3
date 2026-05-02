@@ -54,7 +54,7 @@ export function ApprovalRateChart({ data, loading }: ApprovalRateChartProps) {
             <Tooltip formatter={(v) => [`${v} (${((v as number) / data.total * 100).toFixed(1)}%)`, ""]} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: "-20px" }}>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-2xl font-bold">{data.total}</p>
             <p className="text-xs text-muted-foreground">Total</p>

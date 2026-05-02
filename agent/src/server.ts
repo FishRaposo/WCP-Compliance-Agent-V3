@@ -29,6 +29,7 @@ app.use("/api/*", rateLimiter());
 
 app.route("/health", health);
 app.route("/api/auth", auth);
+app.use("/api/auth/me", authMiddleware);
 
 // Protected routes
 app.use("/api/analyze", authMiddleware);
@@ -42,14 +43,15 @@ app.use("/api/payrolls", authMiddleware);
 app.use("/api/ingestion", authMiddleware);
 app.use("/api/prompt-versions", authMiddleware);
 app.use("/api/events", authMiddleware);
+app.use("/api/v4/analytics", authMiddleware);
 
 app.route("/api/analyze", analyze);
 app.route("/api/analyze-pdf", analyzePdf);
 app.route("/api/analyze-csv", analyzeCsv);
 app.route("/api/decisions", decisions);
 app.route("/api/jobs", jobs);
-app.route("/api/analytics", v4Analytics);
 app.route("/api/analytics", analytics);
+app.route("/api/v4/analytics", v4Analytics);
 app.route("/api/contracts", contracts);
 app.route("/api/payrolls", payrolls);
 app.route("/api/ingestion", ingestion);

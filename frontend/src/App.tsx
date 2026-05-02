@@ -65,6 +65,18 @@ export default function App() {
                       <Suspense fallback={<LoadingFallback />}><AnalyticsLLM /></Suspense>
                     } />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={
+                      <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+                        <h1 className="text-4xl font-bold mb-4">404</h1>
+                        <p className="text-muted-foreground mb-6">Page not found</p>
+                        <button 
+                          onClick={() => window.location.href = "/"}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                        >
+                          Go Home
+                        </button>
+                      </div>
+                    } />
                   </Routes>
                 </Layout>
               </ProtectedRoute>

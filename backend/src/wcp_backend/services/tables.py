@@ -139,3 +139,16 @@ users_table = Table(
     Column("role", Text(), nullable=False, server_default="analyst"),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
+
+audit_events_table = Table(
+    "audit_events",
+    metadata,
+    Column("id", PgUUID(), primary_key=True, server_default=func.gen_random_uuid()),
+    Column("job_id", Text(), nullable=False),
+    Column("event_type", Text(), nullable=False),
+    Column("actor", Text(), nullable=False, server_default="system"),
+    Column("payload", JSONB(), nullable=False, server_default="{}"),
+    Column("regulation_references", JSONB(), nullable=False, server_default="[]"),
+    Column("trace_id", Text(), nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)

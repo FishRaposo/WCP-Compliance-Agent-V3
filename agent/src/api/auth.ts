@@ -1,7 +1,9 @@
 import { Hono } from "hono";
+import { setCookie } from "hono/cookie";
 import { z } from "zod";
 import type { Context } from "hono";
 
+import { config } from "../config.js";
 import { httpClient } from "../utils/http-client.js";
 import { signToken } from "../middleware/auth.js";
 import { logger } from "../utils/logger.js";
@@ -41,10 +43,13 @@ auth.post("/login", async (c) => {
 
     logger.info({ user_id: result.user_id }, "User logged in");
 
-    c.header(
-      "Set-Cookie",
-      `wcp_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
-    );
+    setCookie(c, "wcp_token", token, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "Lax",
+      maxAge: 86400,
+      secure: config.NODE_ENV === "production",
+    });
 
     return c.json({
       token,

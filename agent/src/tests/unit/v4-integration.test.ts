@@ -26,11 +26,11 @@ import { formatSSEEvent, broadcastSSEEvent, type SSEEventPayload } from "../../e
 
 describe("V4 route map", () => {
   it("reserves V4 analytics sub-routes", () => {
-    expect(v4RouteMap.analyticsOverview).toBe("/api/analytics/overview");
-    expect(v4RouteMap.analyticsDecisionVolume).toBe("/api/analytics/decision-volume");
-    expect(v4RouteMap.analyticsCompliance).toBe("/api/analytics/compliance");
-    expect(v4RouteMap.analyticsWages).toBe("/api/analytics/wages");
-    expect(v4RouteMap.analyticsLlm).toBe("/api/analytics/llm");
+    expect(v4RouteMap.analyticsOverview).toBe("/api/v4/analytics/overview");
+    expect(v4RouteMap.analyticsDecisionVolume).toBe("/api/v4/analytics/decision-volume");
+    expect(v4RouteMap.analyticsCompliance).toBe("/api/v4/analytics/compliance");
+    expect(v4RouteMap.analyticsWages).toBe("/api/v4/analytics/wages");
+    expect(v4RouteMap.analyticsLlm).toBe("/api/v4/analytics/llm");
   });
 
   it("reserves bulk-upload route", () => {
@@ -146,29 +146,29 @@ describe("V4 events subscribe endpoint", () => {
 });
 
 describe("V4 analytics routes reachable", () => {
-  it("GET /api/analytics/overview reaches V4 analytics proxy", async () => {
-    const res = await app.request("/api/analytics/overview");
+  it("GET /api/v4/analytics/overview reaches V4 analytics proxy", async () => {
+    const res = await app.request("/api/v4/analytics/overview");
     // Backend may be unavailable — accept 502
     expect([200, 502]).toContain(res.status);
   });
 
-  it("GET /api/analytics/decision-volume reaches V4 analytics proxy", async () => {
-    const res = await app.request("/api/analytics/decision-volume");
+  it("GET /api/v4/analytics/decision-volume reaches V4 analytics proxy", async () => {
+    const res = await app.request("/api/v4/analytics/decision-volume");
     expect([200, 502]).toContain(res.status);
   });
 
-  it("GET /api/analytics/compliance reaches V4 analytics proxy", async () => {
-    const res = await app.request("/api/analytics/compliance");
+  it("GET /api/v4/analytics/compliance reaches V4 analytics proxy", async () => {
+    const res = await app.request("/api/v4/analytics/compliance");
     expect([200, 502]).toContain(res.status);
   });
 
-  it("GET /api/analytics/wages reaches V4 analytics proxy", async () => {
-    const res = await app.request("/api/analytics/wages");
+  it("GET /api/v4/analytics/wages reaches V4 analytics proxy", async () => {
+    const res = await app.request("/api/v4/analytics/wages");
     expect([200, 502]).toContain(res.status);
   });
 
-  it("GET /api/analytics/llm reaches V4 analytics proxy", async () => {
-    const res = await app.request("/api/analytics/llm");
+  it("GET /api/v4/analytics/llm reaches V4 analytics proxy", async () => {
+    const res = await app.request("/api/v4/analytics/llm");
     expect([200, 502]).toContain(res.status);
   });
 });

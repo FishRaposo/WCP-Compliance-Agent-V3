@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { analyticsPageRoute } from "./index";
-
 export type Period = "7d" | "30d" | "90d" | "365d";
+
+export const analyticsOverviewRoute = "/analytics/overview";
 
 export interface AnalyticsLayoutProps {
   title: string;
@@ -26,18 +26,22 @@ export function AnalyticsLayout({
   currentPeriod = defaultPeriod,
 }: AnalyticsLayoutProps) {
   const periods: Period[] = ["7d", "30d", "90d", "365d"];
+  const location = useLocation();
+  const isOverview = location.pathname === analyticsOverviewRoute;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Link to={analyticsPageRoute}>
-              <Button variant="ghost" size="sm" className="gap-1 px-0 hover:text-foreground">
-                <ArrowLeft className="h-4 w-4" />
-                Analytics Overview
-              </Button>
-            </Link>
+            {!isOverview && (
+              <Link to={analyticsOverviewRoute}>
+                <Button variant="ghost" size="sm" className="gap-1 px-0 hover:text-foreground">
+                  <ArrowLeft className="h-4 w-4" />
+                  Analytics Overview
+                </Button>
+              </Link>
+            )}
           </div>
           <h1 className="text-2xl font-semibold">{title}</h1>
           <p className="text-sm text-muted-foreground">{description}</p>

@@ -41,9 +41,9 @@ interface LLMAnalytics {
 export default function AnalyticsLLM() {
   const [period, setPeriod] = useState<Period>("30d");
 
-  const { data: analytics, isLoading } = useQuery<LLMAnalytics>({
+  const { data: analytics, isLoading, error } = useQuery<LLMAnalytics>({
     queryKey: ["analytics", "v4", "llm", period],
-    queryFn: () => apiClient.get(`/api/analytics/llm`, { period }),
+    queryFn: () => apiClient.get(`/api/v4/analytics/llm`, { period }),
   });
 
   const summary: LLMSummary = {
@@ -54,9 +54,12 @@ export default function AnalyticsLLM() {
           analytics.cost_per_decision.length
         : 0,
     avg_latency_ms:
-      analytics?.latency_by_model.length
-        ? analytics.latency_by_model.reduce((total, point) => total + point.p50_ms, 0) /
-          analytics.latency_by_model.length
+      analytics?.latency_by_model.length && analytics?.model_distribution.length
+        ? analytics.latency_by_model.reduce((total, point) => {
+            const modelCount = analytics.model_distribution.find(m => m.model === point.model)?.count ?? 1;
+            return total + point.p50_ms * modelCount;
+          }, 0) /
+          analytics.model_distribution.reduce((total, m) => total + m.count, 0)
         : 0,
     total_tokens: analytics?.token_usage.reduce((total, point) => total + point.total_tokens, 0) ?? 0,
     decisions: analytics?.cost_per_decision.reduce((total, point) => total + point.decisions, 0) ?? 0,
@@ -71,6 +74,12 @@ export default function AnalyticsLLM() {
       currentPeriod={period}
       onPeriodChange={setPeriod}
     >
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          Failed to load analytics data. Please try again later.
+        </div>
+      )}
+
       {/* KPI Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard

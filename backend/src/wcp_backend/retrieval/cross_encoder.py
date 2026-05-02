@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from functools import lru_cache
 from typing import Any
 
@@ -21,7 +22,7 @@ async def rerank(query: str, candidates: list[dict[str, Any]], top_k: int = 5) -
         return []
     model = get_cross_encoder()
     pairs = [(query, c["text"]) for c in candidates]
-    scores = model.predict(pairs)
+    scores = await asyncio.to_thread(model.predict, pairs)
     ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
     results: list[dict[str, Any]] = []
     for score, item in ranked[:top_k]:

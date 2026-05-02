@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import CostDashboard from "../components/CostDashboard.tsx";
 import {
   useAnalyticsOverview,
@@ -9,10 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Analytics() {
-  const { data: overview, isLoading: loadingOverview } = useAnalyticsOverview(30);
-  const { data: volume, isLoading: loadingVolume } = useDecisionVolume(30);
-  const { data: approval, isLoading: loadingApproval } = useApprovalByTrade();
-  const { data: distribution, isLoading: loadingDistribution } = useTrustBandDistribution();
+  const { data: overview, isLoading: loadingOverview, error: overviewError } = useAnalyticsOverview(30);
+  const { data: volume, isLoading: loadingVolume, error: volumeError } = useDecisionVolume(30);
+  const { data: approval, isLoading: loadingApproval, error: approvalError } = useApprovalByTrade();
+  const { data: distribution, isLoading: loadingDistribution, error: distributionError } = useTrustBandDistribution();
 
   return (
     <div className="space-y-8">
@@ -23,6 +24,12 @@ export default function Analytics() {
           existing breakdown views remain available below.
         </p>
       </div>
+
+      {(overviewError || volumeError || approvalError || distributionError) && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          Failed to load analytics data. Please try again later.
+        </div>
+      )}
 
       <section>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -168,6 +175,28 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </section>
+
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4">Detailed Analytics</h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link to="/analytics/overview" className="block rounded-lg border p-4 hover:bg-accent transition-colors">
+            <p className="font-medium">Overview</p>
+            <p className="text-sm text-muted-foreground">Cross-contract compliance intelligence</p>
+          </Link>
+          <Link to="/analytics/compliance" className="block rounded-lg border p-4 hover:bg-accent transition-colors">
+            <p className="font-medium">Compliance</p>
+            <p className="text-sm text-muted-foreground">Approval rates and violation patterns</p>
+          </Link>
+          <Link to="/analytics/wages" className="block rounded-lg border p-4 hover:bg-accent transition-colors">
+            <p className="font-medium">Wages</p>
+            <p className="text-sm text-muted-foreground">Prevailing wage compliance analysis</p>
+          </Link>
+          <Link to="/analytics/llm" className="block rounded-lg border p-4 hover:bg-accent transition-colors">
+            <p className="font-medium">LLM Performance</p>
+            <p className="text-sm text-muted-foreground">Model performance and cost efficiency</p>
+          </Link>
+        </div>
+      </div>
 
       <CostDashboard />
     </div>

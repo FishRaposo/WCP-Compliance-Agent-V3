@@ -48,6 +48,7 @@ export interface JobStatus {
 export interface DecisionVolume {
   date: string;
   count: number;
+  avg_trust?: number;
 }
 
 export interface AnalyticsOverview {

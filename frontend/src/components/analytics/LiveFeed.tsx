@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IS_MOCK } from "@/utils/api-client";
+import { mockDecisionSummaries } from "@/utils/mock-data";
 
 export interface DecisionEvent {
   decision_id: string;
@@ -60,9 +62,36 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const esRef = useRef<EventSource | null>(null);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mockIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    if (IS_MOCK) {
+      setConnectionState("connected");
+      let index = 0;
+      const trades = ["Electrician", "Laborer", "Carpenter", "Plumber", "HVAC Technician"];
+      const localities = ["Boston, MA", "Cambridge, MA", "Worcester, MA", "Springfield, MA"];
+
+      mockIntervalRef.current = setInterval(() => {
+        const summary = mockDecisionSummaries[index % mockDecisionSummaries.length];
+        const event: DecisionEvent = {
+          decision_id: `${summary.decision_id}-mock-${index}`,
+          status: normalizeStatus(summary.verdict),
+          trust_score: summary.trust_score,
+          trade: trades[index % trades.length],
+          locality: localities[index % localities.length],
+          timestamp: new Date().toISOString(),
+        };
+        setEvents((prev) => [event, ...prev].slice(0, maxItems));
+        index += 1;
+      }, 3000);
+
+      return () => {
+        clearInterval(mockIntervalRef.current ?? undefined);
+      };
+    }
+
+    let reconnectAttempts = 0;
+
     const connect = () => {
       setConnectionState("connecting");
       const es = new EventSource("/api/events/subscribe?stream=wcp.decisions");
@@ -70,11 +99,7 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
 
       es.onopen = () => {
         setConnectionState("connected");
-        // Heartbeat ping every 30 seconds to keep connection alive
-        heartbeatRef.current = setInterval(() => {
-          // Server-side event source heartbeat is handled by the server sending comment messages
-          // Client just monitors the connection state
-        }, 30000);
+        reconnectAttempts = 0;
       };
 
       const handleEvent = (e: MessageEvent) => {
@@ -94,9 +119,10 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
       es.onerror = () => {
         setConnectionState("reconnecting");
         es.close();
-        clearInterval(heartbeatRef.current ?? undefined);
         // Exponential backoff capped at 30 seconds
-        retryTimeoutRef.current = setTimeout(connect, 5000);
+        const delay = Math.min(1000 * 2 ** reconnectAttempts, 30000);
+        reconnectAttempts += 1;
+        retryTimeoutRef.current = setTimeout(connect, delay);
       };
     };
 
@@ -105,7 +131,6 @@ export function LiveFeed({ maxItems = 50 }: LiveFeedProps) {
     return () => {
       esRef.current?.close();
       clearTimeout(retryTimeoutRef.current ?? undefined);
-      clearInterval(heartbeatRef.current ?? undefined);
     };
   }, [maxItems]);
 

@@ -7,7 +7,6 @@ import pytest
 from wcp_backend.config import settings
 
 
-@pytest.mark.asyncio
 async def test_analytics_volume_requires_phase_2(client):
     """GET /analytics/volume returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -17,7 +16,6 @@ async def test_analytics_volume_requires_phase_2(client):
     assert response.status_code == 503
 
 
-@pytest.mark.asyncio
 async def test_analytics_approval_by_trade_requires_phase_2(client):
     """GET /analytics/approval-by-trade returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -27,7 +25,6 @@ async def test_analytics_approval_by_trade_requires_phase_2(client):
     assert response.status_code == 503
 
 
-@pytest.mark.asyncio
 async def test_analytics_trust_band_requires_phase_2(client):
     """GET /analytics/trust-band-distribution returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -37,7 +34,6 @@ async def test_analytics_trust_band_requires_phase_2(client):
     assert response.status_code == 503
 
 
-@pytest.mark.asyncio
 async def test_analytics_cost_requires_phase_2(client):
     """GET /analytics/cost returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -48,7 +44,6 @@ async def test_analytics_cost_requires_phase_2(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_analytics_volume_days_parameter(client):
     """GET /analytics/volume respects days parameter."""
     response = client.get("/analytics/volume?days=7")
@@ -57,7 +52,6 @@ async def test_analytics_volume_days_parameter(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_analytics_volume_max_days(client):
     """GET /analytics/volume enforces max days (365)."""
     response = client.get("/analytics/volume?days=500")
@@ -66,7 +60,6 @@ async def test_analytics_volume_max_days(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_analytics_approval_by_trade_structure(client):
     """GET /analytics/approval-by-trade returns expected structure."""
     response = client.get("/analytics/approval-by-trade")
@@ -80,7 +73,6 @@ async def test_analytics_approval_by_trade_structure(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_analytics_trust_band_structure(client):
     """GET /analytics/trust-band-distribution returns list of distributions."""
     response = client.get("/analytics/trust-band-distribution")
@@ -95,7 +87,6 @@ async def test_analytics_trust_band_structure(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_analytics_cost_has_note(client):
     """GET /analytics/cost includes note about Phase 3+ requirements."""
     response = client.get("/analytics/cost")

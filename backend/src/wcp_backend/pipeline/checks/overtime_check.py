@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from wcp_backend.models.schemas import ComplianceCheck, EmployeeRecord
 from wcp_backend.models.enums import CheckStatus, CheckType
+from wcp_backend.pipeline.checks import _slugify
 
 OVERTIME_THRESHOLD_HOURS = 40.0
 OVERTIME_MULTIPLIER = 1.5
@@ -67,6 +68,3 @@ def check_overtime(employee: EmployeeRecord) -> ComplianceCheck:
     )
 
 
-def _slugify(name: str) -> str:
-    """Convert name to slug for check_id."""
-    return name.lower().replace(" ", "_").replace("-", "_")

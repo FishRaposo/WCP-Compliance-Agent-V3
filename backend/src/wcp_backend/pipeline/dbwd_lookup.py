@@ -8,6 +8,7 @@ Tier 4: SAM.gov API (future — stub for now)
 
 from __future__ import annotations
 
+import logging
 import re
 import string
 from datetime import date
@@ -20,6 +21,8 @@ from wcp_backend.models.schemas import DBWDRateRecord
 from wcp_backend.observability.tracing import trace_span
 from wcp_backend.services.db import engine
 from wcp_backend.services.redis_cache import cache_get, cache_set, dbwd_cache_key
+
+logger = logging.getLogger(__name__)
 
 # Module-level cache for in-memory corpus
 _IN_MEMORY_CORPUS: dict[str, DBWDRateRecord] | None = None
@@ -222,10 +225,10 @@ async def get_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDR
             try:
                 return DBWDRateRecord.model_validate(cached)
             except Exception:
-                # Cache hit but invalid data — fall through
+                logger.debug("Redis cache operation failed", exc_info=True)
                 pass
     except Exception:
-        # Redis unavailable — fall through to next tier
+        logger.debug("Redis cache_get failed", exc_info=True)
         pass
 
     # Tier 2: PostgreSQL
@@ -235,7 +238,7 @@ async def get_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDR
             try:
                 await cache_set(cache_key, db_rate.model_dump(mode="json"))
             except Exception:
-                # Non-fatal: cache write failure should not block returning the rate
+                logger.debug("Redis cache operation failed", exc_info=True)
                 pass
             return db_rate
     except Exception:
@@ -248,6 +251,7 @@ async def get_dbwd_rate(trade: str, locality: str, effective_date: str) -> DBWDR
     try:
         await cache_set(cache_key, mem_rate.model_dump(mode="json"))
     except Exception:
+        logger.debug("Redis cache operation failed", exc_info=True)
         pass
     return mem_rate
 

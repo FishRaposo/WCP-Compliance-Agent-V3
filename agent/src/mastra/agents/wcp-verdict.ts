@@ -104,7 +104,10 @@ async function buildRagContext(
 
   const results = await Promise.all(
     queries.map((q) =>
-      searchTool(q, undefined, locality).catch(() => [])
+      searchTool(q, undefined, locality).catch((err) => {
+        logger.warn({ q, err }, "RAG search failed for query");
+        return [];
+      })
     )
   );
 

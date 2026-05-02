@@ -33,16 +33,16 @@ export function computeTrustComponents(
     deterministic.violation_count / Math.max(deterministic.checks.length, 1);
   const deterministicScore = 1.0 - violationRatio;
 
-  // Phase 3: placeholder for retrieval/classification confidence
-  const classificationScore = 0.95;
+  // TODO: Replace with actual classification confidence when NLP model is integrated
+  const classificationScore = 0.95; // Placeholder: reduced weight minimizes impact
 
   const llmScore = llmVerdict.confidence;
   const agreementScore = computeAgreement(deterministic, llmVerdict);
 
   return {
-    deterministic: 0.35 * deterministicScore,
-    classification: 0.25 * classificationScore,
-    llm_self: 0.20 * llmScore,
+    deterministic: 0.40 * deterministicScore,
+    classification: 0.15 * classificationScore,
+    llm_self: 0.25 * llmScore,
     agreement: 0.20 * agreementScore,
   };
 }

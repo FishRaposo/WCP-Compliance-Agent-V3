@@ -47,10 +47,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <nav className="w-60 bg-card border-r px-4 py-6 flex flex-col">
+      <nav className="hidden md:flex w-60 bg-card border-r px-4 py-6 flex-col">
         <div className="px-2 mb-6">
           <h1 className="text-lg font-bold">WCP Agent</h1>
-          <p className="text-xs text-muted-foreground">v3.0</p>
+          <p className="text-xs text-muted-foreground">v4.0</p>
         </div>
         <div className="space-y-1">
           {navItems.map(({ href, label, icon: Icon }) => (
@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               key={href}
               to={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname === href
+                (pathname === href || (href !== "/" && pathname.startsWith(href)))
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}

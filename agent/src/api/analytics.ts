@@ -20,7 +20,7 @@ analytics.get("/overview", async (c) => {
         502
       );
     }
-    return c.json({ total_decisions: 0, total_contracts: 0, avg_trust_score: 0.0, overall_approval_rate: 0.0, human_review_queue_depth: 0, decisions_this_month: 0, note: "Mocked overview (backend unreachable)" }, 200);
+    return c.json({ total_decisions: 0, total_contracts: 0, avg_trust_score: 0.0, overall_approval_rate: 0.0, human_review_queue_depth: 0, decisions_this_month: 0, note: "Backend unreachable — returning empty overview" }, 503);
   }
 });
 

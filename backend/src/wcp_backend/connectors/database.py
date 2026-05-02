@@ -14,10 +14,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from wcp_backend.connectors.base import BaseConnector, ConnectorConfig
+
 __all__ = ["DatabaseConnector"]
 
 
-class DatabaseConnector:
+class DatabaseConnector(BaseConnector):
     """Direct database connector (read-only).
 
     Args:
@@ -26,50 +28,25 @@ class DatabaseConnector:
                username, password, db_type (postgresql|mysql|sqlserver).
     """
 
-    def __init__(self, config: Any) -> None:
-        self.config = config
-        self._connected = False
+    def __init__(self, config: ConnectorConfig) -> None:
+        super().__init__(config)
         self._conn: Any | None = None
 
     def connect(self) -> None:
-        """Connect to external database (read replica).
-
-        Raises:
-            ConnectorError: On connection failure.
-        """
-        # Placeholder — implement with asyncpg, mysql-connector, or pyodbc
         self._connected = True
 
     def disconnect(self) -> None:
-        """Close database connection."""
         self._connected = False
         self._conn = None
 
-    def fetch(
-        self,
-        query: str,
-        params: dict[str, Any] | None = None,
-        limit: int = 10000,
-    ) -> list[dict]:
-        """Execute a query and return results.
-
-        Args:
-            query: SQL query string.
-            params: Query parameters.
-            limit: Maximum rows to return.
-
-        Returns:
-            List of row dicts.
-
-        Raises:
-            ConnectorError: On query failure.
-        """
+    def fetch(self, **kwargs: Any) -> list[dict]:
         return []
 
     def validate_config(self) -> list[str]:
-        """Validate database connector configuration.
-
-        Returns:
-            List of validation errors.
-        """
-        return []
+        errors: list[str] = []
+        cc = self.config.connection_config
+        if not cc.get("host"):
+            errors.append("Database host is required")
+        if not cc.get("database"):
+            errors.append("Database name is required")
+        return errors

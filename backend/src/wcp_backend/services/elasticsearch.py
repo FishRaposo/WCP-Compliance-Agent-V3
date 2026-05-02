@@ -67,8 +67,8 @@ async def health_check() -> dict[str, Any]:
     Returns:
         dict with status: 'ok', 'warning', or 'error'
     """
-    client = AsyncElasticsearch([settings.elasticsearch_url])
     try:
+        client = get_es_client()
         health = await client.cluster.health()
         status = health.get("status", "unknown")
 
@@ -80,5 +80,3 @@ async def health_check() -> dict[str, Any]:
             return {"status": "error", "cluster_status": status}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    finally:
-        await client.close()

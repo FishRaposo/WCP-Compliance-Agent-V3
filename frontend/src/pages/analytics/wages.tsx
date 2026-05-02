@@ -32,9 +32,9 @@ interface WagesSummary {
 export default function AnalyticsWages() {
   const [period, setPeriod] = useState<Period>("30d");
 
-  const { data: summary, isLoading } = useQuery<WagesSummary>({
+  const { data: summary, isLoading, error } = useQuery<WagesSummary>({
     queryKey: ["analytics", "v4", "wages", period],
-    queryFn: () => apiClient.get(`/api/analytics/wages`, { period }),
+    queryFn: () => apiClient.get(`/api/v4/analytics/wages`, { period }),
   });
   const totalChecked = summary?.violation_trend.reduce((total, point) => total + point.total_checked, 0) ?? 0;
   const totalViolations = summary?.violation_trend.reduce((total, point) => total + point.violations, 0) ?? 0;
@@ -66,6 +66,12 @@ export default function AnalyticsWages() {
       currentPeriod={period}
       onPeriodChange={setPeriod}
     >
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          Failed to load analytics data. Please try again later.
+        </div>
+      )}
+
       {/* KPI Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard

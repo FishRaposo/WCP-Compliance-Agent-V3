@@ -7,7 +7,7 @@ interface TraceHandle {
 export async function createTrace(jobId: string, promptVersion: string): Promise<TraceHandle> {
   const langfuse = getLangfuse();
   if (!langfuse) {
-    return { id: "" };
+    return { id: `local-${jobId}` };
   }
 
   const trace = langfuse.trace({

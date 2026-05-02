@@ -12,7 +12,7 @@ interface HealthResponse {
 }
 
 export default function SettingsPanel() {
-  const { data: health, isLoading } = useQuery({
+  const { data: health, isLoading, error } = useQuery({
     queryKey: ["health"],
     queryFn: () => apiClient.get<HealthResponse>("/health"),
     staleTime: 30_000,
@@ -43,6 +43,11 @@ export default function SettingsPanel() {
         </CardHeader>
         <CardContent>
           {isLoading && <Skeleton className="h-12 w-full" />}
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+              Failed to load health status. Please try again later.
+            </div>
+          )}
           {health && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">

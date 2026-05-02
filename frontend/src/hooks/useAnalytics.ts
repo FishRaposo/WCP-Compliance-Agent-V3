@@ -12,7 +12,7 @@ export function useAnalyticsOverview(days = 30) {
   return useQuery({
     queryKey: ["analytics", "overview", days],
     queryFn: () =>
-      apiClient.get<AnalyticsOverview>(`/api/analytics/overview?days=${days}`),
+      apiClient.get<AnalyticsOverview>("/api/analytics/overview", { days }),
   });
 }
 
@@ -20,7 +20,7 @@ export function useDecisionVolume(days = 30) {
   return useQuery({
     queryKey: ["analytics", "volume", days],
     queryFn: () =>
-      apiClient.get<DecisionVolume[]>(`/api/analytics/volume?days=${days}`),
+      apiClient.get<DecisionVolume[]>("/api/analytics/volume", { days }),
   });
 }
 

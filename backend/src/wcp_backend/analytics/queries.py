@@ -13,7 +13,7 @@ Functions are designed to be unit-testable with mocked session.execute().
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sqlalchemy import and_, case, desc, func, select
@@ -57,7 +57,7 @@ async def query_overview_metrics(session: Any, days: int = 30) -> dict[str, Any]
         Dict with total_decisions, total_contracts, avg_trust_score,
         overall_approval_rate, human_review_queue_depth, decisions_this_month.
     """
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Total decisions
     total_dec_result = await session.execute(
@@ -139,7 +139,7 @@ async def query_decision_volume(session: Any, days: int = 30) -> list[dict[str, 
     Returns:
         List of {date, count, avg_trust, approval_rate} dicts.
     """
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     query = (
         select(
@@ -280,7 +280,7 @@ async def query_wage_trends(session: Any, days: int = 90) -> list[dict[str, Any]
     Returns:
         List of {date, violations, total_checked, violation_rate} dicts.
     """
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     query = (
         select(
@@ -328,7 +328,7 @@ async def query_llm_cost_analytics(session: Any, days: int = 30) -> dict[str, An
         Dict with cost metrics (cost_per_decision, latency).
         Returns empty arrays when cost_usd/latency_ms columns are null.
     """
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Cost per decision over time
     cost_query = (

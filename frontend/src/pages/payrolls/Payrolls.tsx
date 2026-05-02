@@ -16,7 +16,7 @@ interface PayrollFilters {
   page: number;
 }
 
-function PayrollDetail({ record }: { record: PayrollRecordSummary }) {
+function PayrollDetail({ record, onClose }: { record: PayrollRecordSummary; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
@@ -34,7 +34,7 @@ function PayrollDetail({ record }: { record: PayrollRecordSummary }) {
           <div><span className="text-muted-foreground">Gross Pay</span><p className="font-medium">${record.gross_pay.toFixed(2)}</p></div>
         </div>
         <div className="mt-4 flex justify-end">
-          <Button variant="outline" onClick={() => window.history.back()}>Close</Button>
+          <Button variant="outline" onClick={onClose}>Close</Button>
         </div>
       </div>
     </div>
@@ -288,7 +288,7 @@ export default function Payrolls() {
 
       {/* Dialogs */}
       {showUpload && <CSVUploadDialog onClose={() => setShowUpload(false)} onUploaded={handleUploaded} />}
-      {selectedRecord && <PayrollDetail record={selectedRecord} />}
+      {selectedRecord && <PayrollDetail record={selectedRecord} onClose={() => setSelectedRecord(null)} />}
     </div>
   );
 }

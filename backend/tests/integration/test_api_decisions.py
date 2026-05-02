@@ -7,7 +7,6 @@ import pytest
 from wcp_backend.config import settings
 
 
-@pytest.mark.asyncio
 async def test_list_decisions_requires_phase_2(client):
     """GET /decisions returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -17,7 +16,6 @@ async def test_list_decisions_requires_phase_2(client):
     assert response.status_code == 503
 
 
-@pytest.mark.asyncio
 async def test_get_decision_requires_phase_2(client):
     """GET /decisions/{id} returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -27,7 +25,6 @@ async def test_get_decision_requires_phase_2(client):
     assert response.status_code == 503
 
 
-@pytest.mark.asyncio
 async def test_create_decision_requires_phase_2(client):
     """POST /decisions returns 503 in Phase 1."""
     if settings.phase >= 2:
@@ -50,7 +47,6 @@ async def test_create_decision_requires_phase_2(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_list_decisions_pagination(client, monkeypatch):
     """GET /decisions supports limit and offset."""
     # Mock database query
@@ -67,7 +63,6 @@ async def test_list_decisions_pagination(client, monkeypatch):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_list_decisions_filter_by_verdict(client, monkeypatch):
     """GET /decisions supports verdict filter."""
     received_filters = {}
@@ -88,7 +83,6 @@ async def test_list_decisions_filter_by_verdict(client, monkeypatch):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_get_decision_not_found(client):
     """GET /decisions/{id} returns 404 for non-existent decision."""
     response = client.get("/decisions/nonexistent-id")
@@ -97,7 +91,6 @@ async def test_get_decision_not_found(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_create_decision_validates_payload(client):
     """POST /decisions validates required fields."""
     # Missing required fields
@@ -108,7 +101,6 @@ async def test_create_decision_validates_payload(client):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_create_decision_with_valid_payload(client, monkeypatch):
     """POST /decisions creates a decision with valid payload."""
     from datetime import datetime

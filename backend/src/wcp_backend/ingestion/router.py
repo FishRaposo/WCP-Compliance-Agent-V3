@@ -37,19 +37,6 @@ router = APIRouter(prefix="/v4/ingestion", tags=["v4-ingestion"])
 
 
 # ---------------------------------------------------------------------------
-# Schemas
-# ---------------------------------------------------------------------------
-
-
-class BulkUploadRequest:
-    """Multipart form for bulk upload."""
-
-    file: UploadFile
-    type: str  # contract_import | payroll_import
-    contract_id: str | None = None
-
-
-# ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 

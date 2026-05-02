@@ -16,7 +16,6 @@ from wcp_backend.pipeline.rules import (
 class TestRunRuleEngine:
     """Test the rule engine end-to-end."""
     
-    @pytest.mark.asyncio
     async def test_rule_engine_runs_all_checks(self):
         """Test that rule engine runs all checks for all employees."""
         extracted = ExtractedWCP(
@@ -50,7 +49,6 @@ class TestRunRuleEngine:
         assert len(result.checks) >= 7  # Multiple checks per employee
         assert len(result.dbwd_rates_used) == 1
     
-    @pytest.mark.asyncio
     async def test_rule_engine_detects_violations(self):
         """Test that rule engine correctly identifies violations."""
         extracted = ExtractedWCP(
@@ -87,7 +85,6 @@ class TestRunRuleEngine:
         assert len(wage_checks) == 1
         assert wage_checks[0].status == CheckStatus.FAIL
     
-    @pytest.mark.asyncio
     async def test_rule_engine_multiple_employees(self):
         """Test rule engine with multiple employees."""
         extracted = ExtractedWCP(
@@ -129,7 +126,6 @@ class TestRunRuleEngine:
         # Should only fetch 2 unique DBWD rates
         assert len(result.dbwd_rates_used) == 2
 
-    @pytest.mark.asyncio
     async def test_unknown_trade_fails_overall_status(self):
         """Test that unverified DBWD classifications cannot pass overall validation."""
         extracted = ExtractedWCP(
@@ -158,7 +154,6 @@ class TestRunRuleEngine:
         assert result.violation_count >= 1
         assert classification_checks[0].status == CheckStatus.FAIL
 
-    @pytest.mark.asyncio
     async def test_missing_certification_date_fails_overall_status(self):
         """Test that missing certification dates fail signature validation."""
         extracted = ExtractedWCP(

@@ -18,20 +18,24 @@ async function fetchWithTimeout(
 }
 
 export const httpClient = {
-  async get<T>(path: string): Promise<T> {
+  async get<T>(path: string, headers?: Record<string, string>): Promise<T> {
     const res = await fetchWithTimeout(`${config.BACKEND_URL}${path}`, {
       method: "GET",
+      ...(headers ? { headers } : {}),
     });
     if (!res.ok) {
-      throw new BackendError(`Backend GET ${path} failed: ${res.status}`, path);
+      const body = await res.text().catch(() => "");
+      throw new BackendError(`Backend GET ${path} failed: ${res.status} ${body}`, path);
     }
     return res.json() as Promise<T>;
   },
 
-  async post<T>(path: string, body: unknown): Promise<T> {
+  async post<T>(path: string, body: unknown, headers?: Record<string, string>): Promise<T> {
     const res = await fetchWithTimeout(`${config.BACKEND_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers
+        ? { "Content-Type": "application/json", ...headers }
+        : { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     if (!res.ok) {

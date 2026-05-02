@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { v4BackendApiPrefix, v4PublicApiPrefix, v4RouteMap } from "../../api/v4/index.js";
-import { decisionEventStreamName, v4EventOwner } from "../../events/index.js";
+import { v4EventStreams } from "../../events/index.js";
 
 
 describe("V4 scaffold", () => {
@@ -11,11 +11,10 @@ describe("V4 scaffold", () => {
     expect(v4RouteMap.contracts).toBe("/api/contracts");
     expect(v4RouteMap.payrolls).toBe("/api/payrolls");
     expect(v4RouteMap.ingestion).toBe("/api/ingestion");
-    expect(v4RouteMap.analytics).toBe("/api/analytics");
+    expect(v4RouteMap.analytics).toBe("/api/v4/analytics");
   });
 
   it("reserves the V4 decision event stream", () => {
-    expect(v4EventOwner).toBe("v4");
-    expect(decisionEventStreamName).toBe("wcp.decisions");
+    expect(v4EventStreams.decisions).toBe("wcp.decisions");
   });
 });

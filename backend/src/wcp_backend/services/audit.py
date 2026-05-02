@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 
 from sqlalchemy import text
 
@@ -36,9 +37,9 @@ async def persist_decision(decision: TrustScoredDecision) -> str:
                 "violation_count": decision.violation_count,
                 "warning_count": decision.warning_count,
                 "reasoning_summary": decision.reasoning_summary,
-                "citations": decision.model_dump_json(include={"citations"})[
-                    14:-1
-                ],  # extract JSON array string
+                "citations": json.dumps(
+                    [c.model_dump() for c in (decision.citations or [])]
+                ),
                 "cost_usd": decision.cost_usd,
                 "latency_ms": decision.latency_ms,
                 "phoenix_trace_id": decision.phoenix_trace_id,
@@ -77,7 +78,7 @@ async def append_audit_event(
                 "job_id": job_id,
                 "event_type": event_type,
                 "actor": payload.get("actor", "system"),
-                "payload": __import__("json").dumps(payload),
+                "payload": json.dumps(payload),
                 "regulation_references": regulation_refs or [],
                 "trace_id": trace_id,
             },

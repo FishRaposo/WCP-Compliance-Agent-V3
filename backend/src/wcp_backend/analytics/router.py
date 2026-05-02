@@ -13,13 +13,17 @@ pure SQLAlchemy so it works without DuckDB dependency.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, case, desc, func, select
 
+from wcp_backend.analytics.duckdb_queries import (
+    duckdb_decision_volume,
+    get_analytics_store,
+)
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
 from wcp_backend.services.tables import contracts_table, decisions_table, payroll_records_table
@@ -27,6 +31,20 @@ from wcp_backend.services.tables import contracts_table, decisions_table, payrol
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/v4/analytics", tags=["v4-analytics"])
+
+
+def _get_duckdb():
+    try:
+        return get_analytics_store()
+    except Exception:
+        return None
+
+
+def _safe_float(value: Any) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +149,8 @@ class ModelDistributionEntry(BaseModel):
 
 
 class LatencyByModelEntry(BaseModel):
-    model: str
+    model: str = "aggregate"
+    date: str = ""
     p50_ms: int = 0
     p95_ms: int = 0
     p99_ms: int = 0
@@ -218,7 +237,7 @@ async def analytics_overview(
             human_review_queue_depth = human_review_result.scalar() or 0
 
             # Decisions this period
-            since = datetime.utcnow() - timedelta(days=days)
+            since = datetime.now(timezone.utc) - timedelta(days=days)
             month_result = await session.execute(
                 select(func.count())
                 .select_from(decisions_table)
@@ -270,7 +289,25 @@ async def decision_volume(
     # Parse period
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
-    since = datetime.utcnow() - timedelta(days=days)
+
+    # DuckDB fast path
+    duckdb_store = _get_duckdb()
+    dd_result = duckdb_decision_volume(duckdb_store, days, period, granularity)
+    if dd_result is not None:
+        data = [
+            DecisionVolumeEntry(
+                date=r["date"],
+                decisions=r["decisions"],
+                avg_trust=round(_safe_float(r.get("avg_trust")), 4),
+                approval_rate=round(
+                    r["approved_count"] / r["decisions"] * 100 if r["decisions"] > 0 else 0, 2
+                ),
+            )
+            for r in dd_result
+        ]
+        return DecisionVolumeResponse(period=period, granularity=granularity, data=data)
+
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     try:
         async with async_session() as session:
@@ -344,7 +381,7 @@ async def compliance_breakdown(
     """Compliance breakdown by trade, locality, and violation type."""
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     try:
         async with async_session() as session:
@@ -444,7 +481,7 @@ async def wage_analytics(
     """Wage compliance analytics: trends, actual vs required, fringe compliance."""
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     try:
         async with async_session() as session:
@@ -452,8 +489,7 @@ async def wage_analytics(
             if contract_id:
                 conditions.append(decisions_table.c.contract_id == contract_id)
             if trade:
-                # Trade filter would require payroll join; skip for MVP
-                pass
+                logger.warning("Trade filter not yet supported for wage analytics (requires payroll join)")
 
             # Violation trend: decisions with violations over time
             trend_query = (
@@ -520,17 +556,38 @@ async def wage_analytics(
 
             for row in avq_rows:
                 actual_avg = float(row.avg_rate or 0.0)
-                # Required wage would need DBWD join; show actual only for MVP
-                # compliant_pct = 0.0 until DBWD comparison is implemented
                 actual_vs_required.append(
                     ActualVsRequiredEntry(
                         locality=row.locality_code or "unknown",
                         trade=row.trade_code or "unknown",
-                        required_wage=0.0,  # Placeholder — requires DBWD lookup
+                        required_wage=0.0,
                         actual_avg=round(actual_avg, 2),
-                        compliant_pct=0.0,  # Placeholder — requires DBWD comparison
+                        compliant_pct=0.0,
                     )
                 )
+
+            # DBWD required wage lookup for actual_vs_required entries
+            from sqlalchemy import text as sa_text
+
+            for entry in actual_vs_required:
+                try:
+                    dbwd_result = await session.execute(
+                        sa_text(
+                            "SELECT AVG(rate) AS avg_rate FROM dbwd_rates "
+                            "WHERE trade ILIKE :trade AND locality ILIKE :locality"
+                        ),
+                        {"trade": f"%{entry.trade}%", "locality": f"%{entry.locality}%"},
+                    )
+                    required = _safe_float(dbwd_result.scalar())
+                    if required > 0:
+                        entry.required_wage = round(required, 2)
+                        entry.compliant_pct = (
+                            round(min(entry.actual_avg / required * 100, 100), 2)
+                            if required > 0
+                            else 0.0
+                        )
+                except Exception:
+                    pass
 
             # Fringe compliance: flag records with missing fringe data
             fringe_query = (
@@ -591,7 +648,7 @@ async def llm_analytics(
     """
     days_map = {"7d": 7, "30d": 30, "90d": 90, "365d": 365}
     days = days_map.get(period, 30)
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(timezone.utc) - timedelta(days=days)
 
     try:
         async with async_session() as session:
@@ -634,8 +691,29 @@ async def llm_analytics(
             token_usage: list[TokenUsageEntry] = []
 
             # Model distribution: no model column in decisions table yet
-            # Placeholder: use verdict as proxy
-            model_distribution: list[ModelDistributionEntry] = []
+            # Use verdict grouping as proxy distribution
+            model_dist_query = (
+                select(
+                    decisions_table.c.verdict.label("model"),
+                    func.count().label("count"),
+                )
+                .where(decisions_table.c.created_at >= since)
+                .group_by(decisions_table.c.verdict)
+            )
+            model_dist_result = await session.execute(model_dist_query)
+            model_dist_rows = model_dist_result.fetchall()
+            total_model = sum(r.count or 0 for r in model_dist_rows)
+            model_distribution = []
+            for r in model_dist_rows:
+                model_distribution.append(
+                    ModelDistributionEntry(
+                        model=r.model or "unknown",
+                        count=r.count or 0,
+                        percentage=round(
+                            (r.count / total_model * 100) if total_model > 0 else 0.0, 1
+                        ),
+                    )
+                )
 
             # Latency by model: requires latency_ms column
             latency_query = (

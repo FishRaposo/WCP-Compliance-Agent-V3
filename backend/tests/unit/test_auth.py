@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 from wcp_backend.api.auth import _verify_password
 
 
@@ -30,7 +28,6 @@ class TestVerifyPassword:
 class TestAuthValidateEndpoint:
     """Test auth /validate endpoint."""
 
-    @pytest.mark.asyncio
     async def test_missing_user_returns_invalid(self, client, monkeypatch):
         """Test that non-existent email returns valid=false."""
         monkeypatch.setattr(
@@ -58,7 +55,6 @@ class TestAuthValidateEndpoint:
         assert data["valid"] is False
         assert data["user_id"] is None
 
-    @pytest.mark.asyncio
     async def test_valid_credentials_return_user_info(self, client, monkeypatch):
         """Test that correct credentials return valid=true with user info."""
         import bcrypt

@@ -1,6 +1,3 @@
-export const decisionEventStreamName = "wcp.decisions";
-export const v4EventOwner = "v4";
-
 /**
  * V4 event stream names
  */

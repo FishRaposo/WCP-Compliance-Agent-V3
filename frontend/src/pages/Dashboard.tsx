@@ -7,8 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
   const { latestDecision } = useDecisionStream();
-  const { data: recentDecisions, isLoading: loadingDecisions } = useDecisions(10);
-  const { data: approvalData, isLoading: loadingApproval } = useApprovalByTrade();
+  const { data: recentDecisions, isLoading: loadingDecisions, error: decisionsError } = useDecisions(10);
+  const { data: approvalData, isLoading: loadingApproval, error: approvalError } = useApprovalByTrade();
 
   const totalDecisions = approvalData?.overall.total ?? 0;
   const approvalRate = approvalData?.overall.rate ?? 0;
@@ -22,7 +22,15 @@ export default function Dashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      <div className="grid grid-cols-3 gap-4">
+      {(decisionsError || approvalError) && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-5">
+            <p className="text-sm text-red-800">Failed to load dashboard data. Please try again later.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Decisions</CardTitle>
@@ -49,7 +57,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             {loadingDecisions ? <Skeleton className="h-8 w-16" /> : (
-              <p className="text-2xl font-bold">{(avgTrust * 100).toFixed(0)}%</p>
+               <p className="text-2xl font-bold">{avgTrust.toFixed(2)}</p>
             )}
           </CardContent>
         </Card>

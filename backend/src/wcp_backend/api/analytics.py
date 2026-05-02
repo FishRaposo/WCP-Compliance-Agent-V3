@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
@@ -84,7 +84,7 @@ async def analytics_overview(days: int = Query(default=30, ge=1, le=365)) -> Ana
             month_result = await session.execute(
                 select(func.count())
                 .select_from(decisions_table)
-                .where(decisions_table.c.created_at >= datetime.utcnow() - timedelta(days=days))
+                .where(decisions_table.c.created_at >= datetime.now(timezone.utc) - timedelta(days=days))
             )
 
             total_decisions = total_decisions_result.scalar() or 0
@@ -120,7 +120,7 @@ async def decision_volume(
 
     try:
         async with async_session() as session:
-            start_date = datetime.utcnow() - timedelta(days=days)
+            start_date = datetime.now(timezone.utc) - timedelta(days=days)
 
             query = (
                 select(
@@ -268,7 +268,7 @@ async def cost_analytics() -> CostAnalytics:
                 select(func.count().label("monthly"))
                 .where(
                     decisions_table.c.created_at
-                    >= datetime.utcnow() - timedelta(days=30)
+                    >= datetime.now(timezone.utc) - timedelta(days=30)
                 )
             )
             month_result = await session.execute(month_query)

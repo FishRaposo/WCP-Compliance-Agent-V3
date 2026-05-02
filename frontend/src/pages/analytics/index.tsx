@@ -25,6 +25,7 @@ interface OverviewData {
 interface DecisionVolumeData {
   date: string;
   count: number;
+  avg_trust?: number;
 }
 
 // Derived approval breakdown for chart
@@ -38,26 +39,30 @@ interface ApprovalBreakdown {
 export default function AnalyticsIndex() {
   const [period, setPeriod] = useState<Period>("30d");
 
-  const { data: overview } = useQuery<OverviewData>({
+  const { data: overview, error: overviewError } = useQuery<OverviewData>({
     queryKey: ["analytics", "v4", "overview", period],
-    queryFn: () => apiClient.get(`/api/analytics/overview`, { period }),
+    queryFn: () => apiClient.get(`/api/v4/analytics/overview`, { period }),
   });
 
-  const { data: volume, isLoading: loadingVolume } = useQuery<DecisionVolumeData[]>({
+  const { data: volume, isLoading: loadingVolume, error: volumeError } = useQuery<DecisionVolumeData[]>({
     queryKey: ["analytics", "v4", "decision-volume", period],
-    queryFn: () => apiClient.get(`/api/analytics/decision-volume`, { period }),
+    queryFn: () => apiClient.get(`/api/v4/analytics/decision-volume`, { period }),
   });
 
-  const { data: approvalData } = useQuery<ApprovalRateResponse>({
+  const { data: approvalData, isLoading: loadingApproval, error: approvalError } = useQuery<ApprovalRateResponse>({
     queryKey: ["analytics", "v4", "approval", period],
-    queryFn: () => apiClient.get(`/api/analytics/approval`, { period }),
+    queryFn: () => apiClient.get(`/api/v4/analytics/approval`, { period }),
   });
 
   const approvalBreakdown: ApprovalBreakdown | undefined = approvalData
     ? {
         approved: approvalData.overall.approved,
-        flagged: Math.round(approvalData.overall.total * 0.1),
-        rejected: approvalData.overall.total - approvalData.overall.approved - Math.round(approvalData.overall.total * 0.1),
+        flagged: approvalData.by_trust_band.find((b) => b.trust_band === "flag_for_review")?.total ?? 0,
+        // NOTE: Backend doesn't expose a "rejected" trust band. This count includes
+        // both genuinely rejected items and those flagged for human review.
+        rejected:
+          approvalData.by_trust_band.find((b) => b.trust_band === "rejected")?.total ??
+          approvalData.overall.total - approvalData.overall.approved,
         total: approvalData.overall.total,
       }
     : undefined;
@@ -71,6 +76,12 @@ export default function AnalyticsIndex() {
       currentPeriod={period}
       onPeriodChange={setPeriod}
     >
+      {(overviewError || volumeError || approvalError) && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          Failed to load analytics data. Please try again later.
+        </div>
+      )}
+
       {/* KPI Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
@@ -97,7 +108,7 @@ export default function AnalyticsIndex() {
 
       {/* Second Row */}
       <div className="grid gap-4 md:grid-cols-2">
-        <ApprovalRateChart data={approvalBreakdown} loading={false} />
+        <ApprovalRateChart data={approvalBreakdown} loading={loadingApproval} />
         <TrustScoreTrend period={period} data={volume} loading={loadingVolume} />
       </div>
 

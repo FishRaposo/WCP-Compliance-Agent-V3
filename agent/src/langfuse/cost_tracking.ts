@@ -8,11 +8,9 @@ const MODEL_COST_PER_1K: Record<string, { input: number; output: number }> = {
   // Anthropic
   "claude-sonnet-4-20250514": { input: 0.003, output: 0.015 },
   "claude-sonnet-3-5-20241022": { input: 0.003, output: 0.015 },
-  "claude-opus-20240229": { input: 0.015, output: 0.075 },
-
+  "claude-3-5-haiku-20241022": { input: 0.001, output: 0.005 },
   // Ollama (free local inference)
   "llama3.2": { input: 0, output: 0 },
-  "mistral": { input: 0, output: 0 },
 };
 
 const DEFAULT_RATES = { input: 0.005, output: 0.015 };

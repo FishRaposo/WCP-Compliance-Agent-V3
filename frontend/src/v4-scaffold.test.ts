@@ -9,7 +9,7 @@ import { payrollsApiRoute, payrollsPageRoute, payrollsBulkRoute } from "./pages/
 describe("V4 frontend scaffold", () => {
   it("reserves V4 page and API routes without registering UI routes", () => {
     expect(analyticsPageRoute).toBe("/analytics");
-    expect(analyticsApiRoute).toBe("/api/analytics");
+    expect(analyticsApiRoute).toBe("/api/v4/analytics");
     expect(contractsPageRoute).toBe("/contracts");
     expect(contractsApiRoute).toBe("/api/contracts");
     expect(payrollsPageRoute).toBe("/payrolls");

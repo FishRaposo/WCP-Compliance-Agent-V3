@@ -52,7 +52,7 @@ export function ModelDistributionChart({ data = [], loading }: ModelDistribution
             <Tooltip content={<ModelDistributionTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: "-20px" }}>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <p className="text-2xl font-bold">{(total / 1000).toFixed(1)}K</p>
             <p className="text-xs text-muted-foreground">Total Calls</p>

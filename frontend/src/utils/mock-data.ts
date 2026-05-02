@@ -89,9 +89,16 @@ export const mockTrustScoredDecision: TrustScoredDecision = {
   created_at: new Date().toISOString(),
 };
 
+// Deterministic pseudo-random based on index for stable mock data
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 export const mockDecisionVolume: DecisionVolume[] = Array.from({ length: 14 }, (_, i) => ({
   date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
-  count: Math.floor(Math.random() * 15) + 2,
+  count: Math.floor(seededRandom(i) * 15) + 2,
+  avg_trust: Number((0.6 + seededRandom(i + 100) * 0.35).toFixed(2)),
 }));
 
 export const mockAnalyticsOverview: AnalyticsOverview = {
@@ -237,6 +244,12 @@ export const mockComplianceAnalytics = {
     { locality: "Worcester, MA", total: 28, approval_rate: 78.6 },
     { locality: "Springfield, MA", total: 25, approval_rate: 72.0 },
   ],
+  violation_types: [
+    { type: "underpayment", count: 12, percentage: 42.9 },
+    { type: "missing_fringe", count: 8, percentage: 28.6 },
+    { type: "incorrect_trade", count: 5, percentage: 17.9 },
+    { type: "overtime_violation", count: 3, percentage: 10.7 },
+  ],
 };
 
 export const mockWagesAnalytics = {
@@ -244,22 +257,22 @@ export const mockWagesAnalytics = {
   violation_rate: 14.1,
   avg_actual_vs_required_diff: 2.34,
   fringe_compliance_rate: 91.2,
-  wage_trend: Array.from({ length: 14 }, (_, i) => ({
+  violation_trend: Array.from({ length: 14 }, (_, i) => ({
     date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
-    violations: Math.floor(Math.random() * 8) + 1,
-    total_checked: Math.floor(Math.random() * 20) + 10,
-    violation_rate: Math.random() * 10 + 5,
+    violations: Math.floor(seededRandom(i + 200) * 8) + 1,
+    total_checked: Math.floor(seededRandom(i + 300) * 20) + 10,
+    violation_rate: seededRandom(i + 400) * 10 + 5,
   })),
   actual_vs_required: Array.from({ length: 20 }, (_, i) => ({
-    trade_code: ["Electrician", "Laborer", "Carpenter"][i % 3],
-    locality_code: "Boston, MA",
-    actual_rate: (45 + Math.random() * 15).toFixed(2),
-    required_rate: (48 + Math.random() * 5).toFixed(2),
-    diff: (Math.random() * 6 - 3).toFixed(2),
+    locality: "Boston, MA",
+    trade: ["Electrician", "Laborer", "Carpenter"][i % 3],
+    required_wage: 48 + seededRandom(i + 500) * 5,
+    actual_avg: 45 + seededRandom(i + 600) * 15,
+    compliant_pct: 80 + seededRandom(i + 700) * 18,
   })),
   fringe_compliance: Array.from({ length: 14 }, (_, i) => ({
     date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
-    compliant_pct: 85 + Math.random() * 12,
+    compliant_pct: 85 + seededRandom(i + 800) * 12,
   })),
 };
 
@@ -271,24 +284,24 @@ export const mockLLMAnalytics = {
     total_tokens: 482000,
     decisions: 156,
   },
-  cost: Array.from({ length: 14 }, (_, i) => ({
+  cost_per_decision: Array.from({ length: 14 }, (_, i) => ({
     date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
-    cost_usd: Math.random() * 0.08 + 0.01,
-    decisions: Math.floor(Math.random() * 15) + 2,
-    total_cost: Math.random() * 0.1 + 0.02,
+    cost_usd: seededRandom(i + 900) * 0.08 + 0.01,
+    decisions: Math.floor(seededRandom(i + 1000) * 15) + 2,
+    total_cost: seededRandom(i + 1100) * 0.1 + 0.02,
   })),
-  tokens: Array.from({ length: 14 }, (_, i) => ({
+  token_usage: Array.from({ length: 14 }, (_, i) => ({
     date: new Date(Date.now() - (13 - i) * 86400_000).toISOString().slice(0, 10),
-    prompt_tokens: Math.floor(Math.random() * 20000) + 5000,
-    completion_tokens: Math.floor(Math.random() * 8000) + 2000,
-    total_tokens: Math.floor(Math.random() * 28000) + 7000,
+    prompt_tokens: Math.floor(seededRandom(i + 1200) * 20000) + 5000,
+    completion_tokens: Math.floor(seededRandom(i + 1300) * 8000) + 2000,
+    total_tokens: Math.floor(seededRandom(i + 1400) * 28000) + 7000,
   })),
   model_distribution: [
     { model: "gpt-4o", count: 89, percentage: 57.1, avg_cost: 0.0052 },
     { model: "gpt-4o-mini", count: 48, percentage: 30.8, avg_cost: 0.0008 },
     { model: "claude-3-5-sonnet", count: 19, percentage: 12.1, avg_cost: 0.0068 },
   ],
-  latency: [
+  latency_by_model: [
     { model: "gpt-4o", p50_ms: 1200, p95_ms: 2500, p99_ms: 3800 },
     { model: "gpt-4o-mini", p50_ms: 400, p95_ms: 900, p99_ms: 1500 },
     { model: "claude-3-5-sonnet", p50_ms: 1100, p95_ms: 2200, p99_ms: 3500 },

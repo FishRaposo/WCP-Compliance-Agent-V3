@@ -40,6 +40,16 @@ function TrustScoreTooltip({ active, payload, label }: { active?: boolean; paylo
 }
 
 export function TrustScoreTrend({ data = [], loading }: TrustScoreTrendProps) {
+  if (!loading && data.length === 0) {
+    return (
+      <ChartCard title="Trust Score Trend" subtitle="Average trust score over period" loading={loading}>
+        <div className="flex items-center justify-center h-[240px] text-muted-foreground text-sm">
+          No trust score data available
+        </div>
+      </ChartCard>
+    );
+  }
+
   return (
     <ChartCard title="Trust Score Trend" subtitle="Average trust score over period" loading={loading}>
       <ResponsiveContainer width="100%" height={240}>

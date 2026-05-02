@@ -8,7 +8,6 @@ from wcp_backend.config import settings
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_search_endpoint_returns_results(client, monkeypatch):
     """POST /search returns regulation chunks."""
     # Mock hybrid_search to avoid ES/pgvector dependencies
@@ -45,7 +44,6 @@ async def test_search_endpoint_returns_results(client, monkeypatch):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_search_endpoint_with_filters(client, monkeypatch):
     """POST /search respects trade and locality filters."""
     received_filters = {}
@@ -76,7 +74,6 @@ async def test_search_endpoint_with_filters(client, monkeypatch):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_search_endpoint_empty_results(client, monkeypatch):
     """POST /search handles empty results gracefully."""
     async def mock_hybrid_search(query, trade=None, locality=None, top_k=5):
@@ -97,7 +94,6 @@ async def test_search_endpoint_empty_results(client, monkeypatch):
 
 
 @pytest.mark.skipif(settings.phase < 2, reason="Requires Phase 2")
-@pytest.mark.asyncio
 async def test_search_endpoint_default_top_k(client, monkeypatch):
     """POST /search uses default top_k=5."""
     received_top_k = None

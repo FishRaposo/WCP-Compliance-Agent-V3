@@ -20,6 +20,7 @@
  */
 
 import { createRequire } from "node:module";
+import { config } from "../../config.js";
 import { logger } from "../../utils/logger.js";
 
 const require = createRequire(import.meta.url);
@@ -60,9 +61,9 @@ const getRedisClient = async (): Promise<RedisClientInterface> => {
     const Redis = require("ioredis");
     const client = new Redis({
       lazyConnect: true,
-      host: process.env.REDIS_HOST ?? "localhost",
-      port: parseInt(process.env.REDIS_PORT ?? "6379", 10),
-      password: process.env.REDIS_PASSWORD || undefined,
+      host: config.REDIS_HOST,
+      port: config.REDIS_PORT,
+      password: config.REDIS_PASSWORD,
     }) as RedisClientInterface;
     client.on("error", (err: Error) => {
       logger.error({ err }, "Redis client error");
@@ -95,8 +96,16 @@ export const ensureConsumerGroup = async (config: StreamConfig): Promise<void> =
   }
 };
 
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
 /** Internal type for XREADGROUP results */
-type XReadGroupResult = [streamName: string, messages: [messageId: string, fields: Record<string, string>][]][];
+type XReadGroupResult = [streamName: string, messages: [messageId: string, fields: string[]][]][];
 
 /**
  * Reads new messages from a stream using consumer group pattern.
@@ -124,8 +133,9 @@ export const readStreamMessages = async (
 
   let processed = 0;
   for (const [, messages] of results) {
-    for (const [messageId, fields] of messages) {
+    for (const [messageId, rawFields] of messages) {
       try {
+        const fields = Object.fromEntries(chunkArray(rawFields, 2));
         await handler(messageId, fields);
         // Acknowledge the message after successful processing
         await client.xack(config.streamName, config.consumerGroup, messageId);

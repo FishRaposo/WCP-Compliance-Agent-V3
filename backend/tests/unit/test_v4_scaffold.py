@@ -10,6 +10,7 @@ V4_MODULES = (
     "quality",
     "storage",
     "connectors",
+    "pipelines",
 )
 
 

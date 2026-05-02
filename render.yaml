@@ -23,6 +23,16 @@ services:
         sync: false
       - key: LOG_LEVEL
         value: INFO
+      - key: SAM_GOV_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PHOENIX_COLLECTOR_ENDPOINT
+        sync: false
+      - key: TRUST_SCORE_HIGH_BAND
+        value: "0.85"
+      - key: TRUST_SCORE_HUMAN_REVIEW_THRESHOLD
+        value: "0.60"
     healthCheckPath: /health
 
   agent:
@@ -56,4 +66,22 @@ services:
         sync: false
       - key: PORT
         value: "3000"
+      - key: SAM_GOV_API_KEY
+        sync: false
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
+      - key: LANGFUSE_HOST
+        sync: false
+      - key: PHOENIX_COLLECTOR_ENDPOINT
+        sync: false
+      - key: TRUST_SCORE_HIGH_BAND
+        value: "0.85"
+      - key: TRUST_SCORE_REVIEW_THRESHOLD
+        value: "0.60"
+      - key: REDIS_HOST
+        value: redis
+      - key: REDIS_PORT
+        value: "6379"
     healthCheckPath: /health

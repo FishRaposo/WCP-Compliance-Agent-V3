@@ -1,21 +1,55 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+vi.mock("../../config.js", () => {
+  const mutableConfig = {
+    BACKEND_URL: "http://localhost:8000",
+    OPENAI_API_KEY: "",
+    OPENAI_MODEL: "gpt-4o-mini",
+    LLM_PROVIDER: "openai",
+    ANTHROPIC_API_KEY: "",
+    ANTHROPIC_MODEL: "claude-sonnet-4-20250514",
+    OLLAMA_BASE_URL: "",
+    OLLAMA_MODEL: "llama3.2",
+    LANGFUSE_PUBLIC_KEY: "",
+    LANGFUSE_SECRET_KEY: "",
+    LANGFUSE_HOST: "https://cloud.langfuse.com",
+    PHOENIX_COLLECTOR_ENDPOINT: "http://localhost:6006",
+    SAM_GOV_API_KEY: "",
+    PORT: 3000,
+    NODE_ENV: "test",
+    TRUST_SCORE_REVIEW_THRESHOLD: 0.6,
+    TRUST_SCORE_HIGH_BAND: 0.85,
+    CORS_ORIGINS: "http://localhost:5173",
+    LLM_MODE: "mock",
+    JWT_SECRET: "test-secret",
+    AUTH_DISABLED: "false",
+    REDIS_HOST: "localhost",
+    REDIS_PORT: 6379,
+    REDIS_PASSWORD: undefined,
+  };
+
+  (globalThis as Record<string, unknown>).__testMutableConfig = mutableConfig;
+
+  return {
+    config: mutableConfig,
+  };
+});
+
 import { LLMRouter, type RoutingContext } from "../../lib/llm-router.js";
 
 describe("LLMRouter", () => {
   let router: LLMRouter;
-  const savedEnv = { ...process.env };
 
   beforeEach(() => {
     router = new LLMRouter();
-    // Reset env to known state
-    delete process.env.LLM_PROVIDER;
-    delete process.env.OLLAMA_BASE_URL;
-    delete process.env.ANTHROPIC_API_KEY;
-    process.env.OPENAI_API_KEY = "test-key";
+    const cfg = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+    cfg.LLM_PROVIDER = "openai";
+    cfg.OLLAMA_BASE_URL = "";
+    cfg.ANTHROPIC_API_KEY = "";
+    cfg.OPENAI_API_KEY = "test-key";
   });
 
   afterEach(() => {
-    process.env = { ...savedEnv };
     vi.restoreAllMocks();
   });
 
@@ -28,7 +62,8 @@ describe("LLMRouter", () => {
     });
 
     it("selects Ollama for cost mode when configured", () => {
-      process.env.OLLAMA_BASE_URL = "http://localhost:11434";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.OLLAMA_BASE_URL = "http://localhost:11434";
 
       const ctx: RoutingContext = { costMode: true };
       const cfg = router.selectProvider(ctx);
@@ -37,7 +72,8 @@ describe("LLMRouter", () => {
     });
 
     it("falls back to default when Ollama not configured for cost mode", () => {
-      delete process.env.OLLAMA_BASE_URL;
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.OLLAMA_BASE_URL = "";
 
       const ctx: RoutingContext = { costMode: true };
       // Should not throw, should fallback to default
@@ -47,7 +83,8 @@ describe("LLMRouter", () => {
     });
 
     it("never selects Ollama for compliance-critical even with costMode", () => {
-      process.env.OLLAMA_BASE_URL = "http://localhost:11434";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.OLLAMA_BASE_URL = "http://localhost:11434";
 
       const ctx: RoutingContext = {
         complianceCritical: true,
@@ -60,7 +97,8 @@ describe("LLMRouter", () => {
     });
 
     it("selects Anthropic for synthesis tasks when key is present", () => {
-      process.env.ANTHROPIC_API_KEY = "sk-ant-test";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.ANTHROPIC_API_KEY = "sk-ant-test";
 
       const ctx: RoutingContext = { synthesisTask: true };
       const cfg = router.selectProvider(ctx);
@@ -69,7 +107,8 @@ describe("LLMRouter", () => {
     });
 
     it("falls back to default for synthesis when Anthropic key missing", () => {
-      process.env.ANTHROPIC_API_KEY = "";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.ANTHROPIC_API_KEY = "";
 
       const ctx: RoutingContext = { synthesisTask: true };
       const cfg = router.selectProvider(ctx);
@@ -78,13 +117,14 @@ describe("LLMRouter", () => {
     });
 
     it("uses env LLM_PROVIDER as default when no context flags set", () => {
-      process.env.LLM_PROVIDER = "anthropic";
-      process.env.ANTHROPIC_API_KEY = "sk-ant-test";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.LLM_PROVIDER = "anthropic";
+      mutable.ANTHROPIC_API_KEY = "sk-ant-test";
 
       const ctx: RoutingContext = {};
       const cfg = router.selectProvider(ctx);
 
-      // Default path reads LLM_PROVIDER from env
+      // Default path reads LLM_PROVIDER from config
       expect(cfg.provider).toBe("anthropic");
     });
 
@@ -128,7 +168,8 @@ describe("LLMRouter", () => {
     });
 
     it("excludes Ollama from fallback chain for compliance-critical", async () => {
-      process.env.OLLAMA_BASE_URL = "http://localhost:11434";
+      const mutable = (globalThis as Record<string, unknown>).__testMutableConfig as Record<string, unknown>;
+      mutable.OLLAMA_BASE_URL = "http://localhost:11434";
 
       const generateSpy = vi
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

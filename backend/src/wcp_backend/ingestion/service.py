@@ -10,7 +10,7 @@ Provides:
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import desc, func, insert, select, update
@@ -85,14 +85,14 @@ async def update_ingestion_job(
         "processed_records": processed_records,
         "failed_records": failed_records,
         "error_details": error_details,
-        "updated_at": datetime.utcnow(),
+        "updated_at": datetime.now(timezone.utc),
     }
 
     # Set timestamps based on status transition
     if status == "processing":
-        update_values["started_at"] = datetime.utcnow()
+        update_values["started_at"] = datetime.now(timezone.utc)
     elif status in ("completed", "failed", "partial"):
-        update_values["completed_at"] = datetime.utcnow()
+        update_values["completed_at"] = datetime.now(timezone.utc)
 
     await session.execute(
         update(ingestion_jobs_table)
@@ -112,7 +112,7 @@ async def mark_job_started(session: AsyncSession, job_id: str) -> None:
     await session.execute(
         update(ingestion_jobs_table)
         .where(ingestion_jobs_table.c.id == job_id)
-        .values(status="processing", started_at=datetime.utcnow(), updated_at=datetime.utcnow())
+        .values(status="processing", started_at=datetime.now(timezone.utc), updated_at=datetime.now(timezone.utc))
     )
     await session.commit()
 
@@ -142,8 +142,8 @@ async def mark_job_completed(
             processed_records=processed,
             failed_records=failed,
             error_details=errors,
-            completed_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
     )
     await session.commit()

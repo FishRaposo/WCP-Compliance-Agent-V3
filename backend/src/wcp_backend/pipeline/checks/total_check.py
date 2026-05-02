@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from wcp_backend.models.schemas import ComplianceCheck, EmployeeRecord
 from wcp_backend.models.enums import CheckStatus, CheckType
+from wcp_backend.pipeline.checks import _slugify
 
 TOLERANCE = 0.01  # $0.01 rounding tolerance
 
@@ -58,6 +59,3 @@ def check_totals(employee: EmployeeRecord) -> ComplianceCheck:
     )
 
 
-def _slugify(name: str) -> str:
-    """Convert name to slug for check_id."""
-    return name.lower().replace(" ", "_").replace("-", "_")

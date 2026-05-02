@@ -17,7 +17,7 @@ import {
 } from "./mock-data";
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
-const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
+export const IS_MOCK = import.meta.env.VITE_MOCK_API === "true";
 
 function getToken(): string | null {
   return localStorage.getItem("wcp_token");
@@ -76,10 +76,10 @@ async function mockResolve<T>(path: string): Promise<T> {
   await new Promise((r) => setTimeout(r, 300));
 
   if (path.startsWith("/api/analyze")) return mockTrustScoredDecision as T;
-  if (path.startsWith("/api/decisions")) return mockDecisionSummaries as T;
+  if (path === "/api/decisions") return mockDecisionSummaries as T;
   if (path.startsWith("/api/jobs/")) return mockJobStatus as T;
   if (path.includes("/analytics/overview")) return mockAnalyticsOverview as T;
-  if (path.includes("/analytics/volume")) return mockDecisionVolume as T;
+  if (path.includes("/analytics/volume") || path.includes("/analytics/decision-volume")) return mockDecisionVolume as T;
   if (path.includes("/analytics/approval")) return mockApprovalRate as T;
   if (path.includes("/analytics/trust-band")) return mockTrustBandDistribution as T;
   if (path.includes("/analytics/cost")) return mockCostAnalytics as T;
@@ -87,12 +87,6 @@ async function mockResolve<T>(path: string): Promise<T> {
   if (path.startsWith("/api/contracts")) return mockContracts as T;
   if (path.startsWith("/api/payrolls")) return mockPayrolls as T;
   if (path.startsWith("/api/ingestion/jobs")) return mockIngestionJobs as T;
-  // V4 analytics endpoints
-  if (path.includes("/analytics/overview")) return mockAnalyticsOverview as T;
-  if (path.includes("/analytics/decision-volume")) return mockDecisionVolume as T;
-  if (path.includes("/analytics/approval")) return mockApprovalRate as T;
-  if (path.includes("/analytics/trust-band")) return mockTrustBandDistribution as T;
-  if (path.includes("/analytics/cost")) return mockCostAnalytics as T;
   if (path.includes("/analytics/compliance")) return mockComplianceAnalytics as T;
   if (path.includes("/analytics/wages")) return mockWagesAnalytics as T;
   if (path.includes("/analytics/llm")) return mockLLMAnalytics as T;

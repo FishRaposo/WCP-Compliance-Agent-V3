@@ -66,16 +66,7 @@ def unique_expectation(column: str) -> dict:
     }
 
 
+from wcp_backend.quality._core import parse_validation_result  # noqa: E402
+
 def parse_ge_result(result: dict) -> dict:
-    """Parse a Great Expectations validation result.
-
-    Args:
-        result: Raw GE result dict.
-
-    Returns:
-        Normalized result dict with success, failed_count, errors.
-    """
-    success = result.get("success", True)
-    failed_count = result.get("failed_count", 0)
-    errors = result.get("errors", [])
-    return {"success": success, "failed_count": failed_count, "errors": errors}
+    return parse_validation_result(result).model_dump()

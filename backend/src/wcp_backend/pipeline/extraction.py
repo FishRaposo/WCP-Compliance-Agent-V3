@@ -29,6 +29,7 @@ validates total_fringe >= dbwd_rate.fringe × hours_worked.
 from __future__ import annotations
 
 import io
+import logging
 import re
 import uuid
 from datetime import date, datetime
@@ -39,6 +40,8 @@ import pdfplumber
 from wcp_backend.models.aliases import resolve_classification
 from wcp_backend.models.schemas import ContractorInfo, EmployeeRecord, ExtractedWCP, ProjectInfo
 from wcp_backend.observability.tracing import trace_span
+
+logger = logging.getLogger(__name__)
 
 
 def _extract_pattern(text: str, pattern: str, group: int = 1, default: Any = None) -> Any:
@@ -324,7 +327,7 @@ def extract_from_pdf(pdf_bytes: bytes) -> ExtractedWCP:
             if all_text.strip():
                 return extract_from_text(all_text)
     except Exception:
-        # PDF extraction failed — return empty structure below
+        logger.warning("PDF extraction failed", exc_info=True)
         pass
     
     # Return empty structure with generated job_id

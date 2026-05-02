@@ -1,7 +1,9 @@
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createOllama } from "ollama-ai-provider";
+import { generateText } from "ai";
 import type { LanguageModelV1 } from "@ai-sdk/provider";
+import { config } from "../config.js";
 
 export type RoutingContext = {
   complianceCritical?: boolean;
@@ -12,33 +14,32 @@ export type RoutingContext = {
 export type LLMConfig = {
   provider: string;
   model: string;
-  pricing: { input: number; output: number };
 };
 
 export class LLMRouter {
   private getOllama() {
-    return createOllama({ baseURL: process.env.OLLAMA_BASE_URL || "http://localhost:11434" });
+    return createOllama({ baseURL: config.OLLAMA_BASE_URL || "http://localhost:11434" });
   }
 
   selectProvider(context: RoutingContext): LLMConfig {
     if (context.complianceCritical) {
-      return { provider: "openai", model: "gpt-4o", pricing: { input: 0.01, output: 0.03 } };
+      return { provider: "openai", model: "gpt-4o" };
     }
 
-    if (context.costMode && process.env.OLLAMA_BASE_URL) {
-      return { provider: "ollama", model: "llama3", pricing: { input: 0, output: 0 } };
+    if (context.costMode && config.OLLAMA_BASE_URL) {
+      return { provider: "ollama", model: config.OLLAMA_MODEL };
     }
 
-    if (context.synthesisTask && process.env.ANTHROPIC_API_KEY) {
-      return { provider: "anthropic", model: "claude-3-7-sonnet-20250219", pricing: { input: 0.015, output: 0.075 } };
+    if (context.synthesisTask && config.ANTHROPIC_API_KEY) {
+      return { provider: "anthropic", model: config.ANTHROPIC_MODEL };
     }
 
-    const defaultProvider = process.env.LLM_PROVIDER || "openai";
-    if (defaultProvider === "anthropic" && process.env.ANTHROPIC_API_KEY) {
-        return { provider: "anthropic", model: "claude-3-7-sonnet-20250219", pricing: { input: 0.015, output: 0.075 } };
+    const defaultProvider = config.LLM_PROVIDER;
+    if (defaultProvider === "anthropic" && config.ANTHROPIC_API_KEY) {
+        return { provider: "anthropic", model: config.ANTHROPIC_MODEL };
     }
 
-    return { provider: "openai", model: "gpt-4o-mini", pricing: { input: 0.005, output: 0.015 } };
+    return { provider: "openai", model: "gpt-4o-mini" };
   }
 
   createModel(config: LLMConfig): LanguageModelV1 {
@@ -48,11 +49,16 @@ export class LLMRouter {
   }
 
   async generate(config: LLMConfig) {
+      const model = this.createModel(config);
+      const result = await generateText({
+          model,
+          prompt: "Analyze the following payroll data and provide a JSON verdict.",
+      });
       return {
-          response: '{"verdict": "approved"}',
+          response: result.text,
           model: config.model,
           provider: config.provider,
-          tokens: { prompt: 100, completion: 50 },
+          tokens: { prompt: result.usage?.promptTokens ?? 0, completion: result.usage?.completionTokens ?? 0 },
       };
   }
 
@@ -62,8 +68,8 @@ export class LLMRouter {
         return await this.generate(config);
     } catch {
         const fallbackConfigs = [
-            { provider: "openai", model: "gpt-4o-mini", pricing: { input: 0.005, output: 0.015 } },
-            { provider: "anthropic", model: "claude-3-5-haiku-20241022", pricing: { input: 0.003, output: 0.015 } }
+            { provider: "openai", model: "gpt-4o-mini" },
+            { provider: "anthropic", model: "claude-3-5-haiku-20241022" }
         ];
 
         for (const fallback of fallbackConfigs) {

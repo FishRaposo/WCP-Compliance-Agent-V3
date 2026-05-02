@@ -68,18 +68,19 @@ class DuckDBStore:
             self._conn.close()
             self._conn = None
 
-    def execute_query(self, query: str) -> list[dict]:
+    def execute_query(self, query: str, parameters: dict[str, Any] | None = None) -> list[dict]:
         """Execute an analytical query and return results as list of dicts.
 
         Args:
             query: SQL query string.
+            parameters: Optional named parameters for the query.
 
         Returns:
             List of row dicts.
         """
         if self._conn is None:
             raise RuntimeError("DuckDBStore not connected. Call connect() first.")
-        result = self._conn.execute(query)
+        result = self._conn.execute(query, parameters)
         columns = [desc[0] for desc in result.description]
         rows = result.fetchall()
         return [dict(zip(columns, row)) for row in rows]

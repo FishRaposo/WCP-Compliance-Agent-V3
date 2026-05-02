@@ -20,6 +20,11 @@ router = APIRouter()
 _decision_subscribers: list[asyncio.Queue[str]] = []
 
 
+def _reset_subscribers() -> None:
+    """Clear all subscribers (for testing)."""
+    _decision_subscribers.clear()
+
+
 class DecisionSummary(BaseModel):
     decision_id: str
     job_id: str
@@ -80,8 +85,10 @@ async def stream_decisions() -> StreamingResponse:
         except asyncio.CancelledError:
             logger.debug("SSE stream cancelled for decision subscription")
         finally:
-            if queue in _decision_subscribers:
+            try:
                 _decision_subscribers.remove(queue)
+            except ValueError:
+                pass
 
     return StreamingResponse(
         event_generator(),

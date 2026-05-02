@@ -45,8 +45,18 @@ export default function DecisionCard({ decision }: Props) {
           </div>
         )}
         <AuditTrail citations={decision.citations} traceId={decision.phoenix_trace_id} />
-        {decision.cost_usd != null && (
-          <p className="text-xs text-muted-foreground">Cost: ${decision.cost_usd.toFixed(4)} &middot; Latency: {decision.latency_ms}ms</p>
+        {(decision.cost_usd != null || decision.latency_ms != null) && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {decision.cost_usd != null && (
+              <span>Cost: ${decision.cost_usd.toFixed(4)}</span>
+            )}
+            {decision.cost_usd != null && decision.latency_ms != null && (
+              <span>·</span>
+            )}
+            {decision.latency_ms != null && (
+              <span>Latency: {decision.latency_ms}ms</span>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

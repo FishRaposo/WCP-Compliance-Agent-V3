@@ -92,7 +92,7 @@ def upgrade() -> None:
             fringe_total NUMERIC(10,2),
             overtime_hours NUMERIC(5,1) DEFAULT 0,
             overtime_pay NUMERIC(10,2) DEFAULT 0,
-            decision_id TEXT REFERENCES decisions(job_id),
+            decision_id TEXT REFERENCES decisions(id),
             source_file TEXT,
             ingestion_job_id TEXT REFERENCES ingestion_jobs(id),
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

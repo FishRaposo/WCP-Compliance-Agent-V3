@@ -43,7 +43,11 @@ Backend dependencies are declared in `backend/pyproject.toml` and locked in `bac
 
 ```bash
 cd backend
-poetry install
+poetry install                    # Core V3 deps only
+poetry install -E v4              # V3 + all V4 extras (DuckDB, Parquet, Prefect, GE, paramiko)
+poetry install -E olap            # V3 + DuckDB + PyArrow only
+poetry install -E sftp            # V3 + paramiko SFTP connector only
+poetry install -E ge              # V3 + Great Expectations + pandas only
 ```
 
 For pip-based setup or quick environment repair, use the root `requirements.txt`:
@@ -84,6 +88,19 @@ Use these defaults for local development:
 | `PHOENIX_COLLECTOR_ENDPOINT` | `http://localhost:6006` |
 | `BACKEND_URL` | `http://localhost:8000` |
 | `VITE_API_URL` | `http://localhost:3000` |
+
+## V4 Optional Dependencies
+
+V4 data-platform features (DuckDB OLAP, Parquet archival, Prefect ETL, Great Expectations validation, SFTP connectors) are optional extras in `pyproject.toml`. Install only what you need:
+
+| Extra | Packages | Use case |
+|---|---|---|
+| `v4` | duckdb, pyarrow, pandas, prefect, great-expectations, paramiko | All V4 features |
+| `olap` | duckdb, pyarrow | DuckDB analytics + Parquet export |
+| `ge` | great-expectations, pandas | Data quality validation |
+| `sftp` | paramiko | SFTP payroll file ingestion |
+
+V4 Python modules use lazy imports and graceful fallback — they work even without their optional packages installed (DuckDB queries fall back to PostgreSQL, GE validation falls back to custom validators, SFTP connector raises a clear error).
 
 ## Verification Commands
 

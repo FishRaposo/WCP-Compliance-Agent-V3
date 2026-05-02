@@ -75,14 +75,17 @@ async def ensure_partition(session: AsyncSession, contract_id: str) -> str:
         Partition table name
     """
     partition_name = partition_name_for_contract(contract_id)
-    # Sanitize contract_id for SQL (escape single quotes)
-    safe_contract_id = contract_id.replace("'", "''")
+    if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", partition_name):
+        raise ValueError(f"Invalid partition name: {partition_name}")
+    if len(partition_name) > 128:
+        raise ValueError(f"Partition name too long: {len(partition_name)} characters")
     try:
         await session.execute(
             text(
                 f"CREATE TABLE IF NOT EXISTS {partition_name} "
-                f"PARTITION OF payroll_records FOR VALUES IN ('{safe_contract_id}')"
-            )
+                "PARTITION OF payroll_records FOR VALUES IN (:contract_id)"
+            ),
+            {"contract_id": contract_id},
         )
         await session.commit()
     except Exception as exc:

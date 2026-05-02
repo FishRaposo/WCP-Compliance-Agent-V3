@@ -47,24 +47,29 @@ events.get("/subscribe", async (c) => {
   try {
     bridge = createSSEBridge(clientId, streamConfig);
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes("Maximum SSE connections exceeded")) {
+      logger.warn({ clientId }, "SSE capacity exceeded");
+      return c.json({ error: "Server at capacity" }, 503);
+    }
     logger.warn({ err, clientId }, "Redis unavailable — returning synthetic heartbeat stream");
-    // Graceful fallback: synthetic heartbeat stream when Redis is unavailable
     const encoder = new TextEncoder();
+    let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
     const heartbeatStream = new ReadableStream<Uint8Array>({
       start(controller) {
-        // Send initial connection comment
         controller.enqueue(encoder.encode(": connected (Redis unavailable)\n\n"));
-      },
-      pull(controller) {
-        // Emit heartbeat comment every 15 seconds
-        const heartbeat = encoder.encode(": heartbeat\n\n");
-        try {
-          controller.enqueue(heartbeat);
-        } catch {
-          controller.close();
-        }
+        heartbeatTimer = setInterval(() => {
+          const heartbeat = encoder.encode(": heartbeat\n\n");
+          try {
+            controller.enqueue(heartbeat);
+          } catch {
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            try { controller.close(); } catch { /* already closed */ }
+          }
+        }, 15_000);
       },
       cancel() {
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
         logger.debug({ clientId }, "Synthetic SSE stream cancelled");
       },
     });
@@ -91,14 +96,12 @@ events.get("/subscribe", async (c) => {
         try {
           controller.enqueue(encoder.encode(": heartbeat\n\n"));
         } catch {
-          // Connection closed — clear timer and close
           if (heartbeatTimer) clearInterval(heartbeatTimer);
           closeSSEConnection(clientId);
         }
       }, 15_000);
     },
     async pull(controller) {
-      // Enqueue from the bridge stream directly
       const reader = bridge!.getReader();
       try {
         const { done, value } = await reader.read();
@@ -109,7 +112,7 @@ events.get("/subscribe", async (c) => {
         controller.enqueue(value);
       } catch (err) {
         logger.error({ err, clientId }, "SSE bridge read error");
-        controller.close();
+        try { controller.close(); } catch { /* already closed */ }
       } finally {
         reader.releaseLock();
       }

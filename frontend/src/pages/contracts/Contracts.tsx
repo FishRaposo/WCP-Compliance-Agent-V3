@@ -264,6 +264,7 @@ export default function Contracts() {
     setShowUploadContracts(false);
     setShowUploadIngestion(false);
     queryClient.invalidateQueries({ queryKey: ["contracts"] });
+    queryClient.invalidateQueries({ queryKey: ["ingestion", "jobs"] });
   };
 
   return (

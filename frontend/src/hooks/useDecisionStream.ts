@@ -10,6 +10,7 @@ export function useDecisionStream() {
   const [connected, setConnected] = useState(false);
   const esRef = useRef<EventSource | null>(null);
   const retryRef = useRef(0);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const connect = useCallback(() => {
     if (IS_MOCK) {
@@ -42,17 +43,17 @@ export function useDecisionStream() {
       }
     };
 
+    const scheduleReconnect = () => {
+      const delay = Math.min(1000 * 2 ** retryRef.current, 30_000);
+      retryRef.current += 1;
+      reconnectTimerRef.current = setTimeout(connect, delay);
+    };
+
     es.onerror = () => {
       setConnected(false);
       es.close();
       esRef.current = null;
       scheduleReconnect();
-    };
-
-    const scheduleReconnect = () => {
-      const delay = Math.min(1000 * 2 ** retryRef.current, 30_000);
-      retryRef.current += 1;
-      setTimeout(connect, delay);
     };
 
     return undefined;
@@ -62,6 +63,10 @@ export function useDecisionStream() {
     const cleanup = connect();
     return () => {
       cleanup?.();
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       if (esRef.current) {
         esRef.current.close();
         esRef.current = null;
@@ -69,5 +74,6 @@ export function useDecisionStream() {
     };
   }, [connect]);
 
+  // `connected` is available for consumers that need connection status UI
   return { latestDecision, connected };
 }

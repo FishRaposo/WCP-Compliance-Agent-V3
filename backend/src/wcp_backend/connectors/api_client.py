@@ -15,10 +15,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from wcp_backend.connectors.base import BaseConnector, ConnectorConfig
+
 __all__ = ["APIConnector"]
 
 
-class APIConnector:
+class APIConnector(BaseConnector):
     """Generic REST API connector.
 
     Args:
@@ -27,52 +29,23 @@ class APIConnector:
                api_key or (client_id, client_secret), headers.
     """
 
-    def __init__(self, config: Any) -> None:
-        self.config = config
-        self._connected = False
+    def __init__(self, config: ConnectorConfig) -> None:
+        super().__init__(config)
         self._session: Any | None = None
 
     def connect(self) -> None:
-        """Initialize HTTP session and authenticate.
-
-        Raises:
-            ConnectorError: On connection/auth failure.
-        """
-        # Placeholder — implement with httpx or requests
         self._connected = True
 
     def disconnect(self) -> None:
-        """Close HTTP session."""
         self._connected = False
         self._session = None
 
-    def fetch(
-        self,
-        endpoint: str,
-        method: str = "GET",
-        params: dict[str, Any] | None = None,
-        body: dict[str, Any] | None = None,
-    ) -> list[dict]:
-        """Fetch data from API endpoint.
-
-        Args:
-            endpoint: API endpoint path (appended to base_url).
-            method: HTTP method (GET, POST, etc.).
-            params: Query parameters.
-            body: Request body (for POST/PUT).
-
-        Returns:
-            List of record dicts.
-
-        Raises:
-            ConnectorError: On API error.
-        """
+    def fetch(self, **kwargs: Any) -> list[dict]:
         return []
 
     def validate_config(self) -> list[str]:
-        """Validate API connector configuration.
-
-        Returns:
-            List of validation errors.
-        """
-        return []
+        errors: list[str] = []
+        cc = self.config.connection_config
+        if not cc.get("base_url"):
+            errors.append("API base_url is required")
+        return errors

@@ -22,7 +22,8 @@ Data layer: PostgreSQL 16 (pgvector), Redis 7, Elasticsearch 8, Arize Phoenix.
 
 ```bash
 cd backend
-poetry install                              # Install deps
+poetry install                              # Core deps only (V3)
+poetry install -E v4                        # V3 + all V4 extras
 poetry run uvicorn wcp_backend.main:app --reload  # Dev server
 poetry run pytest tests/unit -v             # Unit tests (no infra needed)
 poetry run pytest tests/integration -v      # Needs postgres + redis

@@ -16,10 +16,6 @@
     "@ai-sdk/anthropic": "^3.0.71",
     "@ai-sdk/openai": "^1.1.0",
     "@hono/node-server": "^1.13.0",
-    "@mastra/core": "^0.10.0",
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
-    "@opentelemetry/sdk-trace-node": "^1.28.0",
     "ai": "^4.0.0",
     "dotenv": "^16.4.7",
     "hono": "^4.6.0",
@@ -32,9 +28,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
     "@types/node": "^22.10.0",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
     "esbuild": "^0.24.0",
     "eslint": "^9.16.0",
     "globals": "^15.13.0",

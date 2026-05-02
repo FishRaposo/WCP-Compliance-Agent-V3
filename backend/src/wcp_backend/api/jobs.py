@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -78,10 +78,17 @@ async def enqueue_job(job: JobCreate) -> JobStatusResponse:
             await session.commit()
 
         task_name = task_mapping[job.task_type]
-        celery_result = celery_app.send_task(
-            task_name,
-            args=[job_id, job.payload.get("items", [job.payload])],
-        )
+        payload_items = job.payload.get("items", [job.payload])
+        if job.task_type == "batch_validate":
+            celery_result = celery_app.send_task(
+                task_name,
+                args=[{"job_id": job_id, "payloads": payload_items}],
+            )
+        else:
+            celery_result = celery_app.send_task(
+                task_name,
+                args=[job_id, payload_items],
+            )
 
         async with async_session() as session:
             await session.execute(
@@ -100,7 +107,7 @@ async def enqueue_job(job: JobCreate) -> JobStatusResponse:
             status=JobStatus.PROCESSING,
             result=None,
             error=None,
-            created_at=datetime.utcnow().isoformat(),
+            created_at=datetime.now(timezone.utc).isoformat(),
             updated_at=None,
         )
     except HTTPException:
@@ -167,7 +174,7 @@ async def get_job_status(job_id: str) -> JobStatusResponse:
                         )
                         await session.commit()
                         status = celery_status
-                        updated_at = datetime.utcnow().isoformat()
+                        updated_at = datetime.now(timezone.utc).isoformat()
                 except Exception:
                     logger.debug("Celery state unavailable, using DB status")
 

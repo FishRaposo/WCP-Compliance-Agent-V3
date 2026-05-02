@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from wcp_backend.quality import (
+from wcp_backend.quality._core import (
     ValidationResult,
     not_null_expectation,
     between_expectation,

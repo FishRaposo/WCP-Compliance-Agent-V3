@@ -18,3 +18,5 @@ __all__ = [
     "ROUTE_PREFIX",
     "router",
 ]
+
+from wcp_backend.analytics.router import router  # noqa: E402

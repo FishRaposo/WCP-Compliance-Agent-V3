@@ -6,16 +6,12 @@ import { proxyJson } from "./proxy.js";
  * V4 Analytics Proxy Routes
  *
  * Proxies analytics requests to backend V4 endpoints:
- *   GET /api/analytics/overview     → GET /v4/analytics/overview
- *   GET /api/analytics/decision-volume → GET /v4/analytics/decision-volume
- *   GET /api/analytics/compliance   → GET /v4/analytics/compliance
- *   GET /api/analytics/wages        → GET /v4/analytics/wages
- *   GET /api/analytics/llm         → GET /v4/analytics/llm
- *
- * These routes are mounted under the shared /api/analytics prefix in server.ts
- * (v4Analytics router), so existing V3 analytics routes (overview, volume,
- * approval-by-trade, trust-band-distribution, cost) remain accessible alongside
- * the new V4 endpoints.
+ *   GET /api/v4/analytics/overview     → GET /v4/analytics/overview
+ *   GET /api/v4/analytics/decision-volume → GET /v4/analytics/decision-volume
+ *   GET /api/v4/analytics/approval     → GET /v4/analytics/approval (V3 proxy fallback)
+ *   GET /api/v4/analytics/compliance   → GET /v4/analytics/compliance
+ *   GET /api/v4/analytics/wages        → GET /v4/analytics/wages
+ *   GET /api/v4/analytics/llm          → GET /v4/analytics/llm
  */
 
 export const v4Analytics = new Hono();
@@ -25,6 +21,9 @@ v4Analytics.get("/overview", (c) => proxyJson(c, "GET", "/v4/analytics/overview"
 
 /** V4 Decision Volume — time-series decision counts per period */
 v4Analytics.get("/decision-volume", (c) => proxyJson(c, "GET", "/v4/analytics/decision-volume"));
+
+/** Approval rates — proxy to V3 backend approval-by-trade for now */
+v4Analytics.get("/approval", (c) => proxyJson(c, "GET", "/analytics/approval-by-trade"));
 
 /** V4 Compliance — approval/rejection rates and flag trends */
 v4Analytics.get("/compliance", (c) => proxyJson(c, "GET", "/v4/analytics/compliance"));

@@ -50,7 +50,7 @@ jobs:
         run: pip install poetry
       - name: Install dependencies
         working-directory: backend
-        run: poetry install
+        run: poetry install -E v4
       - name: Run database migrations
         working-directory: backend
         run: poetry run alembic upgrade head

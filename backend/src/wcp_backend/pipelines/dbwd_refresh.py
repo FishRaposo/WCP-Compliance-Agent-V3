@@ -16,30 +16,145 @@ Responsibilities:
 
 from __future__ import annotations
 
-from datetime import date
+import asyncio
+import logging
+from datetime import date, datetime
 from typing import Any
 
+import httpx
 from sqlalchemy import text
 
+from wcp_backend.config import settings
 from wcp_backend.pipelines.utils import prefect_flow, prefect_task
 from wcp_backend.quality.dbwd_expectations import validate_dbwd_rates
 from wcp_backend.services.db import async_session
 
 __all__ = ["dbwd_refresh_flow"]
 
+_logger = logging.getLogger(__name__)
+
+_SAM_GOV_BASE = "https://api.sam.gov/wages/v2/wage-determinations"
+_MAX_RETRIES = 3
+_REQUEST_TIMEOUT = 30
+_MAX_RECORDS = 1000
+_PAGE_SIZE = 100
+
 
 @prefect_task(retries=3, retry_delay_seconds=60)
 async def fetch_sam_gov_rates(sam_gov_api_key: str | None = None) -> list[dict[str, Any]]:
-    """Fetch DBWD rates.
+    """Fetch DBWD rates from SAM.gov WAGE API with pagination and retry.
 
-    The SAM.gov integration in this repo is intentionally narrow for portfolio
-    use, so the flow accepts injected data in tests and otherwise returns an
-    empty batch with a clear status instead of fabricating rates.
+    Args:
+        sam_gov_api_key: SAM.gov API key. Falls back to settings.sam_gov_api_key.
+
+    Returns:
+        List of rate dicts with keys: trade, locality, rate, fringe,
+        effective_date, wage_determination_number.
     """
-    if not sam_gov_api_key:
+    api_key = sam_gov_api_key or settings.sam_gov_api_key
+    if not api_key:
+        _logger.warning("SAM_GOV_API_KEY not configured — returning empty rate list")
         return []
-    # Hook point for a full SAM.gov WAGE API implementation.
-    return []
+
+    all_rates: list[dict[str, Any]] = []
+    offset = 0
+
+    async with httpx.AsyncClient(timeout=_REQUEST_TIMEOUT) as client:
+        while len(all_rates) < _MAX_RECORDS:
+            params: dict[str, str | int] = {
+                "api_key": api_key,
+                "limit": _PAGE_SIZE,
+                "offset": offset,
+            }
+
+            body = await _fetch_with_retry(client, params)
+            if body is None:
+                break
+
+            items = body.get("items", body.get("data", []))
+            if not isinstance(items, list) or not items:
+                break
+
+            for item in items:
+                parsed = _parse_rate_item(item)
+                if parsed is not None:
+                    all_rates.append(parsed)
+
+            if len(items) < _PAGE_SIZE:
+                break
+            offset += _PAGE_SIZE
+
+    _logger.info("Fetched %d DBWD rates from SAM.gov", len(all_rates))
+    return all_rates
+
+
+async def _fetch_with_retry(
+    client: httpx.AsyncClient,
+    params: dict[str, str | int],
+) -> dict[str, Any] | None:
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            response = await client.get(_SAM_GOV_BASE, params=params)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            _logger.warning(
+                "SAM.gov HTTP %s (attempt %d/%d)",
+                exc.response.status_code,
+                attempt,
+                _MAX_RETRIES,
+            )
+            if attempt == _MAX_RETRIES:
+                return None
+        except httpx.RequestError as exc:
+            _logger.warning(
+                "SAM.gov request error (attempt %d/%d): %s",
+                attempt,
+                _MAX_RETRIES,
+                exc,
+            )
+            if attempt == _MAX_RETRIES:
+                return None
+        await asyncio.sleep(2 ** attempt)
+    return None
+
+
+def _parse_rate_item(item: dict[str, Any]) -> dict[str, Any] | None:
+    try:
+        rate_val = item.get("rate")
+        fringe_val = item.get("fringe", 0)
+        effective = item.get("effectiveDate", item.get("effective_date"))
+        wd_number = item.get("wdNumber", item.get("wage_determination_number", ""))
+
+        if rate_val is None:
+            return None
+
+        rate = float(rate_val)
+        fringe = float(fringe_val) if fringe_val else 0.0
+
+        if effective:
+            if isinstance(effective, str):
+                parsed_date = date.fromisoformat(effective[:10])
+            elif isinstance(effective, (int, float)):
+                parsed_date = date.fromisoformat(
+                    datetime.fromtimestamp(effective / 1000).strftime("%Y-%m-%d")
+                )
+            else:
+                parsed_date = date.today()
+        else:
+            parsed_date = date.today()
+
+        return {
+            "trade": item.get("trade", ""),
+            "locality": item.get("locality", ""),
+            "rate": rate,
+            "fringe": fringe,
+            "effective_date": parsed_date,
+            "wage_determination_number": str(wd_number),
+        }
+    except (ValueError, TypeError, KeyError) as exc:
+        _logger.warning("Skipping invalid rate item: %s", exc)
+        return None
 
 
 @prefect_task()

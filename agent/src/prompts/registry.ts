@@ -14,9 +14,7 @@ const LOCAL_REGISTRY: Record<string, PromptVersion> = {
   [wcpVerdictV2.version]: wcpVerdictV2,
 };
 
-const DEFAULT_VERSION = config.OPENAI_MODEL.startsWith("gpt-4o-mini")
-  ? "v2"
-  : "v2";
+const DEFAULT_VERSION = "v2";
 
 function isLangfuseConfigured(): boolean {
   return Boolean(

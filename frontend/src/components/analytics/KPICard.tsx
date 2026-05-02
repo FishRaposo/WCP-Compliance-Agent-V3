@@ -16,7 +16,7 @@ function formatValue(value: string | number, format?: string): string {
     case "percent":
       return `${value.toFixed(1)}%`;
     case "currency":
-      return `$${value.toFixed(3)}`;
+      return `$${value.toFixed(2)}`;
     default:
       return value.toLocaleString();
   }

@@ -58,7 +58,13 @@ class TestExtractEndpoint:
         assert response.json()["detail"] == "Provide 'text' or 'file'"
 
     def test_extract_invalid_pdf(self, client):
-        """POST /extract with corrupted PDF returns empty structure with job_id."""
+        """POST /extract with corrupted PDF returns empty structure with job_id.
+
+        NOTE: The endpoint returns 200 with an empty/minimal structure for
+        corrupted or unreadable PDFs rather than raising a 4xx/5xx error.
+        This is intentional so that downstream processing can continue with
+        a placeholder job_id and manual review flags.
+        """
         # Send invalid PDF bytes (not matching expected format)
         invalid_pdf = b"This is not a PDF"
 

@@ -37,10 +37,6 @@ const forwardedHeaders = [
   "content-type",
 ] as const;
 
-/**
- * Extracts forwardable headers from the incoming request.
- * Includes auth headers, trace IDs, content type, and accept type.
- */
 const extractForwardedHeaders = (c: Context): Record<string, string> => {
   const headers: Record<string, string> = {};
   for (const key of forwardedHeaders) {
@@ -50,22 +46,44 @@ const extractForwardedHeaders = (c: Context): Record<string, string> => {
   return headers;
 };
 
-/**
- * Node.js fetch requires the `duplex` option when the request body
- * will be streamed (half-connection). This type narrows the unsafe `any`
- * cast required for the Node fetch implementation.
- *
- * @see https://nodejs.org/api/fetch.html#fetchfetchurl-options — "duplex"
- */
 interface RequestInitNodeDuplex extends RequestInit {
   duplex?: "half";
 }
 
-/**
- * Builds a Node-compatible RequestInit with duplex set for streaming bodies.
- * Safe to use with multipart/binary requests where the body is streamed.
- */
 const buildNodeRequestInit = (init: RequestInitNodeDuplex): RequestInitNodeDuplex => init;
+
+async function handle4xxResponse(c: Context, res: Response): Promise<Response> {
+  const text = await res.text();
+  let errorBody: Record<string, unknown> = { error: res.statusText };
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+      errorBody = {};
+      for (const [key, value] of Object.entries(parsed)) {
+        if (value !== null && value !== undefined) {
+          errorBody[key] = value;
+        }
+      }
+    }
+  } catch {
+    if (text) errorBody = { error: text };
+  }
+  return c.json(errorBody, res.status as 400 | 401 | 403 | 404 | 409 | 422);
+}
+
+async function handleSuccessResponse(c: Context, res: Response, successStatus: V4SuccessStatus): Promise<Response> {
+  const contentType = res.headers.get("content-type") ?? "";
+  const text = await res.text();
+  if (!text) return c.body(null, successStatus);
+  if (!contentType.includes("application/json")) {
+    return c.body(text, successStatus, contentType ? { "Content-Type": contentType } : undefined);
+  }
+  try {
+    return c.json(JSON.parse(text) as unknown, successStatus);
+  } catch {
+    return c.body(text, successStatus, { "Content-Type": "text/plain" });
+  }
+}
 
 /**
  * Proxies JSON requests to the backend. Handles empty responses, non-JSON
@@ -105,49 +123,19 @@ export const proxyJson = async (
     }
     const res = await fetch(buildBackendUrl(backendPath, c.req.url.split("?")[1] ?? ""), init);
 
-    // 4xx: forward with original status and sanitized body
     if (res.status >= 400 && res.status < 500) {
-      const text = await res.text();
-      // Attempt to extract a safe error message; fall back to status text
-      let errorBody: Record<string, unknown> = { error: res.statusText };
-      try {
-        const parsed = JSON.parse(text);
-        // Forward only string fields to avoid leaking internal details
-        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-          errorBody = {};
-          for (const [k, v] of Object.entries(parsed)) {
-            if (typeof v === "string") errorBody[k] = v;
-          }
-        }
-      } catch {
-        // Use text as error message if not JSON
-        if (text) errorBody = { error: text };
-      }
-      return c.json(errorBody, res.status as 400 | 401 | 403 | 404 | 409 | 422);
+      return handle4xxResponse(c, res);
     }
 
-    // 5xx: treat as backend error — 502
     if (res.status >= 500) {
       return c.json({ error: `Backend error ${res.status}` }, 502);
     }
 
-    // Success path
-    const contentType = res.headers.get("content-type") ?? "";
-    const text = await res.text();
-    if (!text) return c.body(null, successStatus);
-    if (!contentType.includes("application/json")) {
-      return c.body(text, successStatus, contentType ? { "Content-Type": contentType } : undefined);
-    }
-    try {
-      return c.json(JSON.parse(text) as unknown, successStatus);
-    } catch {
-      return c.body(text, successStatus, { "Content-Type": "text/plain" });
-    }
+    return handleSuccessResponse(c, res, successStatus);
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       return c.json({ error: `Backend request timed out after ${BACKEND_TIMEOUT_MS}ms` }, 504);
     }
-    // Network failure, DNS failure, or other unrecoverable proxy error → 502
     return c.json({ error: `Failed to proxy ${backendPath}` }, 502);
   } finally {
     clearTimeout(timeout);
@@ -155,16 +143,7 @@ export const proxyJson = async (
 };
 
 /**
- * Proxies multipart/binary requests to the backend (e.g., bulk contract uploads,
- * payroll file uploads, ingestion bulk-upload).
- *
- * Forwards the raw request body and all headers including Content-Type for multipart.
- * Auth and trace headers are forwarded for backend observability correlation.
- *
- * Error semantics (mirrors proxyJson):
- * - 4xx backend responses are forwarded as-is with original status.
- * - 5xx/network failures return 502.
- * - Uses Node.js fetch duplex: "half" for streaming body compatibility.
+ * Proxies multipart/binary requests to the backend.
  */
 export const proxyMultipart = async (
   c: Context,
@@ -178,7 +157,6 @@ export const proxyMultipart = async (
     const rawRequest = c.req.raw;
     const url = buildBackendUrl(backendPath, c.req.url.split("?")[1] ?? "");
     const headers = extractForwardedHeaders(c);
-    // Node.js fetch with duplex option required for streaming request bodies
     const init = buildNodeRequestInit({
       method,
       signal: controller.signal,
@@ -188,41 +166,15 @@ export const proxyMultipart = async (
     });
     const res = await fetch(url, init);
 
-    // 4xx: forward with original status and sanitized body
     if (res.status >= 400 && res.status < 500) {
-      const text = await res.text();
-      let errorBody: Record<string, unknown> = { error: res.statusText };
-      try {
-        const parsed = JSON.parse(text);
-        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-          errorBody = {};
-          for (const [k, v] of Object.entries(parsed)) {
-            if (typeof v === "string") errorBody[k] = v;
-          }
-        }
-      } catch {
-        if (text) errorBody = { error: text };
-      }
-      return c.json(errorBody, res.status as 400 | 401 | 403 | 404 | 409 | 422);
+      return handle4xxResponse(c, res);
     }
 
-    // 5xx: treat as backend error → 502
     if (res.status >= 500) {
       return c.json({ error: `Backend error ${res.status}` }, 502);
     }
 
-    // Success path
-    const contentType = res.headers.get("content-type") ?? "";
-    const text = await res.text();
-    if (!text) return c.body(null, successStatus);
-    if (!contentType.includes("application/json")) {
-      return c.body(text, successStatus, contentType ? { "Content-Type": contentType } : undefined);
-    }
-    try {
-      return c.json(JSON.parse(text) as unknown, successStatus);
-    } catch {
-      return c.body(text, successStatus, { "Content-Type": "text/plain" });
-    }
+    return handleSuccessResponse(c, res, successStatus);
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       return c.json({ error: `Backend request timed out after ${BACKEND_TIMEOUT_MS}ms` }, 504);

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from wcp_backend.models.schemas import ComplianceCheck, DBWDRateRecord, EmployeeRecord
 from wcp_backend.models.enums import CheckStatus, CheckType
+from wcp_backend.pipeline.checks import _slugify
 
 
 def check_wage(employee: EmployeeRecord, dbwd_rate: DBWDRateRecord) -> ComplianceCheck:
@@ -38,6 +39,3 @@ def check_wage(employee: EmployeeRecord, dbwd_rate: DBWDRateRecord) -> Complianc
     )
 
 
-def _slugify(name: str) -> str:
-    """Convert name to slug for check_id."""
-    return name.lower().replace(" ", "_").replace("-", "_")

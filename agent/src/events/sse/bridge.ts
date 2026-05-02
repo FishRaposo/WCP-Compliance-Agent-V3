@@ -43,6 +43,8 @@ interface SSEConnection {
   isActive: boolean;
 }
 
+const MAX_SSE_CONNECTIONS = 100;
+
 /** Active SSE connections registry */
 const activeConnections = new Map<string, SSEConnection>();
 
@@ -93,6 +95,9 @@ export const createSSEBridge = (
   connectionId: string,
   streamConfig: StreamConfig
 ): ReadableStream<Uint8Array> => {
+  if (activeConnections.size >= MAX_SSE_CONNECTIONS) {
+    throw new Error("Maximum SSE connections exceeded");
+  }
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
