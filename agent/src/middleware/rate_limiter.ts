@@ -10,7 +10,7 @@ export const rateLimiter = (): MiddlewareHandler => async (c, next) => {
   // Proxies append to the list. So the most reliable non-spoofed IP is typically the rightmost
   // if we assume our application is behind exactly one reverse proxy.
   const parts = forwardedFor ? forwardedFor.split(",") : [];
-  const key = parts.length > 0 ? parts[parts.length - 1].trim() : "anonymous";
+  const key = parts.length > 0 ? parts[parts.length - 1]?.trim() ?? "anonymous" : "anonymous";
   const now = Date.now();
   const entry = requests.get(key);
 
