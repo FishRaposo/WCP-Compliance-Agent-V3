@@ -23,6 +23,8 @@ cd WCP-Compliance-Agent-V3
 
 # Backend
 cd backend && poetry install
+# To include V4 data-platform extras (DuckDB, Prefect, PyArrow, Great Expectations):
+cd backend && poetry install -E v4
 
 # Agent
 cd agent && npm ci

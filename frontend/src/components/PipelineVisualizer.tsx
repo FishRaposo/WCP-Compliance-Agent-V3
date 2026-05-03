@@ -1,4 +1,4 @@
-import type { PipelineStep } from "../types/api.ts";
+import type { PipelineStep } from "../types/api";
 
 interface Props {
   steps?: PipelineStep[];
@@ -16,7 +16,7 @@ export default function PipelineVisualizer({ steps = defaultSteps }: Props) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {steps.map((step, i) => (
-        <div key={i} className="flex items-center gap-2">
+        <div key={step.label} className="flex items-center gap-2">
           <div className={`px-3 py-1.5 rounded text-xs font-medium ${
             step.status === "done" ? "bg-green-100 text-green-700" :
             step.status === "running" ? "bg-blue-100 text-blue-700 animate-pulse" :

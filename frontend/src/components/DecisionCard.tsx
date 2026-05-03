@@ -1,6 +1,6 @@
-import type { TrustScoredDecision } from "../types/api.ts";
-import TrustScoreBadge from "./TrustScoreBadge.tsx";
-import AuditTrail from "./AuditTrail.tsx";
+import type { TrustScoredDecision } from "../types/api";
+import TrustScoreBadge from "./TrustScoreBadge";
+import AuditTrail from "./AuditTrail";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 

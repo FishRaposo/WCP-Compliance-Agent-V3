@@ -2,8 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import UploadDropzone from "../components/UploadDropzone.tsx";
 import PipelineVisualizer from "../components/PipelineVisualizer.tsx";
 import DecisionCard from "../components/DecisionCard.tsx";
-import { useAnalyze, useAnalyzePdf } from "../hooks/useAnalyze.ts";
-import type { TrustScoredDecision, PipelineStep } from "../types/api.ts";
+import { useAnalyze, useAnalyzePdf } from "../hooks/useAnalyze";
+import type { TrustScoredDecision, PipelineStep } from "../types/api";
 import { Card, CardContent } from "@/components/ui/card";
 
 const STEP_LABELS = ["Extract", "Validate", "Verdict", "Trust Score", "Persist"];

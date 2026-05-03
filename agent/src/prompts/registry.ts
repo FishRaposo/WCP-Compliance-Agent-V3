@@ -1,5 +1,6 @@
 import { config } from "../config.js";
 import { getLangfuse } from "../langfuse/client.js";
+import { logger } from "../utils/logger.js";
 import { wcpVerdictV1 } from "./versions/wcp-verdict-v1.js";
 import { wcpVerdictV2 } from "./versions/wcp-verdict-v2.js";
 
@@ -42,8 +43,8 @@ export const promptRegistry = {
             description: `Langfuse prompt ${name}:${targetVersion}`,
           };
         }
-      } catch {
-        // Fall through to local registry
+      } catch (err) {
+        logger.debug({ err, name, targetVersion }, "Langfuse prompt fetch failed, falling back to local registry");
       }
     }
 

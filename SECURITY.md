@@ -29,6 +29,7 @@ All `.env` files are gitignored. Only `.env.example` files (with placeholder val
 
 | Version | Supported |
 |---|---|
-| V3.1 (current) | Yes |
+| V4.0 (current) | Yes |
+| V3.1 | Yes |
 | V3.0 | Best effort |
 | V2 (archived) | No |

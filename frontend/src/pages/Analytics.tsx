@@ -5,7 +5,7 @@ import {
   useDecisionVolume,
   useApprovalByTrade,
   useTrustBandDistribution,
-} from "../hooks/useAnalytics.ts";
+} from "../hooks/useAnalytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

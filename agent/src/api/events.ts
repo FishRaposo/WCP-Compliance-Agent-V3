@@ -62,9 +62,9 @@ events.get("/subscribe", async (c) => {
           const heartbeat = encoder.encode(": heartbeat\n\n");
           try {
             controller.enqueue(heartbeat);
-          } catch {
+          } catch (enqueueErr) {
             if (heartbeatTimer) clearInterval(heartbeatTimer);
-            try { controller.close(); } catch { /* already closed */ }
+            try { controller.close(); } catch (closeErr) { logger.debug({ err: closeErr }, "Controller already closed"); }
           }
         }, 15_000);
       },
@@ -102,7 +102,12 @@ events.get("/subscribe", async (c) => {
       }, 15_000);
     },
     async pull(controller) {
-      const reader = bridge!.getReader();
+      if (!bridge) {
+        logger.error({ clientId }, "SSE bridge null during pull — closing stream");
+        controller.close();
+        return;
+      }
+      const reader = bridge.getReader();
       try {
         const { done, value } = await reader.read();
         if (done) {
@@ -112,7 +117,7 @@ events.get("/subscribe", async (c) => {
         controller.enqueue(value);
       } catch (err) {
         logger.error({ err, clientId }, "SSE bridge read error");
-        try { controller.close(); } catch { /* already closed */ }
+        try { controller.close(); } catch (closeErr) { logger.debug({ err: closeErr }, "Controller already closed"); }
       } finally {
         reader.releaseLock();
       }

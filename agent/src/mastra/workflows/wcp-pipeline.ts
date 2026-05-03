@@ -18,6 +18,7 @@ import {
   safeVerdict,
 } from "../agents/trust-score.js";
 import { logger } from "../../utils/logger.js";
+import { computeCostUsd } from "../../langfuse/cost_tracking.js";
 import type { ExtractedWCP, TrustScoredDecision } from "../../types/index.js";
 
 export async function runWCPPipeline(
@@ -107,19 +108,3 @@ export async function runPipelineFromExtracted(
   return decision;
 }
 
-function computeCostUsd(
-  model: string,
-  promptTokens: number,
-  completionTokens: number
-): number {
-  const rates: Record<string, { input: number; output: number }> = {
-    "gpt-4o": { input: 0.005, output: 0.015 },
-    "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
-  };
-  const rate = rates[model];
-  if (!rate) return 0;
-  return (
-    (promptTokens / 1000) * rate.input +
-    (completionTokens / 1000) * rate.output
-  );
-}

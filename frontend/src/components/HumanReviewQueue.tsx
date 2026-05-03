@@ -1,5 +1,5 @@
-import { useDecisions } from "../hooks/useDecisions.ts";
-import TrustScoreBadge from "./TrustScoreBadge.tsx";
+import { useDecisions } from "../hooks/useDecisions";
+import TrustScoreBadge from "./TrustScoreBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";

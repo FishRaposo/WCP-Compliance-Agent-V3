@@ -117,7 +117,8 @@ export const createSSEBridge = (
       const heartbeat = encodeToStream(": heartbeat\n\n");
       try {
         controller.enqueue(heartbeat);
-      } catch {
+      } catch (err) {
+        logger.debug({ connectionId, err }, "SSE heartbeat enqueue failed");
         const conn = activeConnections.get(connectionId);
         if (conn) conn.isActive = false;
       }
@@ -174,6 +175,7 @@ const parseStreamFields = (fields: Record<string, string>): Record<string, unkno
         return parsed as Record<string, unknown>;
       }
     } catch {
+      logger.debug({ fields }, "SSE stream field parse fallback — passing raw fields");
       return fields;
     }
   }
@@ -206,8 +208,8 @@ export const closeSSEConnection = (connectionId: string): void => {
     conn.isActive = false;
     try {
       conn.controller.close();
-    } catch {
-      // Already closed or errored
+    } catch (err) {
+      logger.debug({ connectionId, err }, "SSE controller close error (already closed)");
     }
     activeConnections.delete(connectionId);
     logger.info({ connectionId }, "SSE connection closed");

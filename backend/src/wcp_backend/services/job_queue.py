@@ -137,32 +137,75 @@ def process_payroll_batch(
 
 
 def _run_batch_validation(job_id: str, payloads: list[dict[str, Any]]) -> dict[str, Any]:
-    """Run batch validation on user-provided payloads (synchronous)."""
-    import time
+    """Run batch validation on user-provided payloads."""
 
-    start_time = time.time()
-    results: list[dict[str, Any]] = []
+    async def _validate_batch() -> dict[str, Any]:
+        start_time = time.time()
+        results: list[dict[str, Any]] = []
 
-    for idx, payload in enumerate(payloads):
-        try:
-            text = payload.get("text", "")
-            if not text:
-                results.append({"index": idx, "status": "error", "error": "Empty text"})
-                continue
+        for idx, payload in enumerate(payloads):
+            try:
+                text = payload.get("text", "")
+                if not text:
+                    results.append({"index": idx, "status": "error", "error": "Empty text"})
+                    continue
 
-            extract_from_text(text)
-            # Note: run_rule_engine is async; in sync context we can't await it
-            # For now, mark as skipped — full async validation requires Celery async worker
-            results.append({"index": idx, "status": "skipped", "reason": "Async validation not available in sync context"})
-        except Exception as exc:
-            results.append({"index": idx, "status": "error", "error": str(exc)})
+                extracted = await asyncio.to_thread(extract_from_text, text)
+                report = await run_rule_engine(extracted)
 
-    return {
-        "batch_job_id": job_id,
-        "processed": len(payloads),
-        "results": results,
-        "elapsed_ms": int((time.time() - start_time) * 1000),
-    }
+                verdict = (
+                    VerdictStatus.APPROVED
+                    if report.overall_status.value == "pass"
+                    else VerdictStatus.REJECTED
+                )
+                deterministic_score = 1.0 - (report.violation_count / max(len(report.checks), 1))
+                trust_score = deterministic_score
+                trust_band = determine_trust_band(trust_score)
+
+                violation_msgs = [c.message for c in report.checks if c.status.value == "fail"]
+                reasoning = (
+                    "No violations found."
+                    if not violation_msgs
+                    else "Violations: " + "; ".join(violation_msgs)
+                )
+
+                decision = TrustScoredDecision(
+                    job_id=extracted.job_id,
+                    verdict=verdict,
+                    trust_score=trust_score,
+                    trust_band=trust_band,
+                    requires_human_review=(trust_band == TrustBand.REQUIRE_HUMAN_REVIEW),
+                    violation_count=report.violation_count,
+                    warning_count=report.warning_count,
+                    llm_confidence=0.0,
+                    reasoning_summary=reasoning,
+                    citations=[],
+                    cost_usd=0.0,
+                    latency_ms=int((time.time() - start_time) * 1000),
+                    phoenix_trace_id="",
+                    created_at=datetime.now(timezone.utc),
+                )
+
+                decision_id = await persist_decision(decision)
+                results.append({
+                    "index": idx,
+                    "status": "completed",
+                    "job_id": extracted.job_id,
+                    "decision_id": decision_id,
+                    "verdict": verdict.value,
+                    "trust_score": trust_score,
+                })
+            except Exception as exc:
+                results.append({"index": idx, "status": "error", "error": str(exc)})
+
+        return {
+            "batch_job_id": job_id,
+            "processed": len(payloads),
+            "results": results,
+            "elapsed_ms": int((time.time() - start_time) * 1000),
+        }
+
+    return asyncio.run(_validate_batch())
 
 
 @celery_app.task  # type: ignore[untyped-decorator]

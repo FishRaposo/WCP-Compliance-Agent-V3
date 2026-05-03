@@ -1,16 +1,16 @@
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
-import Layout from "./components/Layout.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import Analyze from "./pages/Analyze.tsx";
-import Decisions from "./pages/Decisions.tsx";
-import ReviewQueue from "./pages/ReviewQueue.tsx";
-import Analytics from "./pages/Analytics.tsx";
-import Contracts from "./pages/contracts/Contracts.tsx";
-import Ingestion from "./pages/ingestion/Ingestion.tsx";
-import Payrolls from "./pages/payrolls/Payrolls.tsx";
-import Settings from "./pages/Settings.tsx";
-import Login from "./pages/Login.tsx";
+import { BrowserRouter, Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import Analyze from "./pages/Analyze";
+import Decisions from "./pages/Decisions";
+import ReviewQueue from "./pages/ReviewQueue";
+import Analytics from "./pages/Analytics";
+import Contracts from "./pages/contracts/Contracts";
+import Ingestion from "./pages/ingestion/Ingestion";
+import Payrolls from "./pages/payrolls/Payrolls";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 import { lazy, Suspense } from "react";
 
 // V4 Analytics pages - lazy loaded
@@ -20,7 +20,27 @@ const AnalyticsWages = lazy(() => import("./pages/analytics/wages"));
 const AnalyticsLLM = lazy(() => import("./pages/analytics/llm"));
 
 function LoadingFallback() {
-  return <div className="flex items-center justify-center h-full"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  return (
+    <div className="flex items-center justify-center h-full" role="status" aria-label="Loading">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" aria-hidden="true" />
+    </div>
+  );
+}
+
+function NotFound() {
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+      <h1 className="text-4xl font-bold mb-4">404</h1>
+      <p className="text-muted-foreground mb-6">Page not found</p>
+      <button
+        onClick={() => navigate("/")}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+      >
+        Go Home
+      </button>
+    </div>
+  );
 }
 
 function isAuthenticated(): boolean {
@@ -65,18 +85,7 @@ export default function App() {
                       <Suspense fallback={<LoadingFallback />}><AnalyticsLLM /></Suspense>
                     } />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={
-                      <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-                        <h1 className="text-4xl font-bold mb-4">404</h1>
-                        <p className="text-muted-foreground mb-6">Page not found</p>
-                        <button 
-                          onClick={() => window.location.href = "/"}
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                        >
-                          Go Home
-                        </button>
-                      </div>
-                    } />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>
               </ProtectedRoute>

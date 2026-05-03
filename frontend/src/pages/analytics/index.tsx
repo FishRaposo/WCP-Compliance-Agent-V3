@@ -58,11 +58,9 @@ export default function AnalyticsIndex() {
     ? {
         approved: approvalData.overall.approved,
         flagged: approvalData.by_trust_band.find((b) => b.trust_band === "flag_for_review")?.total ?? 0,
-        // NOTE: Backend doesn't expose a "rejected" trust band. This count includes
-        // both genuinely rejected items and those flagged for human review.
         rejected:
-          approvalData.by_trust_band.find((b) => b.trust_band === "rejected")?.total ??
-          approvalData.overall.total - approvalData.overall.approved,
+          approvalData.by_trust_band.find((b) => b.trust_band === "require_human_review")?.total ??
+          Math.max(0, approvalData.overall.total - approvalData.overall.approved),
         total: approvalData.overall.total,
       }
     : undefined;

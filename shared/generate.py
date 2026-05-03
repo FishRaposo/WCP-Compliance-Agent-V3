@@ -76,8 +76,11 @@ def generate_zod(schema_path: Path) -> str:
     title = schema.get("title", "GeneratedModel")
     lines.append(f"export const {title}Schema = z.object({{")
 
+    required = set(schema.get("required", []))
     for prop_name, prop in schema.get("properties", {}).items():
         zod_type = _json_type_to_zod(prop.get("type", "any"), prop.get("enum"))
+        if prop_name not in required:
+            zod_type = f"{zod_type}.nullable().optional()"
         lines.append(f"  {prop_name}: {zod_type},")
 
     lines.append("});")

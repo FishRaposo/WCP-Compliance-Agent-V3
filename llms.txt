@@ -21,7 +21,7 @@ Three-service AI decision engine:
 
 ### Entry Points
 - `README.md` — Project overview, quick start, architecture diagram
-- `V3_PLAN.md` — Complete architecture plan
+- `docs/planning/V3_PLAN.md` — Complete architecture plan
 - `docs/architecture.md` — System design, service boundaries, data flow
 - `docs/api-contract.md` — REST API specification
 - `docs/v4-api-contract.md` — V4 contract, payroll, ingestion, analytics API
@@ -57,7 +57,6 @@ Three-service AI decision engine:
 
 ### Compliance
 - `docs/compliance/traceability-matrix.md` — Regulation → check ID mapping
-- `docs/compliance/regulatory-report.md` — Davis-Bacon Act implementation
 
 ---
 

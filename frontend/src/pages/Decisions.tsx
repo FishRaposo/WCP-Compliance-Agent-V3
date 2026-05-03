@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useDecisions } from "../hooks/useDecisions.ts";
+import { useDecisions } from "../hooks/useDecisions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { TrustBand } from "../types/api.ts";
+import type { TrustBand } from "../types/api";
 
 export default function Decisions() {
   const [trustBandFilter, setTrustBandFilter] = useState<TrustBand | undefined>(undefined);

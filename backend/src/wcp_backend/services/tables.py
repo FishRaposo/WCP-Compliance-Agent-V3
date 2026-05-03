@@ -21,7 +21,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 
 metadata = MetaData()
@@ -147,8 +147,8 @@ audit_events_table = Table(
     Column("job_id", Text(), nullable=False),
     Column("event_type", Text(), nullable=False),
     Column("actor", Text(), nullable=False, server_default="system"),
-    Column("payload", JSONB(), nullable=False, server_default="{}"),
-    Column("regulation_references", JSONB(), nullable=False, server_default="[]"),
+    Column("payload", JSONB(), nullable=True, server_default="{}"),
+    Column("regulation_references", ARRAY(Text()), nullable=True, server_default="{}"),
     Column("trace_id", Text(), nullable=True),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )

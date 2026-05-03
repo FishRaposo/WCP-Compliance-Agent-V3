@@ -16,9 +16,9 @@ class DeterministicReport(BaseModel):
     job_id: str
     checks: list[Any]
     overall_status: str
-    violation_count: int | None = None
-    warning_count: int | None = None
-    dbwd_rates_used: list[Any] | None = None
+    violation_count: int
+    warning_count: int
+    dbwd_rates_used: list[Any]
 
 class ExtractedWCP(BaseModel):
     job_id: str
@@ -48,11 +48,11 @@ class TrustScoredDecision(BaseModel):
     trust_score: float
     trust_band: str
     requires_human_review: bool
-    violation_count: int | None = None
-    warning_count: int | None = None
-    llm_confidence: float | None = None
-    reasoning_summary: str | None = None
-    citations: list[Any] | None = None
+    violation_count: int
+    warning_count: int
+    llm_confidence: float
+    reasoning_summary: str
+    citations: list[Any]
     cost_usd: float | None = None
     latency_ms: int | None = None
     phoenix_trace_id: str | None = None

@@ -61,6 +61,7 @@ async function request<T>(path: string, init?: RequestInit, params?: Record<stri
 
   if (res.status === 401) {
     localStorage.removeItem("wcp_token");
+    window.dispatchEvent(new CustomEvent("auth:expired"));
     window.location.href = "/login";
     throw new Error("Session expired. Please log in again.");
   }
@@ -95,7 +96,8 @@ async function mockResolve<T>(path: string): Promise<T> {
   if (path.startsWith("/api/auth/login"))
     return { token: "mock-jwt-token", user_id: "mock-user", role: "admin" } as T;
 
-  return {} as T;
+  console.warn(`[apiClient] No mock fixture for path: ${path}`);
+  throw new Error(`Mock API not available for: ${path}`);
 }
 
 export const apiClient = {

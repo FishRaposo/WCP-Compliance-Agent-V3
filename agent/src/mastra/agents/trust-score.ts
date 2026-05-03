@@ -2,9 +2,9 @@
  * Trust score computation — mirrors backend rules.py logic.
  *
  * Calibrated weights (do not adjust without regression testing):
- * - deterministic: 0.35
- * - classification: 0.25
- * - llm_self: 0.20
+ * - deterministic: 0.40
+ * - classification: 0.15
+ * - llm_self: 0.25
  * - agreement: 0.20
  *
  * Hard rule: deterministic violations cannot be overridden into approval.

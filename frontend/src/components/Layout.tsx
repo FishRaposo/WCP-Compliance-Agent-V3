@@ -47,10 +47,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <nav className="hidden md:flex w-60 bg-card border-r px-4 py-6 flex-col">
+      <nav className="hidden md:flex w-60 bg-card border-r px-4 py-6 flex-col" aria-label="Main navigation">
         <div className="px-2 mb-6">
           <h1 className="text-lg font-bold">WCP Agent</h1>
-          <p className="text-xs text-muted-foreground">v4.0</p>
+          <p className="text-xs text-muted-foreground">{import.meta.env.VITE_APP_VERSION ?? "v4.0"}</p>
         </div>
         <div className="space-y-1">
           {navItems.map(({ href, label, icon: Icon }) => (
@@ -75,8 +75,8 @@ export default function Layout({ children }: { children: ReactNode }) {
             <div className="px-2 space-y-2">
               <p className="text-xs font-medium">{user.email}</p>
               <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
-              <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
+              <Button variant="ghost" size="sm" className="w-full justify-start text-destructive hover:text-destructive" onClick={handleLogout} aria-label="Sign out">
+                <LogOut className="h-4 w-4 mr-2" aria-hidden="true" />
                 Sign out
               </Button>
             </div>

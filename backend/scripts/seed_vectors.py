@@ -10,8 +10,16 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from wcp_backend.config import settings
 
 
+import sys
+from pathlib import Path
+
+# Ensure scripts/ is on sys.path for relative imports when run standalone
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
 # Import seed data from seed_elasticsearch
-from seed_elasticsearch import INDEX_NAME
+from seed_elasticsearch import INDEX_NAME  # noqa: E402
 
 
 def generate_simple_embedding(text: str, dim: int = 384) -> list[float]:

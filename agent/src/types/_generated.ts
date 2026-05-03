@@ -6,10 +6,10 @@ export const AuditEventSchema = z.object({
   job_id: z.string(),
   event_type: z.enum(['extraction_complete', 'validation_complete', 'verdict_issued', 'trust_scored', 'human_review_queued', 'human_review_complete', 'decision_persisted']),
   timestamp: z.string(),
-  actor: z.string(),
-  payload: z.record(z.any()),
-  regulation_references: z.array(z.any()),
-  trace_id: z.string(),
+  actor: z.string().nullable().optional(),
+  payload: z.record(z.any()).nullable().optional(),
+  regulation_references: z.array(z.any()).nullable().optional(),
+  trace_id: z.string().nullable().optional(),
 });
 export type AuditEvent = z.infer<typeof AuditEventSchema>;
 
@@ -28,9 +28,9 @@ export const ExtractedWCPSchema = z.object({
   contractor: z.record(z.any()),
   project: z.record(z.any()),
   employees: z.array(z.any()),
-  certification_date: z.string(),
-  payroll_number: z.number().int(),
-  week_ending: z.string(),
+  certification_date: z.string().nullable().optional(),
+  payroll_number: z.number().int().nullable().optional(),
+  week_ending: z.string().nullable().optional(),
 });
 export type ExtractedWCP = z.infer<typeof ExtractedWCPSchema>;
 
@@ -40,12 +40,12 @@ export const LLMVerdictSchema = z.object({
   reasoning: z.string(),
   citations: z.array(z.any()),
   confidence: z.number(),
-  referenced_check_ids: z.array(z.any()),
-  rag_context_used: z.boolean(),
-  model: z.string(),
-  prompt_version: z.string(),
-  langfuse_trace_id: z.string(),
-  token_usage: z.record(z.any()),
+  referenced_check_ids: z.array(z.any()).nullable().optional(),
+  rag_context_used: z.boolean().nullable().optional(),
+  model: z.string().nullable().optional(),
+  prompt_version: z.string().nullable().optional(),
+  langfuse_trace_id: z.string().nullable().optional(),
+  token_usage: z.record(z.any()).nullable().optional(),
 });
 export type LLMVerdict = z.infer<typeof LLMVerdictSchema>;
 
@@ -60,9 +60,9 @@ export const TrustScoredDecisionSchema = z.object({
   llm_confidence: z.number(),
   reasoning_summary: z.string(),
   citations: z.array(z.any()),
-  cost_usd: z.number(),
-  latency_ms: z.number().int(),
-  phoenix_trace_id: z.string(),
-  created_at: z.string(),
+  cost_usd: z.number().nullable().optional(),
+  latency_ms: z.number().int().nullable().optional(),
+  phoenix_trace_id: z.string().nullable().optional(),
+  created_at: z.string().nullable().optional(),
 });
 export type TrustScoredDecision = z.infer<typeof TrustScoredDecisionSchema>;

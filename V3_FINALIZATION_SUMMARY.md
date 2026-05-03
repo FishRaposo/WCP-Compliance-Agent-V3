@@ -15,10 +15,10 @@ Comprehensive audit and hardening of the V3 architecture to ensure production re
 
 | Service | Tests | Status |
 |---------|-------|--------|
-| Backend | 87 unit tests | ✅ PASSED |
-| Agent | 46 tests (9 files) | ✅ PASSED |
-| Frontend | 12 tests (4 files) | ✅ PASSED |
-| **Total** | **145 tests** | **✅ ALL PASS** |
+| Backend | 89 unit tests | ✅ PASSED |
+| Agent | 48 tests (9 files) | ✅ PASSED |
+| Frontend | 13 tests (5 files) | ✅ PASSED |
+| **Total** | **150 tests** | **✅ ALL PASS** |
 
 Plus 100-example golden set eval (separate CI workflow)
 

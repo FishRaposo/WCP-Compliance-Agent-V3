@@ -1,4 +1,4 @@
-import type { TrustBand } from "../types/api.ts";
+import type { TrustBand } from "../types/api";
 import { Badge } from "@/components/ui/badge";
 
 interface Props {

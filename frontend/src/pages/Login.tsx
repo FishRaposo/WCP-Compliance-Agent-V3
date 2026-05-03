@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { apiClient } from "../utils/api-client.ts";
+import { apiClient } from "../utils/api-client";
 
 export default function Login() {
   const [email, setEmail] = useState("");

@@ -1,7 +1,11 @@
 import { z } from "zod";
 
+function normalizeUrl(raw: string): string {
+  return raw.includes("://") ? raw : `http://${raw}`;
+}
+
 const envSchema = z.object({
-  BACKEND_URL: z.string().url().default("http://localhost:8000"),
+  BACKEND_URL: z.string().transform(normalizeUrl).pipe(z.string().url()).default("http://localhost:8000"),
   OPENAI_API_KEY: z.string().default(""),
   OPENAI_MODEL: z.string().default("gpt-4o-mini"),
   LLM_PROVIDER: z.enum(["openai", "anthropic", "ollama"]).default("openai"),

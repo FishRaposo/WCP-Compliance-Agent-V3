@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../utils/api-client.ts";
+import { apiClient } from "../utils/api-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,11 +28,11 @@ export default function SettingsPanel() {
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium">Model</label>
-            <p className="text-sm text-muted-foreground mt-1">gpt-4o-mini (default)</p>
+            <p className="text-sm text-muted-foreground mt-1">{import.meta.env.VITE_LLM_MODEL ?? "gpt-4o-mini"}</p>
           </div>
           <div>
             <label className="text-sm font-medium">Prompt Version</label>
-            <p className="text-sm text-muted-foreground mt-1">v2 (managed via Langfuse)</p>
+            <p className="text-sm text-muted-foreground mt-1">{import.meta.env.VITE_PROMPT_VERSION ?? "v2"}</p>
           </div>
         </CardContent>
       </Card>

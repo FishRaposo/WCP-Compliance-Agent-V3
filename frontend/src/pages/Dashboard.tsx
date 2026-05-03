@@ -1,6 +1,6 @@
-import { useDecisionStream } from "../hooks/useDecisionStream.ts";
-import { useDecisions } from "../hooks/useDecisions.ts";
-import { useApprovalByTrade } from "../hooks/useAnalytics.ts";
+import { useDecisionStream } from "../hooks/useDecisionStream";
+import { useDecisions } from "../hooks/useDecisions";
+import { useApprovalByTrade } from "../hooks/useAnalytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";

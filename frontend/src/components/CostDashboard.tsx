@@ -1,4 +1,4 @@
-import { useCostAnalytics } from "../hooks/useAnalytics.ts";
+import { useCostAnalytics } from "../hooks/useAnalytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

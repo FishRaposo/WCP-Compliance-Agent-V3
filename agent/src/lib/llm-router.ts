@@ -4,6 +4,7 @@ import { createOllama } from "ollama-ai-provider";
 import { generateText } from "ai";
 import type { LanguageModelV1 } from "@ai-sdk/provider";
 import { config } from "../config.js";
+import { logger as log } from "../utils/logger.js";
 
 export type RoutingContext = {
   complianceCritical?: boolean;
@@ -66,20 +67,24 @@ export class LLMRouter {
     const config = this.selectProvider(context);
     try {
         return await this.generate(config);
-    } catch {
+    } catch (err) {
+        log.warn({ err, config }, "Primary LLM provider failed, trying fallbacks");
         const fallbackConfigs = [
             { provider: "openai", model: "gpt-4o-mini" },
             { provider: "anthropic", model: "claude-3-5-haiku-20241022" }
         ];
 
+        const errors: Error[] = [];
         for (const fallback of fallbackConfigs) {
             try {
                 return await this.generate(fallback);
-            } catch {
-                // Ignore fallback error and try next
+            } catch (fallbackErr) {
+                log.warn({ err: fallbackErr, fallback }, "Fallback LLM provider failed");
+                errors.push(fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr)));
             }
         }
-        throw new Error("All LLM providers failed");
+        log.error({ errors, prompt: prompt.slice(0, 200) }, "All LLM providers failed");
+        throw new AggregateError(errors, "All LLM providers failed");
     }
   }
 }

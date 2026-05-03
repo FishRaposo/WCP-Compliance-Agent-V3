@@ -11,6 +11,7 @@ from alembic import context
 
 # Import models for autogenerate support
 from wcp_backend.config import settings
+from wcp_backend.services.tables import metadata
 
 # this is the Alembic Config object
 config = context.config
@@ -18,14 +19,11 @@ config = context.config
 # Override sqlalchemy.url with settings
 config.set_main_option("sqlalchemy.url", settings.database_url)
 
+target_metadata = metadata
+
 # Interpret the config file for Python logging
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# add your model's MetaData object here for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

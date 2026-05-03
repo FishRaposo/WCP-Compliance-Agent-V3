@@ -35,9 +35,15 @@ poetry run alembic upgrade head             # Run migrations
 
 **Seeding** (required before full pipeline or eval):
 ```bash
-poetry run python scripts/seed_dbwd.py           # DBWD prevailing wage rates
-poetry run python scripts/seed_elasticsearch.py   # Regulation chunks → ES
-poetry run python scripts/seed_vectors.py         # Embeddings → pgvector
+poetry run python scripts/seed_all.py              # Run all three seed scripts in order
+poetry run python scripts/seed_dbwd.py             # DBWD prevailing wage rates
+poetry run python scripts/seed_elasticsearch.py    # Regulation chunks → ES
+poetry run python scripts/seed_vectors.py          # Embeddings → pgvector
+```
+**Other utility scripts** (in `backend/scripts/`):
+```bash
+poetry run python scripts/quick_verify.py          # Phase 1 endpoint smoke test
+poetry run python scripts/etl_sam_gov.py           # SAM.gov live rate ETL
 ```
 
 **V4 commands** (additive, after V4 implementation):

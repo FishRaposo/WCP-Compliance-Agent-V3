@@ -4,7 +4,7 @@
   "title": "TrustScoredDecision",
   "description": "Final decision output with trust score and routing determination",
   "type": "object",
-  "required": ["job_id", "verdict", "trust_score", "trust_band", "requires_human_review"],
+  "required": ["job_id", "verdict", "trust_score", "trust_band", "requires_human_review", "violation_count", "warning_count", "llm_confidence", "reasoning_summary", "citations"],
   "properties": {
     "job_id": { "type": "string" },
     "verdict": { "type": "string", "enum": ["approved", "rejected", "requires_review"] },

@@ -4,7 +4,7 @@
   "title": "DeterministicReport",
   "description": "Output of the Python rule engine for all deterministic compliance checks",
   "type": "object",
-  "required": ["job_id", "checks", "overall_status"],
+  "required": ["job_id", "checks", "overall_status", "violation_count", "warning_count", "dbwd_rates_used"],
   "properties": {
     "job_id": { "type": "string" },
     "checks": {
@@ -20,8 +20,8 @@
           },
           "employee_name": { "type": "string" },
           "status": { "type": "string", "enum": ["pass", "fail", "warning"] },
-          "expected_value": {},
-          "actual_value": {},
+          "expected_value": { "type": "number" },
+          "actual_value": { "type": "number" },
           "variance": { "type": "number" },
           "regulation_cite": { "type": "string" },
           "message": { "type": "string" }
