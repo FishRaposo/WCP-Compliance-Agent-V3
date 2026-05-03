@@ -148,7 +148,7 @@ async def bulk_import_payrolls(
             errors.append({
                 "row": index,
                 "error": str(exc),
-                "employee": record.get("employee_name", "unknown"),
+                "employee": getattr(record, "employee_name", "unknown"),
             })
 
     await session.commit()

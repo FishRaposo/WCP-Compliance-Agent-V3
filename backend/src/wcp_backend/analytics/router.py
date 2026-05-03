@@ -29,6 +29,7 @@ from wcp_backend.analytics.duckdb_queries import (
     duckdb_llm_analytics,
     get_analytics_store_with_archive,
 )
+from wcp_backend.analytics.duckdb_store import DuckDBStore
 from wcp_backend.config import settings
 from wcp_backend.services.db import async_session
 from wcp_backend.services.tables import contracts_table, decisions_table, payroll_records_table
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v4/analytics", tags=["v4-analytics"])
 
 
-def _get_duckdb():
+def _get_duckdb() -> DuckDBStore | None:
     """Get DuckDB store with archive support. Returns None if unavailable."""
     try:
         return get_analytics_store_with_archive()
@@ -166,7 +167,7 @@ class LLMResponse(BaseModel):
     cost_per_decision: list[dict[str, Any]] = Field(default_factory=list)
     token_usage: list[TokenUsageEntry] = Field(default_factory=list)
     model_distribution: list[ModelDistributionEntry] = Field(default_factory=list)
-    latency_by_model: list[LatencyByModelEntry] = Field(default_factory=list)
+    latency_by_model: list[dict[str, Any]] = Field(default_factory=list)
     note: str = "Token usage and latency tracking requires pg columns (cost_usd, latency_ms). Returns empty data if columns are null."
 
 
@@ -631,7 +632,7 @@ async def wage_analytics(
                 )
 
             # Actual vs required: avg hourly_rate by locality from payroll_records
-            actual_vs_required: list[ActualVsRequiredEntry] = []
+            actual_vs_required_pg: list[ActualVsRequiredEntry] = []
 
             avq = (
                 select(
@@ -658,7 +659,7 @@ async def wage_analytics(
 
             for row in avq_rows:
                 actual_avg = float(row.avg_rate or 0.0)
-                actual_vs_required.append(
+                actual_vs_required_pg.append(
                     ActualVsRequiredEntry(
                         locality=row.locality_code or "unknown",
                         trade=row.trade_code or "unknown",
@@ -668,10 +669,10 @@ async def wage_analytics(
                     )
                 )
 
-            # DBWD required wage lookup for actual_vs_required entries
+            # DBWD required wage lookup for actual_vs_required_pg entries
             from sqlalchemy import text as sa_text
 
-            for entry in actual_vs_required:
+            for entry in actual_vs_required_pg:
                 try:
                     dbwd_result = await session.execute(
                         sa_text(
@@ -729,7 +730,7 @@ async def wage_analytics(
 
             return WagesResponse(
                 violation_trend=violation_trend,
-                actual_vs_required=actual_vs_required,
+                actual_vs_required=actual_vs_required_pg,
                 fringe_compliance=fringe_compliance,
                 note="PostgreSQL fallback (DuckDB unavailable); required wage comparison requires DBWD prevailing wage lookup",
             )
@@ -848,15 +849,16 @@ async def llm_analytics(
             )
             model_dist_result = await session.execute(model_dist_query)
             model_dist_rows = model_dist_result.fetchall()
-            total_model = sum(r.count or 0 for r in model_dist_rows)
+            total_model = sum(getattr(r, 'count', 0) or 0 for r in model_dist_rows)
             model_distribution = []
             for r in model_dist_rows:
+                count_val = getattr(r, 'count', 0) or 0
                 model_distribution.append(
                     ModelDistributionEntry(
                         model=r.model or "unknown",
-                        count=r.count or 0,
+                        count=count_val,
                         percentage=round(
-                            (r.count / total_model * 100) if total_model > 0 else 0.0, 1
+                            (count_val / total_model * 100) if total_model > 0 else 0.0, 1
                         ),
                     )
                 )

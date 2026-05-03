@@ -19,7 +19,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import date, datetime
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from sqlalchemy import text
@@ -96,7 +96,7 @@ async def _fetch_with_retry(
         try:
             response = await client.get(_SAM_GOV_BASE, params=params)
             response.raise_for_status()
-            return response.json()
+            return cast(dict[str, Any] | None, response.json())
         except httpx.HTTPStatusError as exc:
             _logger.warning(
                 "SAM.gov HTTP %s (attempt %d/%d)",

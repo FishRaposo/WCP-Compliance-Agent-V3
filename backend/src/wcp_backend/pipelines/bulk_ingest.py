@@ -26,7 +26,7 @@ from wcp_backend.contracts.schemas import ContractCreate
 from wcp_backend.contracts.service import create_contract
 from wcp_backend.ingestion.schemas import IngestionJobCreate
 from wcp_backend.ingestion.service import create_ingestion_job, mark_job_completed, mark_job_started
-from wcp_backend.payrolls.schemas import PayrollBulkImportRequest
+from wcp_backend.payrolls.schemas import PayrollBulkImportRequest, PayrollRecordCreate
 from wcp_backend.payrolls.service import bulk_import_payrolls
 from wcp_backend.pipelines.utils import prefect_flow, prefect_task
 from wcp_backend.quality.contract_expectations import validate_contracts
@@ -96,11 +96,13 @@ async def import_payroll_records(
             "errors": validation.errors,
         }
     async with async_session() as session:
+        # Convert dict records to PayrollRecordCreate objects
+        payroll_records = [PayrollRecordCreate.model_validate(r) for r in records]
         result = await bulk_import_payrolls(
             session,
             PayrollBulkImportRequest(
                 contract_id=contract_id,
-                records=records,
+                records=payroll_records,
                 source="csv",
                 source_reference=source_reference,
             ),

@@ -62,7 +62,7 @@ events.get("/subscribe", async (c) => {
           const heartbeat = encoder.encode(": heartbeat\n\n");
           try {
             controller.enqueue(heartbeat);
-          } catch (enqueueErr) {
+          } catch {
             if (heartbeatTimer) clearInterval(heartbeatTimer);
             try { controller.close(); } catch (closeErr) { logger.debug({ err: closeErr }, "Controller already closed"); }
           }

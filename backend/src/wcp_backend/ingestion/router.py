@@ -17,12 +17,13 @@ from __future__ import annotations
 import csv
 import io
 import logging
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from wcp_backend.ingestion import schemas as ingestion_schemas
+from wcp_backend.ingestion.schemas import IngestionStatus, IngestionType
 from wcp_backend.ingestion.service import (
     create_ingestion_job,
     get_ingestion_status,
@@ -122,7 +123,7 @@ async def bulk_upload(
 
     # Create ingestion job
     job_create = ingestion_schemas.IngestionJobCreate(
-        type=type,
+        type=cast(IngestionType, type),
         source_type="csv",
         source_reference=file.filename,
         contract_id=contract_id,
@@ -134,7 +135,7 @@ async def bulk_upload(
     await update_ingestion_job(
         session,
         job_id,
-        status="processing",
+        status=cast(IngestionStatus, "processing"),
         processed_records=0,
         failed_records=0,
         error_details=[],
@@ -170,7 +171,7 @@ async def bulk_upload(
     await update_ingestion_job(
         session,
         job_id,
-        status=final_status,
+        status=cast(IngestionStatus, final_status),
         processed_records=processed,
         failed_records=failed,
         error_details=errors,

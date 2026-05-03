@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from functools import wraps
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 from wcp_backend.quality import ValidationResult
 from wcp_backend.quality.contract_expectations import validate_contracts
@@ -32,7 +32,7 @@ __all__ = [
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def task_retry(max_attempts: int = 3, delay_seconds: int = 60) -> dict:
+def task_retry(max_attempts: int = 3, delay_seconds: int = 60) -> dict[str, Any]:
     """Return Prefect retry policy configuration.
 
     Args:
@@ -48,7 +48,7 @@ def task_retry(max_attempts: int = 3, delay_seconds: int = 60) -> dict:
     }
 
 
-def task_timeout(seconds: int = 3600) -> dict:
+def task_timeout(seconds: int = 3600) -> dict[str, Any]:
     """Return Prefect timeout configuration.
 
     Args:
@@ -60,7 +60,7 @@ def task_timeout(seconds: int = 3600) -> dict:
     return {"timeout_seconds": seconds}
 
 
-def run_ge_validation(expectation_suite: str, data: list[dict]) -> dict:
+def run_ge_validation(expectation_suite: str, data: list[dict[str, Any]]) -> dict[str, Any]:
     """Run a Great Expectations validation suite on a dataset.
 
     Args:
@@ -98,9 +98,9 @@ def get_pg_connection() -> object:
 def prefect_flow(*flow_args: Any, **flow_kwargs: Any) -> Callable[[F], F]:
     """Use Prefect's flow decorator when available, with an import-safe fallback."""
     try:
-        from prefect import flow
+        from prefect import flow  # type: ignore[import-not-found]
 
-        return flow(*flow_args, **flow_kwargs)
+        return cast(Callable[[F], F], flow(*flow_args, **flow_kwargs))
     except Exception:
         def decorator(func: F) -> F:
             return func
@@ -111,9 +111,9 @@ def prefect_flow(*flow_args: Any, **flow_kwargs: Any) -> Callable[[F], F]:
 def prefect_task(*task_args: Any, **task_kwargs: Any) -> Callable[[F], F]:
     """Use Prefect's task decorator when available, with an import-safe fallback."""
     try:
-        from prefect import task
+        from prefect import task  # type: ignore[import-not-found]
 
-        return task(*task_args, **task_kwargs)
+        return cast(Callable[[F], F], task(*task_args, **task_kwargs))
     except Exception:
         def decorator(func: F) -> F:
             @wraps(func)
