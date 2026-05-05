@@ -12,4 +12,4 @@ async def validate_wcp(extracted: ExtractedWCP) -> DeterministicReport:
     try:
         return await run_rule_engine(extracted)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Validation failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Validation failed: {str(e)}") from e

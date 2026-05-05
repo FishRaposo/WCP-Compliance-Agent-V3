@@ -131,9 +131,9 @@ async def list_decisions(
             result = await session.execute(query)
             rows = result.fetchall()
             return [_row_to_summary(row) for row in rows]
-    except Exception:
+    except Exception as e:
         logger.exception("list_decisions failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from e
 
 
 @router.get("/{decision_id}", response_model=DecisionSummary)
@@ -161,9 +161,9 @@ async def get_decision(decision_id: str) -> DecisionSummary:
             return _row_to_summary(row)
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         logger.exception("get_decision failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from e
 
 
 @router.post("", response_model=DecisionSummary, status_code=201)
@@ -211,6 +211,6 @@ async def create_decision(decision: TrustScoredDecision) -> DecisionSummary:
             summary = _row_to_summary(row)
             _publish_decision(summary)
             return summary
-    except Exception:
+    except Exception as e:
         logger.exception("create_decision failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from e

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 _analytics_store: DuckDBStore | None = None
 
 
-def get_analytics_store() -> DuckDBStore | None:
+def _ensure_analytics_store() -> DuckDBStore | None:
     """Return a singleton DuckDBStore with PostgreSQL views registered.
 
     Returns None if DuckDB or postgres_scanner is unavailable.
@@ -251,9 +251,9 @@ def _register_parquet_archive(store: DuckDBStore) -> None:
         logger.debug("Parquet archive registration failed (may not exist yet)", exc_info=True)
 
 
-def get_analytics_store_with_archive() -> DuckDBStore | None:
+def _ensure_analytics_store_with_archive() -> DuckDBStore | None:
     """Get analytics store with Parquet archive registered."""
-    store = get_analytics_store()
+    store = _ensure_analytics_store()
     if store is not None:
         _register_parquet_archive(store)
     return store

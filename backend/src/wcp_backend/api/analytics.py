@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import Integer, case, desc, func, select
 
 from wcp_backend.config import settings
+from wcp_backend.models.enums import VerdictStatus
 from wcp_backend.services.db import async_session
 from wcp_backend.services.tables import contracts_table, decisions_table
 
@@ -76,7 +77,7 @@ async def analytics_overview(days: int = Query(default=30, ge=1, le=365)) -> Ana
             total_contracts_result = await session.execute(select(func.count()).select_from(contracts_table))
             avg_trust_result = await session.execute(select(func.avg(decisions_table.c.trust_score)))
             approved_result = await session.execute(
-                select(func.count()).select_from(decisions_table).where(decisions_table.c.verdict == "approved")
+                select(func.count()).select_from(decisions_table).where(decisions_table.c.verdict == VerdictStatus.APPROVED.value)
             )
             human_review_result = await session.execute(
                 select(func.count()).select_from(decisions_table).where(decisions_table.c.requires_human_review.is_(True))
@@ -105,7 +106,7 @@ async def analytics_overview(days: int = Query(default=30, ge=1, le=365)) -> Ana
             )
     except Exception:
         logger.exception("analytics_overview failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from None
 
 
 @router.get("/volume", response_model=list[DecisionVolume])
@@ -146,7 +147,7 @@ async def decision_volume(
             ]
     except Exception:
         logger.exception("decision_volume failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from None
 
 
 @router.get("/approval-by-trade", response_model=dict)
@@ -161,7 +162,7 @@ async def approval_by_trade() -> dict[str, Any]:
         async with async_session() as session:
             total_query = select(func.count().label("total"))
             approved_query = select(func.count().label("approved")).where(
-                decisions_table.c.verdict == "approved"
+                decisions_table.c.verdict == VerdictStatus.APPROVED.value
             )
 
             total_result = await session.execute(total_query)
@@ -176,7 +177,7 @@ async def approval_by_trade() -> dict[str, Any]:
                     func.count().label("cnt"),
                     func.sum(
                         case(
-                            (decisions_table.c.verdict == "approved", 1),
+                            (decisions_table.c.verdict == VerdictStatus.APPROVED.value, 1),
                             else_=0,
                         ).cast(Integer)
                     ).label("approved_count"),
@@ -209,7 +210,7 @@ async def approval_by_trade() -> dict[str, Any]:
             }
     except Exception:
         logger.exception("approval_by_trade failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from None
 
 
 @router.get("/trust-band-distribution", response_model=list[TrustBandDistribution])
@@ -247,7 +248,7 @@ async def trust_band_distribution() -> list[TrustBandDistribution]:
             ]
     except Exception:
         logger.exception("trust_band_distribution failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from None
 
 
 @router.get("/cost", response_model=CostAnalytics)
@@ -281,4 +282,4 @@ async def cost_analytics() -> CostAnalytics:
             )
     except Exception:
         logger.exception("cost_analytics failed")
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail="Database error") from None

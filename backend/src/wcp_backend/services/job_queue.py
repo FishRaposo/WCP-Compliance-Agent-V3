@@ -10,7 +10,7 @@ from typing import Any
 from celery import Celery  # type: ignore[import-untyped]
 
 from wcp_backend.config import settings
-from wcp_backend.models.enums import TrustBand, VerdictStatus
+from wcp_backend.models.enums import CheckStatus, OverallStatus, TrustBand, VerdictStatus
 from wcp_backend.models.schemas import TrustScoredDecision
 from wcp_backend.pipeline.extraction import extract_from_text
 from wcp_backend.pipeline.rules import (
@@ -55,7 +55,7 @@ async def _process_single_payload(
         # Build deterministic-only decision
         verdict = (
             VerdictStatus.APPROVED
-            if report.overall_status.value == "pass"
+            if report.overall_status.value == OverallStatus.PASS
             else VerdictStatus.REJECTED
         )
         deterministic_score = 1.0 - (report.violation_count / max(len(report.checks), 1))
@@ -63,7 +63,7 @@ async def _process_single_payload(
         trust_band = determine_trust_band(trust_score)
 
         # Summarize reasoning
-        violation_msgs = [c.message for c in report.checks if c.status.value == "fail"]
+        violation_msgs = [c.message for c in report.checks if c.status.value == CheckStatus.FAIL]
         reasoning = (
             "No violations found."
             if not violation_msgs
@@ -155,14 +155,14 @@ def _run_batch_validation(job_id: str, payloads: list[dict[str, Any]]) -> dict[s
 
                 verdict = (
                     VerdictStatus.APPROVED
-                    if report.overall_status.value == "pass"
+                    if report.overall_status.value == OverallStatus.PASS
                     else VerdictStatus.REJECTED
                 )
                 deterministic_score = 1.0 - (report.violation_count / max(len(report.checks), 1))
                 trust_score = deterministic_score
                 trust_band = determine_trust_band(trust_score)
 
-                violation_msgs = [c.message for c in report.checks if c.status.value == "fail"]
+                violation_msgs = [c.message for c in report.checks if c.status.value == CheckStatus.FAIL]
                 reasoning = (
                     "No violations found."
                     if not violation_msgs
@@ -238,7 +238,7 @@ def run_eval(eval_config: dict[str, Any]) -> dict[str, Any]:
 
             verdict = (
                 "approved"
-                if report.overall_status.value == "pass"
+                if report.overall_status.value == OverallStatus.PASS
                 else "rejected"
             )
             deterministic_score = 1.0 - (

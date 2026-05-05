@@ -112,9 +112,9 @@ async def enqueue_job(job: JobCreate) -> JobStatusResponse:
         )
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         logger.exception("enqueue_job failed")
-        raise HTTPException(status_code=500, detail="Failed to enqueue job")
+        raise HTTPException(status_code=500, detail="Failed to enqueue job") from e
 
 
 @router.get("/{job_id}", response_model=JobStatusResponse)
@@ -188,6 +188,6 @@ async def get_job_status(job_id: str) -> JobStatusResponse:
             )
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
         logger.exception("get_job_status failed")
-        raise HTTPException(status_code=500, detail="Failed to get job status")
+        raise HTTPException(status_code=500, detail="Failed to get job status") from e

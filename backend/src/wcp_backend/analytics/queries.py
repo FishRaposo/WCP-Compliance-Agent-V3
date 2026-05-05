@@ -18,6 +18,7 @@ from typing import Any
 
 from sqlalchemy import and_, case, desc, func, select
 
+from wcp_backend.models.enums import VerdictStatus
 from wcp_backend.services.tables import contracts_table, decisions_table
 
 __all__ = [
@@ -80,7 +81,7 @@ async def query_overview_metrics(session: Any, days: int = 30) -> dict[str, Any]
     # Approved count
     approved_result = await session.execute(
         select(func.count()).select_from(decisions_table).where(
-            decisions_table.c.verdict == "approved"
+            decisions_table.c.verdict == VerdictStatus.APPROVED.value
         )
     )
     approved_count = _safe_int(approved_result.scalar())
@@ -148,7 +149,7 @@ async def query_decision_volume(session: Any, days: int = 30) -> list[dict[str, 
             func.avg(decisions_table.c.trust_score).label("avg_trust"),
             func.sum(
                 case(
-                    (decisions_table.c.verdict == "approved", 1),
+                    (decisions_table.c.verdict == VerdictStatus.APPROVED.value, 1),
                     else_=0,
                 )
             ).label("approved"),
@@ -193,7 +194,7 @@ async def query_approval_by_trust_band(session: Any) -> dict[str, Any]:
 
     approved_result = await session.execute(
         select(func.count()).select_from(decisions_table).where(
-            decisions_table.c.verdict == "approved"
+            decisions_table.c.verdict == VerdictStatus.APPROVED.value
         )
     )
     approved = _safe_int(approved_result.scalar())
@@ -207,7 +208,7 @@ async def query_approval_by_trust_band(session: Any) -> dict[str, Any]:
             func.count().label("cnt"),
             func.sum(
                 case(
-                    (decisions_table.c.verdict == "approved", 1),
+                    (decisions_table.c.verdict == VerdictStatus.APPROVED.value, 1),
                     else_=0,
                 )
             ).label("approved"),

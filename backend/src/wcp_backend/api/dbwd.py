@@ -28,6 +28,6 @@ async def get_dbwd_rate_endpoint(trade: str, locality: str, date: str) -> DBWDRa
             wage_determination_number=rate_record.wage_determination_number
         )
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DBWD lookup failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"DBWD lookup failed: {str(e)}") from e

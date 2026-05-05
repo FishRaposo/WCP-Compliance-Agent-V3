@@ -27,10 +27,11 @@ from wcp_backend.analytics.duckdb_queries import (
     duckdb_compliance_breakdown,
     duckdb_wage_analytics,
     duckdb_llm_analytics,
-    get_analytics_store_with_archive,
+    _ensure_analytics_store_with_archive,
 )
 from wcp_backend.analytics.duckdb_store import DuckDBStore
 from wcp_backend.config import settings
+from wcp_backend.models.enums import VerdictStatus
 from wcp_backend.services.db import async_session
 from wcp_backend.services.tables import contracts_table, decisions_table, payroll_records_table
 
@@ -39,19 +40,16 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v4/analytics", tags=["v4-analytics"])
 
 
-def _get_duckdb() -> DuckDBStore | None:
+def _ensure_duckdb() -> DuckDBStore | None:
     """Get DuckDB store with archive support. Returns None if unavailable."""
     try:
-        return get_analytics_store_with_archive()
-    except Exception:
+        return _ensure_analytics_store_with_archive()
+    except Exception as e:
+        logger.warning("DuckDB unavailable, falling back to PostgreSQL: %s", e)
         return None
 
 
-def _safe_float(value: Any) -> float:
-    try:
-        return float(value or 0)
-    except (TypeError, ValueError):
-        return 0.0
+from wcp_backend.analytics.queries import _safe_float
 
 
 # ---------------------------------------------------------------------------
@@ -208,7 +206,7 @@ async def analytics_overview(
         )
 
     # Try DuckDB first
-    duckdb_store = _get_duckdb()
+    duckdb_store = _ensure_duckdb()
     dd_result = duckdb_overview(duckdb_store, days)
     if dd_result is not None:
         return AnalyticsOverview(
@@ -247,7 +245,7 @@ async def analytics_overview(
             # Approved count
             approved_result = await session.execute(
                 select(func.count()).select_from(decisions_table).where(
-                    decisions_table.c.verdict == "approved"
+                    decisions_table.c.verdict == VerdictStatus.APPROVED.value
                 )
             )
             approved_count = approved_result.scalar() or 0
@@ -315,7 +313,7 @@ async def decision_volume(
     days = days_map.get(period, 30)
 
     # DuckDB fast path
-    duckdb_store = _get_duckdb()
+    duckdb_store = _ensure_duckdb()
     dd_result = duckdb_decision_volume(duckdb_store, days, period, granularity)
     if dd_result is not None:
         data = [
@@ -357,7 +355,7 @@ async def decision_volume(
                     func.avg(decisions_table.c.trust_score).label("avg_trust"),
                     func.sum(
                         case(
-                            (decisions_table.c.verdict == "approved", 1),
+                            (decisions_table.c.verdict == VerdictStatus.APPROVED.value, 1),
                             else_=0,
                         )
                     ).label("approved_count"),
@@ -411,7 +409,7 @@ async def compliance_breakdown(
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Try DuckDB first
-    duckdb_store = _get_duckdb()
+    duckdb_store = _ensure_duckdb()
     dd_result = duckdb_compliance_breakdown(duckdb_store, days)
     if dd_result is not None:
         by_locality = [
@@ -460,7 +458,7 @@ async def compliance_breakdown(
                     func.count().label("total"),
                     func.sum(
                         case(
-                            (decisions_table.c.verdict == "approved", 1),
+                            (decisions_table.c.verdict == VerdictStatus.APPROVED.value, 1),
                             else_=0,
                         )
                     ).label("approved"),
@@ -495,7 +493,7 @@ async def compliance_breakdown(
                     decisions_table.c.verdict,
                     func.count().label("cnt"),
                 )
-                .where(and_(*conditions, decisions_table.c.verdict != "approved"))
+                .where(and_(*conditions, decisions_table.c.verdict != VerdictStatus.APPROVED.value))
                 .group_by(decisions_table.c.verdict)
             )
 
@@ -543,7 +541,7 @@ async def wage_analytics(
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Try DuckDB first
-    duckdb_store = _get_duckdb()
+    duckdb_store = _ensure_duckdb()
     dd_result = duckdb_wage_analytics(duckdb_store, days)
     if dd_result is not None:
         violation_trend = [
@@ -753,7 +751,7 @@ async def llm_analytics(
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # Try DuckDB first
-    duckdb_store = _get_duckdb()
+    duckdb_store = _ensure_duckdb()
     dd_result = duckdb_llm_analytics(duckdb_store, days)
     if dd_result is not None:
         cost_per_decision = [

@@ -49,9 +49,9 @@ async def validate_credentials(
                 user_id=str(row.id),
                 role=row.role,
             )
-    except Exception:
+    except Exception as e:
         logger.exception("validate_credentials failed")
-        raise HTTPException(status_code=500, detail="Authentication error")
+        raise HTTPException(status_code=500, detail="Authentication error") from e
 
 
 def _verify_password(plain: str, hashed: str) -> bool:

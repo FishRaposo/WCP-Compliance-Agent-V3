@@ -39,7 +39,6 @@ yarn-error.log*
 .yarn-integrity
 
 # Vite/React
-dist/
 dist-ssr/
 *.local
 
@@ -59,14 +58,6 @@ dist-ssr/
 *.swo
 *~
 
-# AI tool configs (local per-machine)
-.claude/
-.codex
-.remember/
-.windsurf/
-.cursor/
-.jules/
-
 # OS
 .DS_Store
 Thumbs.db
@@ -85,6 +76,9 @@ logs/
 .mypy_cache/
 .ruff_cache/
 
+# Desloppify local state
+.desloppify/
+
 # Temporary files
 *.tmp
 *.temp
@@ -93,7 +87,6 @@ logs/
 # Build artifacts and V4 runtime data
 .prefect/
 validation_artifacts/
-backend/package-lock.json
 *.pem
 *.key
 *.crt
@@ -112,9 +105,6 @@ _archive/
 *-Prince.ts
 *-Prince.json
 *-Prince.md
-
-# Stray files
-=
 
 # Test outputs
 test-results/

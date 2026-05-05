@@ -328,7 +328,6 @@ def extract_from_pdf(pdf_bytes: bytes) -> ExtractedWCP:
                 return extract_from_text(all_text)
     except Exception:
         logger.warning("PDF extraction failed", exc_info=True)
-        pass
     
     # Return empty structure with generated job_id
     job_id = str(uuid.uuid4())

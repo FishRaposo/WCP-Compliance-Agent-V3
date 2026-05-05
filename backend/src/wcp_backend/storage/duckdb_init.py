@@ -9,7 +9,11 @@ duplicating connection and registration logic.
 
 from __future__ import annotations
 
+import logging
+
 from wcp_backend.analytics.duckdb_store import DuckDBStore
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["init_duckdb_views", "DuckDBInit"]
 
@@ -37,11 +41,11 @@ def init_duckdb_views(
     for table in ["decisions", "contracts", "payroll_records"]:
         try:
             store.register_postgres_view(table, connection_uri=postgres_uri)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to register DuckDB PostgreSQL view for %s: %s", table, e)
     if parquet_archive_glob:
         try:
             store.register_parquet_view("archived_decisions", parquet_archive_glob)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to register DuckDB Parquet view: %s", e)
     return store

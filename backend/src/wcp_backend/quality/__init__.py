@@ -39,6 +39,15 @@ from wcp_backend.quality._core import (
     validate_contracts,
     validate_payroll_records,
 )
+from wcp_backend.quality.ge_runtime import GERuntime
+from wcp_backend.quality.checkpoint import (
+    CheckpointRunner,
+    ValidationArtifact,
+    run_validation_checkpoint,
+    validate_and_checkpoint_dbwd,
+    validate_and_checkpoint_contracts,
+    validate_and_checkpoint_payroll,
+)
 
 __all__ = [
     "MODULE_NAME",
@@ -62,13 +71,3 @@ __all__ = [
     "validate_and_checkpoint_contracts",
     "validate_and_checkpoint_payroll",
 ]
-
-from wcp_backend.quality.ge_runtime import GERuntime  # noqa: E402
-from wcp_backend.quality.checkpoint import (  # noqa: E402
-    CheckpointRunner,
-    ValidationArtifact,
-    run_validation_checkpoint,
-    validate_and_checkpoint_dbwd,
-    validate_and_checkpoint_contracts,
-    validate_and_checkpoint_payroll,
-)

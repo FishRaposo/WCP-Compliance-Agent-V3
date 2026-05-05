@@ -1,5 +1,7 @@
 """Health check service for monitoring infrastructure connectivity."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from sqlalchemy import text

@@ -67,4 +67,4 @@ async def hybrid_search(request: SearchRequest) -> list[SearchResult]:
             for r in results
         ]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}") from e
